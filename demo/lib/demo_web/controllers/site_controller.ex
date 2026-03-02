@@ -19,6 +19,16 @@ defmodule DemoWeb.SiteController do
     end
   end
 
+  def install(conn, params) do
+    if static_render?(params) do
+      render_html(conn, SiteRenderer.install_html())
+    else
+      render(conn, :install,
+        sections: SiteRuntime.catalog_sections()
+      )
+    end
+  end
+
   def component(conn, %{"id" => id} = params) do
     case SiteRuntime.find_entry(id) do
       nil ->

@@ -1,0 +1,81 @@
+<Docs.docs_layout sections={@sections} mode={:live} home_url="/">
+  <div class="docs-markdown prose prose-neutral dark:prose-invert max-w-3xl">
+    <h1>Installation</h1>
+    <p>
+      Cinder UI is a component library for Phoenix LiveView applications.
+      Follow these steps to add it to your project.
+    </p>
+
+    <h2 id="prerequisites">Prerequisites</h2>
+    <p>You need an existing Phoenix 1.7+ project. If you don't have one yet:</p>
+    <pre><code>{"mix phx.new my_app\ncd my_app"}</code></pre>
+
+    <h2 id="tailwind-css">1. Set up Tailwind CSS</h2>
+    <p>
+      Cinder UI requires Tailwind CSS v4+. New Phoenix projects generated with
+      <code>mix phx.new</code> include Tailwind by default — if yours already has
+      it, skip to <a href="#add-cinder-ui">step 2</a>.
+    </p>
+    <p>Add the Tailwind plugin to your dependencies in <code>mix.exs</code>:</p>
+    <pre><code class="language-elixir">{"defp deps do\n  [\n    {:tailwind, \"~> 0.3\", runtime: Mix.env() == :dev},\n    # ...\n  ]\nend"}</code></pre>
+    <p>Configure Tailwind in <code>config/config.exs</code>:</p>
+    <pre><code class="language-elixir">{"config :tailwind,\n  version: \"4.1.12\",\n  my_app: [\n    args: ~w(\n      --input=assets/css/app.css\n      --output=priv/static/assets/app.css\n    ),\n    cd: Path.expand(\"..\", __DIR__)\n  ]"}</code></pre>
+    <p>Add the Tailwind watcher in <code>config/dev.exs</code>:</p>
+    <pre><code class="language-elixir">{"config :my_app, MyAppWeb.Endpoint,\n  watchers: [\n    tailwind: {Tailwind, :install_and_run, [:my_app, ~w(--watch)]}\n  ]"}</code></pre>
+    <p>Add Tailwind to the deployment alias in <code>mix.exs</code>:</p>
+    <pre><code class="language-elixir">{"defp aliases do\n  [\n    \"assets.deploy\": [\n      \"tailwind my_app --minify\",\n      \"esbuild my_app --minify\",\n      \"phx.digest\"\n    ]\n  ]\nend"}</code></pre>
+    <p>Install Tailwind and fetch dependencies:</p>
+    <pre><code>{"mix deps.get\nmix tailwind.install"}</code></pre>
+    <p>Set up <code>assets/css/app.css</code>:</p>
+    <pre><code class="language-css">@import "tailwindcss";</code></pre>
+    <p>
+      If your <code>assets/js/app.js</code> imports CSS
+      (<code>import "../css/app.css"</code>), remove that line — Tailwind
+      handles CSS compilation separately.
+    </p>
+
+    <h2 id="add-cinder-ui">2. Add Cinder UI</h2>
+    <p>Add the dependency to your <code>mix.exs</code>:</p>
+    <pre><code class="language-elixir">{"defp deps do\n  [\n    {:cinder_ui, \"~> 0.1.0\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.0\"},\n    # ...\n  ]\nend"}</code></pre>
+    <p>Fetch dependencies:</p>
+    <pre><code>mix deps.get</code></pre>
+
+    <h2 id="run-installer">3. Run the installer</h2>
+    <p>
+      Cinder UI includes a Mix task that sets up CSS, JavaScript hooks,
+      and Tailwind plugins automatically:
+    </p>
+    <pre><code>mix cinder_ui.install</code></pre>
+    <p>This will:</p>
+    <ul>
+      <li>Copy <code>cinder_ui.css</code> into <code>assets/css/</code> (theme variables and dark mode)</li>
+      <li>Copy <code>cinder_ui.js</code> into <code>assets/js/</code> (LiveView hooks for interactive components)</li>
+      <li>
+        Update <code>assets/css/app.css</code> with:<br />
+        <code>@source "../../deps/cinder_ui";</code> — so Tailwind scans component classes<br />
+        <code>@import "./cinder_ui.css";</code> — loads theme tokens
+      </li>
+      <li>Update <code>assets/js/app.js</code> to merge <code>CinderUIHooks</code> into your LiveView hooks</li>
+      <li>Install the <code>tailwindcss-animate</code> npm package</li>
+    </ul>
+    <p>The installer auto-detects your package manager (npm, pnpm, yarn, or bun). To specify one explicitly:</p>
+    <pre><code>mix cinder_ui.install --package-manager pnpm</code></pre>
+    <p>To re-run without overwriting customized files:</p>
+    <pre><code>mix cinder_ui.install --skip-existing</code></pre>
+
+    <h2 id="configure-app">4. Configure your app</h2>
+    <p>
+      Add <code>use CinderUI</code> to your app's <code>html_helpers</code> in
+      <code>lib/my_app_web.ex</code>:
+    </p>
+    <pre><code class="language-elixir">{"defp html_helpers do\n  quote do\n    use Phoenix.Component\n    use CinderUI\n    # ...\n  end\nend"}</code></pre>
+    <p>Or selectively import only the modules you need:</p>
+    <pre><code class="language-elixir">{"import CinderUI.Components.Actions\nimport CinderUI.Components.Forms"}</code></pre>
+
+    <h2 id="verify">5. Start building</h2>
+    <p>Start your Phoenix server:</p>
+    <pre><code>mix phx.server</code></pre>
+    <p>Try a component in any template:</p>
+    <pre><code class="language-heex">&lt;.button&gt;Click me&lt;/.button&gt;</code></pre>
+  </div>
+</Docs.docs_layout>

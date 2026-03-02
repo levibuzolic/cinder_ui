@@ -6,75 +6,166 @@ Cinder UI is a Hex-oriented component library that ports shadcn/ui design patter
 
 ## Installation
 
-### 1) Add dependency
+### Prerequisites
+
+You need an existing Phoenix 1.7+ project. If you don't have one yet:
+
+```bash
+mix phx.new my_app
+cd my_app
+```
+
+### 1. Set up Tailwind CSS
+
+Cinder UI requires Tailwind CSS v4+. New Phoenix projects generated with `mix phx.new` include Tailwind by default — if yours already has it, skip to [step 2](#2-add-cinder-ui).
+
+Add the Tailwind plugin to your dependencies in `mix.exs`:
 
 ```elixir
-def deps do
+defp deps do
   [
-    {:cinder_ui, "~> 0.1.0"},
-    # optional but recommended for <.icon /> and icon-based primitives
-    {:lucide_icons, "~> 2.0"}
+    {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
+    # ...
   ]
 end
 ```
 
-### 2) Fetch deps
+Configure Tailwind in `config/config.exs`:
+
+```elixir
+config :tailwind,
+  version: "4.1.12",
+  my_app: [
+    args: ~w(
+      --input=assets/css/app.css
+      --output=priv/static/assets/app.css
+    ),
+    cd: Path.expand("..", __DIR__)
+  ]
+```
+
+Add the Tailwind watcher in `config/dev.exs`:
+
+```elixir
+config :my_app, MyAppWeb.Endpoint,
+  watchers: [
+    tailwind: {Tailwind, :install_and_run, [:my_app, ~w(--watch)]}
+  ]
+```
+
+Add Tailwind to the deployment alias in `mix.exs`:
+
+```elixir
+defp aliases do
+  [
+    "assets.deploy": [
+      "tailwind my_app --minify",
+      "esbuild my_app --minify",
+      "phx.digest"
+    ]
+  ]
+end
+```
+
+Install Tailwind and fetch dependencies:
+
+```bash
+mix deps.get
+mix tailwind.install
+```
+
+Set up `assets/css/app.css`:
+
+```css
+@import "tailwindcss";
+```
+
+If your `assets/js/app.js` imports CSS (`import "../css/app.css"`), remove that line — Tailwind handles CSS compilation separately.
+
+### 2. Add Cinder UI
+
+Add the dependency to your `mix.exs`:
+
+```elixir
+defp deps do
+  [
+    {:cinder_ui, "~> 0.1.0"},
+    # Optional but recommended — required for the <.icon /> component
+    {:lucide_icons, "~> 2.0"},
+    # ...
+  ]
+end
+```
+
+Fetch dependencies:
 
 ```bash
 mix deps.get
 ```
 
-### 3) Install assets and hooks
+### 3. Run the installer
+
+Cinder UI includes a Mix task that sets up CSS, JavaScript hooks, and Tailwind plugins automatically:
 
 ```bash
 mix cinder_ui.install
 ```
 
-Installer behavior:
+This will:
 
-- Copies `assets/css/cinder_ui.css`
-- Copies `assets/js/cinder_ui.js`
-- Updates `assets/css/app.css` with:
-  - `@source "../../deps/cinder_ui";`
-  - `@import "./cinder_ui.css";`
-- Updates `assets/js/app.js` to merge `CinderUIHooks` into LiveView hooks
-- Installs `tailwindcss-animate` in your assets package manager
+- Copy `cinder_ui.css` into `assets/css/` (theme variables and dark mode)
+- Copy `cinder_ui.js` into `assets/js/` (LiveView hooks for interactive components)
+- Update `assets/css/app.css` with:
+  - `@source "../../deps/cinder_ui";` — so Tailwind scans component classes
+  - `@import "./cinder_ui.css";` — loads theme tokens
+- Update `assets/js/app.js` to merge `CinderUIHooks` into your LiveView hooks
+- Install the `tailwindcss-animate` npm package
 
-Optional flags:
+The installer auto-detects your package manager (npm, pnpm, yarn, or bun). To specify one explicitly:
 
 ```bash
-mix cinder_ui.install --assets-path assets --package-manager pnpm
+mix cinder_ui.install --package-manager pnpm
 ```
 
-Supported package managers: `npm`, `pnpm`, `yarn`, `bun`.
-
-If you want to avoid overwriting generated files when re-running the installer:
+To re-run without overwriting customized files:
 
 ```bash
 mix cinder_ui.install --skip-existing
 ```
 
-`--skip-existing` skips overwriting:
+### 4. Configure your app
 
-- `assets/css/cinder_ui.css`
-- `assets/js/cinder_ui.js`
-
-## Usage in `MyAppWeb`
+Add `use CinderUI` to your app's `html_helpers` in `lib/my_app_web.ex`:
 
 ```elixir
 defp html_helpers do
   quote do
     use Phoenix.Component
     use CinderUI
+    # ...
   end
 end
 ```
 
-You can also selectively import modules:
+Or selectively import only the modules you need:
 
 ```elixir
 import CinderUI.Components.Actions
 import CinderUI.Components.Forms
+```
+
+### 5. Start building
+
+Start your Phoenix server:
+
+```bash
+mix phx.server
+```
+
+Try a component in any template:
+
+```heex
+<.button>Click me</.button>
 ```
 
 ## Icons (Optional, Recommended)

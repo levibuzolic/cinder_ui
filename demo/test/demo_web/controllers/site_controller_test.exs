@@ -24,6 +24,15 @@ defmodule DemoWeb.SiteControllerTest do
     assert body =~ "Original shadcn/ui docs"
   end
 
+  test "GET /docs/install renders installation guide", %{conn: conn} do
+    conn = get(conn, ~p"/docs/install")
+    body = html_response(conn, 200)
+
+    assert body =~ "Installation"
+    assert body =~ "mix cinder_ui.install"
+    assert body =~ "use CinderUI"
+  end
+
   test "GET /assets/site.css serves docs CSS", %{conn: conn} do
     conn = get(conn, ~p"/assets/site.css")
 

@@ -92,6 +92,7 @@ defmodule Mix.Tasks.Demo.Site.Export do
 
   defp destination_path("/"), do: "index.html"
   defp destination_path("/docs/"), do: Path.join(["docs", "index.html"])
+  defp destination_path("/docs/install/"), do: Path.join(["docs", "install", "index.html"])
 
   defp destination_path(path) do
     ["", "docs", id, ""] = String.split(path, "/")

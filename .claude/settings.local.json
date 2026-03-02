@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:petal.build)",
+      "Bash(mix compile:*)",
+      "Bash(mix test:*)"
+    ]
+  }
+}
