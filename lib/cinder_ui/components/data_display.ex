@@ -200,7 +200,7 @@ defmodule CinderUI.Components.DataDisplay do
   </.table>
   ```
 
-  ```heex title="Invoice summary table" align="full"
+  ```heex title="Invoice summary table" align="full" vrt
   <.table>
     <.table_header>
       <.table_row>

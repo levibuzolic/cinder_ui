@@ -46,7 +46,7 @@ defmodule CinderUI.Components.Overlay do
   </.dialog>
   ```
 
-  ```heex title="Form inside dialog"
+  ```heex title="Form inside dialog" vrt
   <.dialog id="invite-member-dialog">
     <:trigger><.button>Invite member</.button></:trigger>
     <:title>Invite teammate</:title>
@@ -73,7 +73,7 @@ defmodule CinderUI.Components.Overlay do
   </.dialog>
   ```
 
-  ```heex title="Server-controlled open state"
+  ```heex title="Server-controlled open state" vrt
   <.dialog id="billing-dialog" open={@show_billing}>
     <:trigger><.button>Open billing</.button></:trigger>
     <:title>Billing details</:title>

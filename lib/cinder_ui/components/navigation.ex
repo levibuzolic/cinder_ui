@@ -348,7 +348,7 @@ defmodule CinderUI.Components.Navigation do
   </.tabs>
   ```
 
-  ```heex title="Line variant for analytics views"
+  ```heex title="Line variant for analytics views" vrt
   <.tabs value="overview" variant={:line}>
     <:trigger value="overview">Overview</:trigger>
     <:trigger value="usage">Usage</:trigger>
@@ -360,7 +360,7 @@ defmodule CinderUI.Components.Navigation do
   </.tabs>
   ```
 
-  ```heex title="Vertical tabs for admin panels"
+  ```heex title="Vertical tabs for admin panels" vrt
   <.tabs value="general" orientation={:vertical} class="items-start">
     <:trigger value="general">General</:trigger>
     <:trigger value="members">Members</:trigger>

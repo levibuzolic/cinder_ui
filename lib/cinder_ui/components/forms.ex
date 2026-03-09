@@ -78,7 +78,7 @@ defmodule CinderUI.Components.Forms do
   </.field>
   ```
 
-  ```heex title="Validation state" align="full"
+  ```heex title="Validation state" align="full" vrt
   <.field>
     <:label><.label for="email">Work email</.label></:label>
     <.input id="email" name="email" type="email" />
@@ -102,7 +102,7 @@ defmodule CinderUI.Components.Forms do
   </.field>
   ```
 
-  ```heex title="Phoenix validation flow" align="full"
+  ```heex title="Phoenix validation flow" align="full" vrt
   <.form for={@form} phx-change="validate" phx-submit="save" class="space-y-6">
     <.field invalid={@form[:owner].errors != []}>
       <:label>
@@ -484,14 +484,14 @@ defmodule CinderUI.Components.Forms do
   </.select>
   ```
 
-  ```heex title="Grouped labels" align="full"
+  ```heex title="Grouped labels" align="full" vrt
   <.select id="assignee" name="assignee" placeholder="Assign a teammate">
     <:option value="levi" label="Levi" description="Platform" group="Engineering" />
     <:option value="mira" label="Mira" description="Product Design" group="Design" />
   </.select>
   ```
 
-  ```heex title="Disabled option" align="full"
+  ```heex title="Disabled option" align="full" vrt
   <.select id="region" name="region">
     <:option value="us" label="United States" />
     <:option value="eu" label="Europe" />
@@ -499,7 +499,7 @@ defmodule CinderUI.Components.Forms do
   </.select>
   ```
 
-  ```heex title="Clearable select" align="full"
+  ```heex title="Clearable select" align="full" vrt
   <.select id="support-tier" name="tier" value="pro" clearable={true}>
     <:option value="free" label="Free" />
     <:option value="pro" label="Pro" />
@@ -746,13 +746,13 @@ defmodule CinderUI.Components.Forms do
   </.autocomplete>
   ```
 
-  ```heex title="Loading state" align="full"
+  ```heex title="Loading state" align="full" vrt
   <.autocomplete id="repo-search" name="repo" loading={true}>
     <:option value="cinder" label="cinder_ui" />
   </.autocomplete>
   ```
 
-  ```heex title="LiveView server search" align="full"
+  ```heex title="LiveView server search" align="full" vrt
   <.form for={@form} phx-change="search-owners">
     <.autocomplete
       id="owner-search"

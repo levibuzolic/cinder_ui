@@ -391,7 +391,8 @@ defmodule CinderUI.Docs.Catalog do
           description: nil,
           preview_html: render_heex_example(module, function, template_heex),
           template_heex: display_template_heex,
-          preview_align: example.preview_align || :center
+          preview_align: example.preview_align || :center,
+          promoted_visual: Map.get(example, :promoted_visual, false)
         }
       end)
     else
@@ -414,7 +415,8 @@ defmodule CinderUI.Docs.Catalog do
           description: example[:description],
           preview_html: render_component(module, function, assigns),
           template_heex: display_template_heex,
-          preview_align: :center
+          preview_align: :center,
+          promoted_visual: Map.get(example, :promoted_visual, false)
         }
       end)
     end
@@ -550,10 +552,10 @@ defmodule CinderUI.Docs.Catalog do
       |> String.trim()
       |> then(&Regex.scan(~r/```([^\n]*)\n(.*?)```/s, &1, capture: :all_but_first))
       |> Enum.map(fn [info, code] ->
-        {lang, title, preview_align} = parse_fence_info(info)
-        {lang, title, preview_align, String.trim(code)}
+        {lang, title, preview_align, promoted_visual} = parse_fence_info(info)
+        {lang, title, preview_align, promoted_visual, String.trim(code)}
       end)
-      |> Enum.filter(fn {lang, _title, _preview_align, code} ->
+      |> Enum.filter(fn {lang, _title, _preview_align, _promoted_visual, code} ->
         code != "" and (lang in ["", "heex", "html", "elixir"] and String.contains?(code, "<."))
       end)
 
@@ -572,7 +574,7 @@ defmodule CinderUI.Docs.Catalog do
           |> String.trim()
         end)
         |> Enum.filter(&String.contains?(&1, "<."))
-        |> Enum.map(&{"", nil, :center, &1})
+        |> Enum.map(&{"", nil, :center, false, &1})
       else
         []
       end
@@ -580,12 +582,13 @@ defmodule CinderUI.Docs.Catalog do
     (fenced_examples ++ indented_examples)
     |> Enum.uniq()
     |> Enum.with_index(1)
-    |> Enum.map(fn {{lang, title, preview_align, code}, index} ->
+    |> Enum.map(fn {{lang, title, preview_align, promoted_visual, code}, index} ->
       %{
         id: "inline-#{index}",
         title: inline_doc_example_title(title, lang, index),
         template_heex: code,
-        preview_align: preview_align
+        preview_align: preview_align,
+        promoted_visual: promoted_visual
       }
     end)
   end
@@ -594,10 +597,11 @@ defmodule CinderUI.Docs.Catalog do
     trimmed = String.trim(info)
     title = fence_title(trimmed)
     preview_align = fence_preview_align(trimmed)
+    promoted_visual = fence_promoted_visual(trimmed)
 
     case String.split(trimmed, ~r/\s+/, trim: true) do
       [] ->
-        {"", title, preview_align}
+        {"", title, preview_align, promoted_visual}
 
       [lang | rest] ->
         fallback_title =
@@ -606,7 +610,7 @@ defmodule CinderUI.Docs.Catalog do
             tokens -> Enum.join(tokens, " ")
           end
 
-        {String.downcase(lang), title || fallback_title, preview_align}
+        {String.downcase(lang), title || fallback_title, preview_align, promoted_visual}
     end
   end
 
@@ -633,6 +637,15 @@ defmodule CinderUI.Docs.Catalog do
           [value] -> normalize_preview_align(value)
           _ -> :center
         end
+    end
+  end
+
+  defp fence_promoted_visual(info) do
+    cond do
+      Regex.match?(~r/(?:^|\s)vrt\s*=\s*"true"(?:\s|$)/, info) -> true
+      Regex.match?(~r/(?:^|\s)vrt\s*=\s*'true'(?:\s|$)/, info) -> true
+      Regex.match?(~r/(?:^|\s)vrt(?:\s|$)/, info) -> true
+      true -> false
     end
   end
 

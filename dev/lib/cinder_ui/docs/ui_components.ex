@@ -308,7 +308,14 @@ defmodule CinderUI.Docs.UIComponents do
 
     <section class="mb-8 space-y-4">
       <%= for {example, index} <- Enum.with_index(@entry.examples, 1) do %>
-        <section class="mb-10">
+        <section
+          class="mb-10"
+          data-component-example
+          data-component-id={@entry.id}
+          data-example-id={example.id}
+          data-example-title={example.title}
+          data-promoted-visual={example.promoted_visual}
+        >
           <header>
             <h3 class="text-sm font-semibold">{example_heading(example.title, index, length(@entry.examples))}</h3>
             <p
@@ -319,10 +326,21 @@ defmodule CinderUI.Docs.UIComponents do
             </p>
           </header>
 
-          <div data-slot="component-preview" class="mt-4 overflow-hidden rounded-xl border">
+          <div
+            data-slot="component-preview"
+            data-component-id={@entry.id}
+            data-example-id={example.id}
+            data-example-title={example.title}
+            data-promoted-visual={example.promoted_visual}
+            class="mt-4 overflow-hidden rounded-xl border"
+          >
             <div
               data-slot="preview"
               data-preview-align={example.preview_align || :center}
+              data-component-id={@entry.id}
+              data-example-id={example.id}
+              data-example-title={example.title}
+              data-promoted-visual={example.promoted_visual}
               class={[
                 "p-4 sm:p-6",
                 (example.preview_align || :center) == :center &&

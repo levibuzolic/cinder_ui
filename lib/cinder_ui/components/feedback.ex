@@ -107,7 +107,7 @@ defmodule CinderUI.Components.Feedback do
   </.alert>
   ```
 
-  ```heex title="Destructive alert" align="full"
+  ```heex title="Destructive alert" align="full" vrt
   <.alert variant={:destructive}>
     <CinderUI.Icons.icon name="triangle-alert" />
     <.alert_title>Unable to deploy</.alert_title>

@@ -121,11 +121,19 @@ npx playwright test tests/browser/visual.spec.ts
 
 This suite also exports component screenshots to `doc/screenshots` for HexDocs module docs image references.
 
+Promoted example visual suite:
+
+```bash
+cd demo
+npx playwright test tests/browser/example_visual.spec.ts
+```
+
 Update visual baselines (only when UI change is intentional):
 
 ```bash
 cd demo
 npx playwright test tests/browser/visual.spec.ts --update-snapshots
+npx playwright test tests/browser/example_visual.spec.ts --update-snapshots
 ```
 
 ## Documentation Expectations
@@ -133,6 +141,12 @@ npx playwright test tests/browser/visual.spec.ts --update-snapshots
 - `README.md`: only user-facing install/usage/docs guidance.
 - `CONTRIBUTING.md`: maintainer and contributor workflow.
 - Module/function docs: use markdown, include realistic examples, and include multiple named fenced HEEx examples where useful.
+- Visual regression policy:
+  - Tier 1: every public component gets one baseline snapshot from the docs overview card.
+  - Tier 2: only examples marked with the inline-docs `vrt` fence flag get dedicated snapshots from the component detail page.
+  - Promote examples only when they add a distinct visual or behavioral state such as open/expanded overlays, invalid/loading/disabled form states, grouped or filtered options, alternative layout orientation, or materially different composition.
+  - Do not promote examples that only change copy, labels, or other low-signal cosmetic variations.
+  - Use the fence metadata marker for promoted example snapshots, for example: ```` ```heex title="Validation state" align="full" vrt ````. The `vrt` marker is consumed by the docs builder and is not shown in rendered docs.
 
 Example inline docs pattern:
 

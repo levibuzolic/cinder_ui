@@ -24,35 +24,39 @@ defmodule CinderUI.Components.Layout do
 
   ## Examples
 
-      <.card>
-        <.card_header>
-          <.card_title>Project status</.card_title>
-          <.card_description>Active deployments across environments.</.card_description>
-        </.card_header>
-        <.card_content>
-          <p class="text-sm">Production healthy, staging pending one migration.</p>
-        </.card_content>
-      </.card>
+  ```heex title="Project status"
+  <.card>
+    <.card_header>
+      <.card_title>Project status</.card_title>
+      <.card_description>Active deployments across environments.</.card_description>
+    </.card_header>
+    <.card_content>
+      <p class="text-sm">Production healthy, staging pending one migration.</p>
+    </.card_content>
+  </.card>
+  ```
 
-      <.card class="max-w-md">
-        <.card_header class="border-b">
-          <.card_title>Team invite</.card_title>
-          <.card_action>
-            <.button size={:sm} variant={:outline}>Skip</.button>
-          </.card_action>
-          <.card_description>Invite teammates before your first deploy.</.card_description>
-        </.card_header>
-        <.card_content class="space-y-3">
-          <.field>
-            <:label><.label for="invite_email">Email</.label></:label>
-            <.input id="invite_email" type="email" placeholder="dev@company.com" />
-          </.field>
-        </.card_content>
-        <.card_footer class="justify-end gap-2 border-t">
-          <.button variant={:outline}>Cancel</.button>
-          <.button>Send invite</.button>
-        </.card_footer>
-      </.card>
+  ```heex title="Team invite" vrt
+  <.card class="max-w-md">
+    <.card_header class="border-b">
+      <.card_title>Team invite</.card_title>
+      <.card_action>
+        <.button size={:sm} variant={:outline}>Skip</.button>
+      </.card_action>
+      <.card_description>Invite teammates before your first deploy.</.card_description>
+    </.card_header>
+    <.card_content class="space-y-3">
+      <.field>
+        <:label><.label for="invite_email">Email</.label></:label>
+        <.input id="invite_email" type="email" placeholder="dev@company.com" />
+      </.field>
+    </.card_content>
+    <.card_footer class="justify-end gap-2 border-t">
+      <.button variant={:outline}>Cancel</.button>
+      <.button>Send invite</.button>
+    </.card_footer>
+  </.card>
+  ```
 
   ## Minimal
 
@@ -338,7 +342,7 @@ defmodule CinderUI.Components.Layout do
   </div>
   ```
 
-  ```heex title="Card loading state" align="full"
+  ```heex title="Card loading state" align="full" vrt
   <.card class="max-w-sm">
     <.card_header>
       <.skeleton class="h-5 w-[140px]" />
@@ -485,7 +489,7 @@ defmodule CinderUI.Components.Layout do
   </.resizable>
   ```
 
-  ```heex title="Vertical" align="full"
+  ```heex title="Vertical" align="full" vrt
   <.resizable id="resizable-2" direction={:vertical} class="h-[240px]">
     <:panel size={45}>
       <div class="h-full rounded-md bg-muted p-2 text-xs">Top panel</div>
@@ -496,7 +500,7 @@ defmodule CinderUI.Components.Layout do
   </.resizable>
   ```
 
-  ```heex title="Handle + persisted sizes" align="full"
+  ```heex title="Handle + persisted sizes" align="full" vrt
   <.resizable id="resizable-3" with_handle storage_key="docs-layout-main">
     <:panel size={30} min_size={20}>
       <div class="rounded-md bg-muted p-2 text-xs">Explorer</div>
