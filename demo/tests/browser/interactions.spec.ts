@@ -140,7 +140,7 @@ test.describe("interactive previews", () => {
     await select.scrollIntoViewIfNeeded()
     expect(await hasClass(content, "hidden")).toBe(true)
 
-    const initialValue = await hiddenInput.inputValue()
+    const initialValue = (await hiddenInput.inputValue()) ?? ""
 
     await trigger.focus()
     await page.keyboard.press("ArrowDown")
@@ -311,7 +311,7 @@ test.describe("page integrity", () => {
 
     const firstEntryHref = await page.locator("[data-component-card] a").first().getAttribute("href")
     expect(firstEntryHref).toBeTruthy()
-    await page.goto(firstEntryHref!)
+    await page.goto(firstEntryHref ?? "/docs/")
 
     expect(consoleErrors).toEqual([])
     expect(failedRequests).toEqual([])
