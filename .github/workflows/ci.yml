@@ -170,6 +170,10 @@ jobs:
             demo/test-results
             demo/playwright-report
 
+      - name: Generate visual autofix artifacts
+        if: failure()
+        run: npx playwright test tests/browser/visual.spec.ts --update-snapshots
+
       - name: Upload visual autofix artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -178,6 +182,7 @@ jobs:
           path: |
             demo/tests/browser/visual.spec.ts-snapshots
             doc/screenshots
+          if-no-files-found: ignore
 
       - name: Annotate Playwright VRT failures
         if: failure()
@@ -210,10 +215,20 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Verify autofix push token
+        env:
+          AUTOFIX_PUSH_TOKEN: ${{ secrets.AUTOFIX_PUSH_TOKEN }}
+        run: |
+          if [ -z "${AUTOFIX_PUSH_TOKEN:-}" ]; then
+            echo "::error::Missing AUTOFIX_PUSH_TOKEN secret. Configure a PAT or GitHub App token with permission to push PR branches and trigger workflows."
+            exit 1
+          fi
+
       - name: Checkout pull request branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+          token: ${{ secrets.AUTOFIX_PUSH_TOKEN }}
 
       - name: Setup toolchains
         uses: ./.github/actions/setup-toolchains
