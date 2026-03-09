@@ -109,7 +109,7 @@ defmodule CinderUI.MixProject do
     [
       main: "readme",
       groups_for_modules: [
-        Core: [CinderUI, CinderUI.Classes, CinderUI.Hooks, CinderUI.Icons],
+        Core: [CinderUI, CinderUI.Classes, CinderUI.Hooks, CinderUI.Icons, CinderUI.JS],
         Components: [
           CinderUI.Components,
           CinderUI.Components.Advanced,

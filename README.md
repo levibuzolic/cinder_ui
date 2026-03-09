@@ -168,6 +168,120 @@ Try a component in any template:
 <.button>Click me</.button>
 ```
 
+## Forms and Validation
+
+`CinderUI.Components.Forms` supports both simple field wrappers and more explicit
+field composition for validated LiveView forms.
+
+Basic field usage:
+
+```heex
+<.field>
+  <:label><.label for="project-name">Project name</.label></:label>
+  <.input id="project-name" name="project[name]" />
+  <:description>Visible to your team in dashboards and alerts.</:description>
+</.field>
+```
+
+Explicit composition with validation messaging:
+
+```heex
+<.form for={@form} phx-change="validate" phx-submit="save" class="space-y-6">
+  <.field invalid={@form[:owner].errors != []}>
+    <:label>
+      <.label for={@form[:owner].id}>Owner</.label>
+    </:label>
+
+    <.field_control>
+      <.autocomplete
+        id={@form[:owner].id}
+        name={@form[:owner].name}
+        value={@form[:owner].value}
+        aria-label="Owner"
+      >
+        <:option value="levi" label="Levi Buzolic" description="Engineering" />
+        <:option value="mira" label="Mira Chen" description="Design" />
+        <:empty>No matching teammates.</:empty>
+      </.autocomplete>
+    </.field_control>
+
+    <.field_description>Pick the teammate responsible for the workspace.</.field_description>
+    <.field_error :for={{msg, _opts} <- @form[:owner].errors}>{msg}</.field_error>
+  </.field>
+
+  <.button type="submit">Save</.button>
+</.form>
+```
+
+Available field helpers:
+
+- `field/1`
+- `field_label/1`
+- `field_control/1`
+- `field_description/1`
+- `field_error/1`
+- `input/1`
+- `select/1`
+- `native_select/1`
+- `autocomplete/1`
+
+## Interactive Commands
+
+Interactive components that ship with Cinder UI hooks now share a small command
+surface through the `cinder-ui:command` custom event. You can drive that
+surface directly from LiveView with `CinderUI.JS`.
+
+For overlay-style components that use the shipped hooks, the current baseline
+behavior is:
+
+- `Escape` closes dialogs, drawers, popovers, and dropdown menus
+- outside click closes popovers and dropdown menus
+- dialog and drawer overlay clicks dismiss the overlay
+
+Supported commands depend on the component, but the common baseline is:
+
+- `open`
+- `close`
+- `toggle`
+- `focus`
+
+Some input-style components also support:
+
+- `clear`
+
+LiveView example:
+
+```heex
+<button phx-click={CinderUI.JS.open(to: "#account-dialog")}>
+  Open dialog
+</button>
+
+<button phx-click={CinderUI.JS.clear(to: "#owner-autocomplete")}>
+  Clear owner
+</button>
+```
+
+Raw event example:
+
+```js
+const dialog = document.querySelector("[data-slot='dialog']")
+
+dialog?.dispatchEvent(
+  new CustomEvent("cinder-ui:command", {
+    detail: { command: "open" },
+  }),
+)
+```
+
+If you import `CinderUI` from `assets/js/cinder_ui.js`, you can also dispatch
+through the helper:
+
+```js
+import { CinderUI, CinderUIHooks } from "./cinder_ui"
+
+CinderUI.dispatchCommand(document.querySelector("[data-slot='select']"), "toggle")
+```
+
 ## Icons (Optional, Recommended)
 
 `CinderUI.Icons.icon/1` dispatches to [`lucide_icons`](https://hex.pm/packages/lucide_icons).

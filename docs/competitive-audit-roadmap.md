@@ -96,7 +96,6 @@ Caveat:
 
 Highest-impact gaps identified during the audit:
 
-- `select/1` is currently a native select under the public name `select`, which conflicts with broader expectations for a custom select primitive.
 - `combobox/1` is currently a lightweight filterable dropdown and lacks keyboard navigation, hidden form backing, multi-select, and richer state control.
 - interactive hooks are mostly visibility toggles rather than a reusable command model.
 - form composition is less expressive than the better Phoenix-first libraries.
@@ -121,9 +120,9 @@ This is the highest-value area. The current library surface is good enough for s
 
 ### 1.1 Split native and custom select responsibilities
 
-- [ ] Rename the current native implementation to `native_select/1`.
-- [ ] Decide whether `select/1` becomes the custom/select-listbox component name.
-- [ ] Provide a compatibility path or documented migration for existing `select/1` users.
+- [x] Rename the current native implementation to `native_select/1`.
+- [x] Make `select/1` the custom/select-listbox component name.
+- [~] Provide a compatibility path or documented migration for existing `select/1` users.
 
 Acceptance criteria:
 
@@ -133,11 +132,11 @@ Acceptance criteria:
 
 ### 1.2 Build a real custom select
 
-- [ ] Add `select/1` as a custom interactive select primitive.
-- [ ] Support trigger/content/item composition.
-- [ ] Support placeholder, disabled state, clearable state, grouped items, and empty state.
-- [ ] Back the component with a hidden input or select so forms submit correctly.
-- [ ] Add keyboard navigation and selection behavior.
+- [x] Add `select/1` as a custom interactive select primitive.
+- [x] Support trigger/content/item composition.
+- [-] Support placeholder, disabled state, clearable state, grouped items, and empty state.
+- [x] Back the component with a hidden input or select so forms submit correctly.
+- [x] Add keyboard navigation and selection behavior.
 
 Borrow from:
 
@@ -152,10 +151,10 @@ Acceptance criteria:
 
 ### 1.3 Add `autocomplete/1`
 
-- [ ] Separate autocomplete from select semantics.
-- [ ] Support client-side filtering first.
+- [x] Separate autocomplete from select semantics.
+- [x] Support client-side filtering first.
 - [ ] Add a documented server-search pattern for LiveView.
-- [ ] Support empty state, loading state, and no-results messaging.
+- [-] Support empty state, loading state, and no-results messaging.
 
 Borrow from:
 
@@ -169,10 +168,10 @@ Acceptance criteria:
 
 ### 1.4 Upgrade form composition primitives
 
-- [ ] Expand the current field model into richer subcomponents or equivalent slots:
+- [-] Expand the current field model into richer subcomponents or equivalent slots:
   control, description, message, and error presentation
-- [ ] Ensure error state styling can flow from the field wrapper to the control
-- [ ] Provide examples for Phoenix forms and validation errors
+- [x] Ensure error state styling can flow from the field wrapper to the control
+- [x] Provide examples for Phoenix forms and validation errors
 
 Borrow from:
 
@@ -192,10 +191,10 @@ The current JS hooks work, but they are too bespoke. Better libraries make inter
 
 ### 2.1 Introduce a command model for interactive components
 
-- [ ] Define a consistent command vocabulary for interactive primitives:
+- [x] Define a consistent command vocabulary for interactive primitives:
   `open`, `close`, `toggle`, `focus`, and component-specific commands where justified
-- [ ] Decide whether commands live in JS helpers, LiveView helpers, or both
-- [ ] Standardize event and data-attribute naming
+- [x] Decide whether commands live in JS helpers, LiveView helpers, or both
+- [x] Standardize event and data-attribute naming
 
 Borrow from:
 
@@ -206,11 +205,12 @@ Acceptance criteria:
 
 - dialogs, drawers/sheets, popovers, and dropdowns share a consistent control story
 - docs explain the command model clearly
+- both JS and LiveView have first-class helpers for dispatching commands
 
 ### 2.2 Improve overlay behavior quality
 
-- [ ] Add focus management expectations for dialog-like components.
-- [ ] Review dismissal behavior: close button, escape key, outside click, server-controlled state updates.
+- [-] Add focus management expectations for dialog-like components.
+- [-] Review dismissal behavior: close button, escape key, outside click, server-controlled state updates.
 - [ ] Ensure patch-safe behavior when LiveView re-renders content.
 - [ ] Revisit `drawer` vs `sheet` semantics and split them if needed.
 
@@ -395,6 +395,12 @@ Use this section to record actual work as it lands.
 - Primary benchmark selected for interactive quality: Fluxon.
 - Primary benchmark selected for LiveView command ideas: SaladUI.
 - Primary benchmark selected for theme ergonomics and utility component ideas: daisyUI.
+- Split native and custom select responsibilities.
+- Added a first custom `select/1` primitive with hidden form backing and browser-tested keyboard selection behavior.
+- Added a first `autocomplete/1` primitive with client-side filtering, hidden form backing, and focused browser coverage.
+- Expanded `field/1` with explicit field subcomponents and shared invalid-state styling hooks for inputs, select, and autocomplete.
+- Added Phoenix validation examples for the expanded field composition model in module docs and the README.
+- Added a shared `cinder-ui:command` event model plus JS helper exports for commandable interactive components.
 
 ## Source Links
 

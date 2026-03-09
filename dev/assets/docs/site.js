@@ -643,6 +643,74 @@
     })
   })
 
+  // Autocomplete previews
+  qs(document, "[data-slot='autocomplete']").forEach((root) => {
+    const input = root.querySelector("[data-autocomplete-input]")
+    const content = root.querySelector("[data-autocomplete-content]")
+    const valueInput = root.querySelector("[data-slot='autocomplete-value']")
+    const items = qs(root, "[data-slot='autocomplete-item']")
+    const empty = root.querySelector("[data-slot='autocomplete-empty']")
+    let selectedLabel = root.getAttribute("data-selected-label") || ""
+
+    const sync = (open) => {
+      toggleVisibility(content, open)
+      input?.setAttribute("aria-expanded", open ? "true" : "false")
+      root.dataset.state = open ? "open" : "closed"
+    }
+
+    const syncEmpty = () => {
+      if (!empty) return
+      const hasVisibleItems = items.some((item) => !item.classList.contains("hidden"))
+      empty.classList.toggle("hidden", hasVisibleItems)
+    }
+
+    const filterItems = () => {
+      const value = (input?.value || "").toLowerCase()
+      items.forEach((item) => {
+        const text = (item.getAttribute("data-label") || item.textContent || "").toLowerCase()
+        item.classList.toggle("hidden", !text.includes(value))
+      })
+
+      if (valueInput && (input?.value || "") !== selectedLabel) {
+        valueInput.value = ""
+      }
+
+      syncEmpty()
+      sync(true)
+    }
+
+    input?.addEventListener("focus", () => sync(true))
+    input?.addEventListener("input", filterItems)
+
+    items.forEach((item) => {
+      item.addEventListener("click", () => {
+        if (item.getAttribute("data-disabled") === "true") return
+        selectedLabel = item.getAttribute("data-label") || item.textContent || ""
+        root.dataset.selectedLabel = selectedLabel
+        if (input) input.value = selectedLabel
+        if (valueInput) valueInput.value = item.getAttribute("data-value") || ""
+
+        items.forEach((entry) => {
+          const selected = entry === item
+          entry.dataset.selected = selected ? "true" : "false"
+          entry.setAttribute("aria-selected", selected ? "true" : "false")
+          entry.classList.toggle("bg-accent", selected)
+          entry.classList.toggle("text-accent-foreground", selected)
+        })
+
+        sync(false)
+      })
+    })
+
+    document.addEventListener("click", (event) => {
+      if (!root.contains(event.target)) {
+        if (input && valueInput?.value) input.value = selectedLabel
+        filterItems()
+        sync(false)
+      }
+    })
+  })
+
   // Carousel previews
   qs(document, "[data-slot='carousel']").forEach((root) => {
     const track = root.querySelector("[data-carousel-track]")

@@ -11,6 +11,9 @@ const toggleVisibility = (el, visible) => {
 
 const clickClosest = (target, selector) => target && target.closest(selector)
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
+const COMMAND_EVENT = "cinder-ui:command"
+const FOCUSABLE_SELECTOR =
+  "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
 
 const parsePercentage = (value, fallback) => {
   if (value === null || value === undefined || value === "") return fallback
@@ -25,16 +28,92 @@ const normalizePercentages = (values) => {
   return values.map((value) => (value / total) * 100)
 }
 
+const registerCommandListener = (root, handlers) => {
+  const onCommand = (event) => {
+    const command = event.detail?.command
+    if (!command) return
+
+    const handler = handlers[command]
+    if (typeof handler === "function") {
+      handler(event.detail || {})
+    }
+  }
+
+  root.addEventListener(COMMAND_EVENT, onCommand)
+  return () => root.removeEventListener(COMMAND_EVENT, onCommand)
+}
+
+const dispatchCommand = (target, command, detail = {}) => {
+  if (!target) return
+  target.dispatchEvent(
+    new CustomEvent(COMMAND_EVENT, {
+      bubbles: false,
+      detail: { ...detail, command },
+    }),
+  )
+}
+
+const getFocusableElements = (root) =>
+  root ? Array.from(root.querySelectorAll(FOCUSABLE_SELECTOR)).filter((el) => !el.hasAttribute("hidden")) : []
+
+const focusFirst = (root) => {
+  const first = getFocusableElements(root)[0]
+  if (first) {
+    first.focus()
+    return true
+  }
+
+  if (root && typeof root.focus === "function") {
+    root.focus()
+    return true
+  }
+
+  return false
+}
+
+const getFocusTarget = (root) => getFocusableElements(root)[0] || root || null
+
+const restoreFocus = (preferred, fallback) => {
+  if (preferred && document.contains(preferred) && typeof preferred.focus === "function") {
+    preferred.focus()
+    return
+  }
+
+  if (fallback && document.contains(fallback) && typeof fallback.focus === "function") {
+    fallback.focus()
+  }
+}
+
 const CuiDialog = {
   mounted() {
+    this.trigger = this.el.querySelector("[data-dialog-trigger]")
+    this.content = this.el.querySelector("[data-dialog-content]")
+    this.lastActiveElement = null
     this.sync(this.el.dataset.state === "open")
 
     this.handleEvent = (event) => {
-      if (clickClosest(event.target, "[data-dialog-trigger]")) this.sync(true)
+      if (clickClosest(event.target, "[data-dialog-trigger]")) {
+        this.lastActiveElement = getFocusTarget(this.trigger)
+        this.sync(true)
+      }
       if (clickClosest(event.target, "[data-dialog-close]") || clickClosest(event.target, "[data-dialog-overlay]")) this.sync(false)
     }
 
+    this.onKeydown = (event) => {
+      if (event.key === "Escape" && this.el.dataset.state === "open") {
+        event.preventDefault()
+        this.sync(false)
+      }
+    }
+
     this.el.addEventListener("click", this.handleEvent)
+    document.addEventListener("keydown", this.onKeydown)
+    this.removeCommandListener = registerCommandListener(this.el, {
+      open: () => this.sync(true),
+      close: () => this.sync(false),
+      toggle: () => this.sync(this.el.dataset.state !== "open"),
+      focus: () => this.trigger?.focus(),
+    })
   },
 
   updated() {
@@ -42,26 +121,64 @@ const CuiDialog = {
   },
 
   sync(open) {
+    const wasOpen = this.el.dataset.state === "open"
+
+    if (open && !wasOpen) {
+      this.lastActiveElement =
+        this.lastActiveElement ||
+        (document.activeElement instanceof HTMLElement ? document.activeElement : getFocusTarget(this.trigger))
+    }
+
     this.el.dataset.state = open ? "open" : "closed"
     toggleVisibility(this.el.querySelector("[data-dialog-overlay]"), open)
-    toggleVisibility(this.el.querySelector("[data-dialog-content]"), open)
+    toggleVisibility(this.content, open)
+
+    if (open && !wasOpen) {
+      window.requestAnimationFrame(() => focusFirst(this.content))
+    }
+
+    if (!open && wasOpen) {
+      restoreFocus(this.lastActiveElement, this.trigger)
+    }
   },
 
   destroyed() {
     this.el.removeEventListener("click", this.handleEvent)
+    document.removeEventListener("keydown", this.onKeydown)
+    this.removeCommandListener && this.removeCommandListener()
   },
 }
 
 const CuiDrawer = {
   mounted() {
+    this.trigger = this.el.querySelector("[data-drawer-trigger]")
+    this.content = this.el.querySelector("[data-drawer-content]")
+    this.lastActiveElement = null
     this.sync(this.el.dataset.state === "open")
 
     this.handleEvent = (event) => {
-      if (clickClosest(event.target, "[data-drawer-trigger]")) this.sync(true)
+      if (clickClosest(event.target, "[data-drawer-trigger]")) {
+        this.lastActiveElement = getFocusTarget(this.trigger)
+        this.sync(true)
+      }
       if (clickClosest(event.target, "[data-drawer-overlay]")) this.sync(false)
     }
 
+    this.onKeydown = (event) => {
+      if (event.key === "Escape" && this.el.dataset.state === "open") {
+        event.preventDefault()
+        this.sync(false)
+      }
+    }
+
     this.el.addEventListener("click", this.handleEvent)
+    document.addEventListener("keydown", this.onKeydown)
+    this.removeCommandListener = registerCommandListener(this.el, {
+      open: () => this.sync(true),
+      close: () => this.sync(false),
+      toggle: () => this.sync(this.el.dataset.state !== "open"),
+      focus: () => this.trigger?.focus(),
+    })
   },
 
   updated() {
@@ -69,13 +186,31 @@ const CuiDrawer = {
   },
 
   sync(open) {
+    const wasOpen = this.el.dataset.state === "open"
+
+    if (open && !wasOpen) {
+      this.lastActiveElement =
+        this.lastActiveElement ||
+        (document.activeElement instanceof HTMLElement ? document.activeElement : getFocusTarget(this.trigger))
+    }
+
     this.el.dataset.state = open ? "open" : "closed"
     toggleVisibility(this.el.querySelector("[data-drawer-overlay]"), open)
-    toggleVisibility(this.el.querySelector("[data-drawer-content]"), open)
+    toggleVisibility(this.content, open)
+
+    if (open && !wasOpen) {
+      window.requestAnimationFrame(() => focusFirst(this.content))
+    }
+
+    if (!open && wasOpen) {
+      restoreFocus(this.lastActiveElement, this.trigger)
+    }
   },
 
   destroyed() {
     this.el.removeEventListener("click", this.handleEvent)
+    document.removeEventListener("keydown", this.onKeydown)
+    this.removeCommandListener && this.removeCommandListener()
   },
 }
 
@@ -84,26 +219,64 @@ const CuiPopover = {
     this.open = false
     this.trigger = this.el.querySelector("[data-popover-trigger]")
     this.content = this.el.querySelector("[data-popover-content]")
+    this.lastActiveElement = null
 
     this.toggle = () => {
-      this.open = !this.open
-      toggleVisibility(this.content, this.open)
+      if (!this.open) this.lastActiveElement = getFocusTarget(this.trigger)
+      this.sync(!this.open)
     }
 
     this.onDocumentClick = (event) => {
       if (!this.el.contains(event.target)) {
-        this.open = false
-        toggleVisibility(this.content, false)
+        this.sync(false)
+      }
+    }
+
+    this.onKeydown = (event) => {
+      if (event.key === "Escape" && this.open) {
+        event.preventDefault()
+        this.sync(false)
       }
     }
 
     this.trigger && this.trigger.addEventListener("click", this.toggle)
     document.addEventListener("click", this.onDocumentClick)
+    document.addEventListener("keydown", this.onKeydown)
+    this.removeCommandListener = registerCommandListener(this.el, {
+      open: () => this.sync(true),
+      close: () => this.sync(false),
+      toggle: () => this.toggle(),
+      focus: () => this.trigger?.focus(),
+    })
+  },
+
+  sync(open) {
+    const wasOpen = this.open
+
+    if (open && !wasOpen) {
+      this.lastActiveElement =
+        this.lastActiveElement ||
+        (document.activeElement instanceof HTMLElement ? document.activeElement : getFocusTarget(this.trigger))
+    }
+
+    this.open = open
+    toggleVisibility(this.content, open)
+    if (this.trigger) this.trigger.setAttribute("aria-expanded", open ? "true" : "false")
+
+    if (open && !wasOpen) {
+      window.requestAnimationFrame(() => focusFirst(this.content))
+    }
+
+    if (!open && wasOpen) {
+      restoreFocus(this.lastActiveElement, this.trigger)
+    }
   },
 
   destroyed() {
     this.trigger && this.trigger.removeEventListener("click", this.toggle)
     document.removeEventListener("click", this.onDocumentClick)
+    document.removeEventListener("keydown", this.onKeydown)
+    this.removeCommandListener && this.removeCommandListener()
   },
 }
 
@@ -112,26 +285,465 @@ const CuiDropdownMenu = {
     this.open = false
     this.trigger = this.el.querySelector("[data-dropdown-trigger]")
     this.content = this.el.querySelector("[data-dropdown-content]")
+    this.lastActiveElement = null
 
     this.toggle = () => {
-      this.open = !this.open
-      toggleVisibility(this.content, this.open)
+      if (!this.open) this.lastActiveElement = getFocusTarget(this.trigger)
+      this.sync(!this.open)
     }
 
     this.onDocumentClick = (event) => {
       if (!this.el.contains(event.target)) {
-        this.open = false
-        toggleVisibility(this.content, false)
+        this.sync(false)
+      }
+    }
+
+    this.onKeydown = (event) => {
+      if (event.key === "Escape" && this.open) {
+        event.preventDefault()
+        this.sync(false)
       }
     }
 
     this.trigger && this.trigger.addEventListener("click", this.toggle)
     document.addEventListener("click", this.onDocumentClick)
+    document.addEventListener("keydown", this.onKeydown)
+    this.removeCommandListener = registerCommandListener(this.el, {
+      open: () => this.sync(true),
+      close: () => this.sync(false),
+      toggle: () => this.toggle(),
+      focus: () => this.trigger?.focus(),
+    })
+  },
+
+  sync(open) {
+    const wasOpen = this.open
+
+    if (open && !wasOpen) {
+      this.lastActiveElement =
+        this.lastActiveElement ||
+        (document.activeElement instanceof HTMLElement ? document.activeElement : getFocusTarget(this.trigger))
+    }
+
+    this.open = open
+    toggleVisibility(this.content, open)
+    if (this.trigger) this.trigger.setAttribute("aria-expanded", open ? "true" : "false")
+
+    if (open && !wasOpen) {
+      window.requestAnimationFrame(() => focusFirst(this.content))
+    }
+
+    if (!open && wasOpen) {
+      restoreFocus(this.lastActiveElement, this.trigger)
+    }
   },
 
   destroyed() {
     this.trigger && this.trigger.removeEventListener("click", this.toggle)
     document.removeEventListener("click", this.onDocumentClick)
+    document.removeEventListener("keydown", this.onKeydown)
+    this.removeCommandListener && this.removeCommandListener()
+  },
+}
+
+const CuiSelect = {
+  mounted() {
+    this.trigger = this.el.querySelector("[data-select-trigger]")
+    this.content = this.el.querySelector("[data-select-content]")
+    this.input = this.el.querySelector("[data-slot='select-input']")
+    this.items = Array.from(this.el.querySelectorAll("[data-select-item]"))
+    this.open = false
+
+    this.enabledItems = () => this.items.filter((item) => item.dataset.disabled !== "true" && !item.disabled)
+
+    this.selectedIndex = () =>
+      this.items.findIndex((item) => item.dataset.selected === "true")
+
+    this.sync = () => {
+      this.el.dataset.state = this.open ? "open" : "closed"
+      if (this.trigger) this.trigger.setAttribute("aria-expanded", this.open ? "true" : "false")
+      toggleVisibility(this.content, this.open)
+    }
+
+    this.focusItem = (index) => {
+      const enabledItems = this.enabledItems()
+      if (!enabledItems.length) return
+
+      const nextIndex = Math.min(Math.max(index, 0), enabledItems.length - 1)
+      enabledItems[nextIndex].focus()
+    }
+
+    this.openMenu = () => {
+      if (this.open) return
+      this.open = true
+      this.sync()
+
+      const enabledItems = this.enabledItems()
+      if (!enabledItems.length) return
+
+      const selectedIndex = this.selectedIndex()
+      const selectedItem = selectedIndex >= 0 ? this.items[selectedIndex] : enabledItems[0]
+      window.requestAnimationFrame(() => selectedItem && selectedItem.focus())
+    }
+
+    this.closeMenu = () => {
+      if (!this.open) return
+      this.open = false
+      this.sync()
+    }
+
+    this.selectItem = (item) => {
+      const value = item.dataset.value || ""
+      const label = item.dataset.label || item.textContent.trim()
+
+      if (this.input) this.input.value = value
+      this.items.forEach((entry) => {
+        const selected = entry === item
+        entry.dataset.selected = selected ? "true" : "false"
+        entry.setAttribute("aria-selected", selected ? "true" : "false")
+        entry.classList.toggle("bg-accent", selected)
+        entry.classList.toggle("text-accent-foreground", selected)
+      })
+
+      const valueEl = this.el.querySelector("[data-slot='select-value']")
+      if (valueEl) valueEl.textContent = label
+
+      this.closeMenu()
+      if (this.trigger) this.trigger.focus()
+      if (this.input) {
+        this.input.dispatchEvent(new Event("input", { bubbles: true }))
+        this.input.dispatchEvent(new Event("change", { bubbles: true }))
+      }
+    }
+
+    this.move = (delta, current) => {
+      const enabledItems = this.enabledItems()
+      if (!enabledItems.length) return
+
+      const currentIndex = enabledItems.indexOf(current)
+      const nextIndex = currentIndex === -1 ? 0 : (currentIndex + delta + enabledItems.length) % enabledItems.length
+      enabledItems[nextIndex].focus()
+    }
+
+    this.onTriggerClick = () => {
+      if (this.open) {
+        this.closeMenu()
+      } else {
+        this.openMenu()
+      }
+    }
+
+    this.onTriggerKeyDown = (event) => {
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault()
+        this.openMenu()
+      }
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault()
+        if (this.open) {
+          this.closeMenu()
+        } else {
+          this.openMenu()
+        }
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault()
+        this.closeMenu()
+      }
+    }
+
+    this.onContentKeyDown = (event) => {
+      const current = event.target.closest("[data-select-item]")
+      if (!current) return
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault()
+        this.move(1, current)
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault()
+        this.move(-1, current)
+      }
+
+      if (event.key === "Home") {
+        event.preventDefault()
+        this.focusItem(0)
+      }
+
+      if (event.key === "End") {
+        event.preventDefault()
+        this.focusItem(this.enabledItems().length - 1)
+      }
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault()
+        this.selectItem(current)
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault()
+        this.closeMenu()
+        if (this.trigger) this.trigger.focus()
+      }
+    }
+
+    this.onItemClick = (event) => {
+      const item = event.currentTarget
+      if (item.dataset.disabled === "true" || item.disabled) return
+      this.selectItem(item)
+    }
+
+    this.onDocumentClick = (event) => {
+      if (!this.el.contains(event.target)) this.closeMenu()
+    }
+
+    this.trigger && this.trigger.addEventListener("click", this.onTriggerClick)
+    this.trigger && this.trigger.addEventListener("keydown", this.onTriggerKeyDown)
+    this.content && this.content.addEventListener("keydown", this.onContentKeyDown)
+    this.items.forEach((item) => item.addEventListener("click", this.onItemClick))
+    document.addEventListener("click", this.onDocumentClick)
+    this.removeCommandListener = registerCommandListener(this.el, {
+      open: () => this.openMenu(),
+      close: () => this.closeMenu(),
+      toggle: () => {
+        if (this.open) {
+          this.closeMenu()
+        } else {
+          this.openMenu()
+        }
+      },
+      focus: () => this.trigger?.focus(),
+    })
+    this.sync()
+  },
+
+  destroyed() {
+    this.trigger && this.trigger.removeEventListener("click", this.onTriggerClick)
+    this.trigger && this.trigger.removeEventListener("keydown", this.onTriggerKeyDown)
+    this.content && this.content.removeEventListener("keydown", this.onContentKeyDown)
+    this.items.forEach((item) => item.removeEventListener("click", this.onItemClick))
+    document.removeEventListener("click", this.onDocumentClick)
+    this.removeCommandListener && this.removeCommandListener()
+  },
+}
+
+const CuiAutocomplete = {
+  mounted() {
+    this.input = this.el.querySelector("[data-autocomplete-input]")
+    this.content = this.el.querySelector("[data-autocomplete-content]")
+    this.valueInput = this.el.querySelector("[data-slot='autocomplete-value']")
+    this.items = Array.from(this.el.querySelectorAll("[data-autocomplete-item]"))
+    this.empty = this.el.querySelector("[data-slot='autocomplete-empty']")
+    this.selectedLabel = this.el.dataset.selectedLabel || ""
+    this.open = false
+    this.skipFocusOpen = false
+
+    this.visibleItems = () =>
+      this.items.filter((item) => !item.classList.contains("hidden") && item.dataset.disabled !== "true" && !item.disabled)
+
+    this.sync = () => {
+      this.el.dataset.state = this.open ? "open" : "closed"
+      if (this.input) this.input.setAttribute("aria-expanded", this.open ? "true" : "false")
+      toggleVisibility(this.content, this.open)
+    }
+
+    this.syncEmpty = () => {
+      if (!this.empty) return
+      const hasVisibleItems = this.items.some((item) => !item.classList.contains("hidden"))
+      this.empty.classList.toggle("hidden", hasVisibleItems)
+    }
+
+    this.applySelection = (item) => {
+      const value = item.dataset.value || ""
+      const label = item.dataset.label || item.textContent.trim()
+
+      this.selectedLabel = label
+      this.el.dataset.selectedLabel = label
+      if (this.input) this.input.value = label
+      if (this.valueInput) this.valueInput.value = value
+
+      this.items.forEach((entry) => {
+        const selected = entry === item
+        entry.dataset.selected = selected ? "true" : "false"
+        entry.setAttribute("aria-selected", selected ? "true" : "false")
+        entry.classList.toggle("bg-accent", selected)
+        entry.classList.toggle("text-accent-foreground", selected)
+      })
+
+      this.open = false
+      this.sync()
+      if (this.valueInput) {
+        this.valueInput.dispatchEvent(new Event("input", { bubbles: true }))
+        this.valueInput.dispatchEvent(new Event("change", { bubbles: true }))
+      }
+    }
+
+    this.filterItems = () => {
+      const query = (this.input?.value || "").toLowerCase()
+
+      this.items.forEach((item) => {
+        const text = (item.dataset.label || item.textContent || "").toLowerCase()
+        item.classList.toggle("hidden", !text.includes(query))
+      })
+
+      if (this.valueInput && (this.input?.value || "") !== this.selectedLabel) {
+        this.valueInput.value = ""
+      }
+
+      this.syncEmpty()
+      this.open = true
+      this.sync()
+    }
+
+    this.move = (delta) => {
+      const visibleItems = this.visibleItems()
+      if (!visibleItems.length) return
+
+      const currentIndex = visibleItems.findIndex((item) => item === document.activeElement)
+      const nextIndex = currentIndex === -1 ? 0 : (currentIndex + delta + visibleItems.length) % visibleItems.length
+      visibleItems[nextIndex].focus()
+    }
+
+    this.onFocus = () => {
+      if (this.skipFocusOpen) {
+        this.skipFocusOpen = false
+        return
+      }
+      this.open = true
+      this.sync()
+    }
+
+    this.onInput = () => {
+      this.filterItems()
+    }
+
+    this.onKeyDown = (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault()
+        this.open = true
+        this.sync()
+        this.move(1)
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault()
+        this.open = true
+        this.sync()
+        this.move(-1)
+      }
+
+      if (event.key === "Enter") {
+        const firstVisible = this.visibleItems()[0]
+        if (!this.open || !firstVisible) return
+        event.preventDefault()
+        this.applySelection(document.activeElement?.dataset?.autocompleteItem !== undefined ? document.activeElement : firstVisible)
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault()
+        this.open = false
+        this.sync()
+        if (this.input && this.selectedLabel && !this.valueInput?.value) {
+          this.input.value = this.selectedLabel
+          if (this.valueInput) this.valueInput.value = this.items.find((item) => item.dataset.label === this.selectedLabel)?.dataset.value || ""
+        }
+        this.filterItems()
+        this.open = false
+        this.sync()
+      }
+    }
+
+    this.onContentKeyDown = (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault()
+        this.move(1)
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault()
+        this.move(-1)
+      }
+
+      if (event.key === "Enter" || event.key === " ") {
+        const item = event.target.closest("[data-autocomplete-item]")
+        if (!item) return
+        event.preventDefault()
+        this.applySelection(item)
+        this.skipFocusOpen = true
+        this.input?.focus()
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault()
+        this.open = false
+        this.sync()
+        this.input?.focus()
+      }
+    }
+
+    this.onItemClick = (event) => {
+      const item = event.currentTarget
+      if (item.dataset.disabled === "true" || item.disabled) return
+      this.applySelection(item)
+      this.skipFocusOpen = true
+      this.input?.focus()
+    }
+
+    this.onDocumentClick = (event) => {
+      if (this.el.contains(event.target)) return
+      this.open = false
+      this.sync()
+      if (this.input && this.valueInput?.value) {
+        this.input.value = this.selectedLabel
+      }
+      this.filterItems()
+      this.open = false
+      this.sync()
+    }
+
+    this.input?.addEventListener("focus", this.onFocus)
+    this.input?.addEventListener("input", this.onInput)
+    this.input?.addEventListener("keydown", this.onKeyDown)
+    this.content?.addEventListener("keydown", this.onContentKeyDown)
+    this.items.forEach((item) => item.addEventListener("click", this.onItemClick))
+    document.addEventListener("click", this.onDocumentClick)
+    this.removeCommandListener = registerCommandListener(this.el, {
+      open: () => {
+        this.open = true
+        this.sync()
+      },
+      close: () => {
+        this.open = false
+        this.sync()
+      },
+      toggle: () => {
+        this.open = !this.open
+        this.sync()
+      },
+      focus: () => this.input?.focus(),
+      clear: () => {
+        if (this.input) this.input.value = ""
+        if (this.valueInput) this.valueInput.value = ""
+        this.selectedLabel = ""
+        this.el.dataset.selectedLabel = ""
+        this.filterItems()
+      },
+    })
+    this.syncEmpty()
+    this.sync()
+  },
+
+  destroyed() {
+    this.input?.removeEventListener("focus", this.onFocus)
+    this.input?.removeEventListener("input", this.onInput)
+    this.input?.removeEventListener("keydown", this.onKeyDown)
+    this.content?.removeEventListener("keydown", this.onContentKeyDown)
+    this.items.forEach((item) => item.removeEventListener("click", this.onItemClick))
+    document.removeEventListener("click", this.onDocumentClick)
+    this.removeCommandListener && this.removeCommandListener()
   },
 }
 
@@ -167,12 +779,23 @@ const CuiCombobox = {
     this.input && this.input.addEventListener("input", this.onInput)
     this.items.forEach((item) => item.addEventListener("click", this.onItemClick))
     document.addEventListener("click", this.onDocumentClick)
+    this.removeCommandListener = registerCommandListener(this.el, {
+      open: () => toggleVisibility(this.content, true),
+      close: () => toggleVisibility(this.content, false),
+      toggle: () => toggleVisibility(this.content, this.content?.classList.contains("hidden")),
+      focus: () => this.input?.focus(),
+      clear: () => {
+        if (this.input) this.input.value = ""
+        this.onInput()
+      },
+    })
   },
 
   destroyed() {
     this.input && this.input.removeEventListener("input", this.onInput)
     this.items.forEach((item) => item.removeEventListener("click", this.onItemClick))
     document.removeEventListener("click", this.onDocumentClick)
+    this.removeCommandListener && this.removeCommandListener()
   },
 }
 
@@ -413,7 +1036,13 @@ export const CinderUIHooks = {
   CuiDrawer,
   CuiPopover,
   CuiDropdownMenu,
+  CuiSelect,
+  CuiAutocomplete,
   CuiCombobox,
   CuiCarousel,
   CuiResizable,
+}
+
+export const CinderUI = {
+  dispatchCommand,
 }

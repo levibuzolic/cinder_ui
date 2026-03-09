@@ -6,11 +6,17 @@ defmodule CinderUI.Components.Forms do
 
   - `label/1`
   - `field/1`
+  - `field_label/1`
+  - `field_control/1`
+  - `field_description/1`
+  - `field_error/1`
   - `input/1`
   - `textarea/1`
   - `checkbox/1`
   - `switch/1`
   - `select/1`
+  - `native_select/1`
+  - `autocomplete/1`
   - `radio_group/1`
   - `slider/1`
   - `input_group/1`
@@ -43,7 +49,7 @@ defmodule CinderUI.Components.Forms do
   def label(assigns) do
     assigns =
       assign(assigns, :classes, [
-        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 group-data-[invalid=true]:text-destructive peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
         assigns.class
       ])
 
@@ -56,6 +62,10 @@ defmodule CinderUI.Components.Forms do
 
   doc("""
   Field wrapper for label, control, description, and errors.
+
+  `field/1` remains the simplest composition helper. For more explicit form
+  structure, compose it with `field_label/1`, `field_control/1`,
+  `field_description/1`, and `field_error/1`.
 
   ## Examples
 
@@ -75,28 +85,138 @@ defmodule CinderUI.Components.Forms do
     <:error>Please use your company domain.</:error>
   </.field>
   ```
+
+  ```heex title="Explicit field composition" align="full"
+  <.field invalid={true}>
+    <:label>
+      <.label for="workspace-slug">Workspace slug</.label>
+    </:label>
+
+    <.field_control>
+      <.input id="workspace-slug" name="workspace[slug]" value="cinder-ui" />
+    </.field_control>
+
+    <.field_description>Used in your public workspace URL.</.field_description>
+    <.field_error>Slug has already been taken.</.field_error>
+  </.field>
+  ```
+
+  ```heex title="Phoenix validation flow" align="full"
+  <.form for={@form} phx-change="validate" phx-submit="save" class="space-y-6">
+    <.field invalid={@form[:owner].errors != []}>
+      <:label>
+        <.label for={@form[:owner].id}>Owner</.label>
+      </:label>
+
+      <.field_control>
+        <.autocomplete
+          id={@form[:owner].id}
+          name={@form[:owner].name}
+          value={@form[:owner].value}
+          aria-label="Owner"
+        >
+          <:option value="levi" label="Levi Buzolic" description="Engineering" />
+          <:option value="mira" label="Mira Chen" description="Design" />
+          <:empty>No matching teammates.</:empty>
+        </.autocomplete>
+      </.field_control>
+
+      <.field_description>Choose the teammate responsible for this workspace.</.field_description>
+      <.field_error :for={{msg, _opts} <- @form[:owner].errors}>{msg}</.field_error>
+    </.field>
+  </.form>
+  ```
   """)
 
   attr :class, :string, default: nil
+  attr :invalid, :boolean, default: false
   slot :label
   slot :description
   slot :error
   slot :inner_block, required: true
 
   def field(assigns) do
-    assigns = assign(assigns, :classes, ["grid gap-2", assigns.class])
+    invalid = assigns.invalid || assigns.error != []
+
+    assigns =
+      assigns
+      |> assign(:invalid, invalid)
+      |> assign(:classes, ["group grid gap-2", assigns.class])
 
     ~H"""
-    <div data-slot="field" class={classes(@classes)}>
-      {render_slot(@label)}
-      {render_slot(@inner_block)}
-      <p :if={@description != []} data-slot="field-description" class="text-muted-foreground text-sm">
-        {render_slot(@description)}
-      </p>
-      <p :if={@error != []} data-slot="field-error" class="text-destructive text-sm font-medium">
-        {render_slot(@error)}
-      </p>
+    <div data-slot="field" data-invalid={@invalid} class={classes(@classes)}>
+      <.field_label :if={@label != []}>{render_slot(@label)}</.field_label>
+      <.field_control>{render_slot(@inner_block)}</.field_control>
+      <.field_description :if={@description != []}>{render_slot(@description)}</.field_description>
+      <.field_error :if={@error != []}>{render_slot(@error)}</.field_error>
     </div>
+    """
+  end
+
+  doc("""
+  Wraps field labels so shared spacing and invalid-state styling remain
+  consistent across controls.
+  """)
+
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def field_label(assigns) do
+    assigns = assign(assigns, :classes, ["flex flex-col gap-1", assigns.class])
+
+    ~H"""
+    <div data-slot="field-label" class={classes(@classes)}>{render_slot(@inner_block)}</div>
+    """
+  end
+
+  doc("""
+  Wraps the main interactive control inside a field.
+  """)
+
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def field_control(assigns) do
+    assigns =
+      assign(assigns, :classes, [
+        "group-data-[invalid=true]:[&_[data-slot=input]]:border-destructive group-data-[invalid=true]:[&_[data-slot=input]]:ring-destructive/20 group-data-[invalid=true]:[&_[data-slot=textarea]]:border-destructive group-data-[invalid=true]:[&_[data-slot=textarea]]:ring-destructive/20 group-data-[invalid=true]:[&_[data-slot=select-trigger]]:border-destructive group-data-[invalid=true]:[&_[data-slot=autocomplete-input]]:border-destructive",
+        assigns.class
+      ])
+
+    ~H"""
+    <div data-slot="field-control" class={classes(@classes)}>{render_slot(@inner_block)}</div>
+    """
+  end
+
+  doc("""
+  Helper text shown beneath a field control.
+  """)
+
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def field_description(assigns) do
+    assigns =
+      assign(assigns, :classes, ["text-muted-foreground text-sm", assigns.class])
+
+    ~H"""
+    <p data-slot="field-description" class={classes(@classes)}>{render_slot(@inner_block)}</p>
+    """
+  end
+
+  doc("""
+  Error or validation message shown beneath a field control.
+  """)
+
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def field_error(assigns) do
+    assigns =
+      assign(assigns, :classes, ["text-destructive text-sm font-medium", assigns.class])
+
+    ~H"""
+    <p data-slot="field-error" class={classes(@classes)}>{render_slot(@inner_block)}</p>
     """
   end
 
@@ -331,24 +451,179 @@ defmodule CinderUI.Components.Forms do
   end
 
   doc("""
-  Renders a native `<select>` element with shadcn styles.
+  Renders a custom select with a button trigger and listbox content.
+
+  Use `native_select/1` when you specifically want a plain HTML `<select>`.
 
   ## Examples
 
-      <.select name="timezone" value="utc">
-        <:option value="utc" label="UTC" />
-      </.select>
+  ```heex title="Custom select" align="full"
+  <.select id="team-plan" name="plan" value="pro">
+    <:option value="free" label="Free" />
+    <:option value="pro" label="Pro" />
+    <:option value="enterprise" label="Enterprise" />
+  </.select>
+  ```
 
-      <.select name="framework" value="phoenix">
+  ```heex title="Grouped labels" align="full"
+  <.select id="assignee" name="assignee" placeholder="Assign a teammate">
+    <:option value="levi" label="Levi" description="Engineering" />
+    <:option value="mira" label="Mira" description="Design" />
+  </.select>
+  ```
+
+  ```heex title="Disabled option" align="full"
+  <.select id="region" name="region">
+    <:option value="us" label="United States" />
+    <:option value="eu" label="Europe" />
+    <:option value="apac" label="APAC" disabled={true} />
+  </.select>
+  ```
+  """)
+
+  attr :id, :string, required: true
+  attr :name, :string, default: nil
+  attr :value, :string, default: nil
+  attr :placeholder, :string, default: "Choose an option"
+  attr :disabled, :boolean, default: false
+  attr :class, :string, default: nil
+  attr :content_class, :string, default: nil
+  attr :rest, :global, include: ~w(required aria-label)
+
+  slot :option, required: true do
+    attr :value, :string, required: true
+    attr :label, :string, required: true
+    attr :description, :string
+    attr :disabled, :boolean
+  end
+
+  slot :empty
+
+  def select(assigns) do
+    selected_option = selected_option(assigns.option, assigns.value)
+    selected_label = if selected_option, do: selected_option.label, else: assigns.placeholder
+
+    assigns =
+      assigns
+      |> assign(:selected_label, selected_label)
+      |> assign(:selected_value, selected_option && selected_option.value)
+      |> assign(:root_classes, ["relative w-full", assigns.class])
+      |> assign(:trigger_classes, [
+        "border-input bg-background text-foreground flex h-9 w-full items-center justify-between rounded-md border px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+        !selected_option && "text-muted-foreground"
+      ])
+      |> assign(:content_classes, [
+        "bg-popover text-popover-foreground absolute top-full left-0 z-50 mt-2 hidden max-h-72 w-full overflow-y-auto rounded-md border p-1 shadow-md outline-none",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        assigns.content_class
+      ])
+
+    ~H"""
+    <div
+      id={@id}
+      data-slot="select"
+      data-state="closed"
+      class={classes(@root_classes)}
+      phx-hook="CuiSelect"
+    >
+      <input
+        :if={@name}
+        data-slot="select-input"
+        type="hidden"
+        name={@name}
+        value={@selected_value}
+        disabled={@disabled}
+      />
+
+      <button
+        type="button"
+        data-slot="select-trigger"
+        data-select-trigger
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        aria-controls={"#{@id}-content"}
+        disabled={@disabled}
+        class={classes(@trigger_classes)}
+        {@rest}
+      >
+        <span data-slot="select-value" class="truncate">{@selected_label}</span>
+        <span class="text-muted-foreground ml-2 shrink-0" aria-hidden="true">▾</span>
+      </button>
+
+      <div
+        id={"#{@id}-content"}
+        data-slot="select-content"
+        data-select-content
+        role="listbox"
+        tabindex="-1"
+        class={classes(@content_classes)}
+      >
+        <button
+          :for={{option, index} <- Enum.with_index(@option)}
+          id={"#{@id}-option-#{index}"}
+          type="button"
+          role="option"
+          data-slot="select-item"
+          data-select-item
+          data-value={option.value}
+          data-label={option.label}
+          data-disabled={option[:disabled] || false}
+          data-selected={@value == option.value}
+          aria-selected={@value == option.value}
+          disabled={option[:disabled] || false}
+          class={
+            classes([
+              "relative flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-hidden select-none",
+              "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+              "disabled:pointer-events-none disabled:opacity-50",
+              @value == option.value && "bg-accent text-accent-foreground"
+            ])
+          }
+        >
+          <span class="min-w-0 flex-1">
+            <span class="block truncate">{option.label}</span>
+            <span :if={option[:description]} class="text-muted-foreground block text-xs">
+              {option.description}
+            </span>
+          </span>
+          <span :if={@value == option.value} class="shrink-0" aria-hidden="true">✓</span>
+        </button>
+
+        <div
+          :if={@option == [] and @empty != []}
+          data-slot="select-empty"
+          class="text-muted-foreground px-2 py-1.5 text-sm"
+        >
+          {render_slot(@empty)}
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  doc("""
+  Renders a native `<select>` element with shadcn styles.
+
+  Use this when you want platform-native select behavior rather than the custom
+  listbox UI from `select/1`.
+
+  ## Examples
+
+      <.native_select name="timezone" value="utc">
+        <:option value="utc" label="UTC" />
+      </.native_select>
+
+      <.native_select name="framework" value="phoenix">
         <:option value="phoenix" label="Phoenix" />
         <:option value="rails" label="Rails" />
         <:option value="laravel" label="Laravel" />
-      </.select>
+      </.native_select>
 
-      <.select name="assignee" placeholder="Assign a teammate">
+      <.native_select name="assignee" placeholder="Assign a teammate">
         <:option value="levi" label="Levi" />
         <:option value="sam" label="Sam" />
-      </.select>
+      </.native_select>
   """)
 
   attr :name, :string, default: nil
@@ -362,7 +637,7 @@ defmodule CinderUI.Components.Forms do
     attr :label, :string, required: true
   end
 
-  def select(assigns) do
+  def native_select(assigns) do
     assigns =
       assign(assigns, :classes, [
         "border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 dark:hover:bg-input/50 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 h-8 w-full min-w-0 appearance-none rounded-lg border bg-transparent py-1 pr-8 pl-2.5 text-sm transition-colors outline-none select-none focus-visible:ring-3 disabled:pointer-events-none disabled:cursor-not-allowed aria-invalid:ring-3 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] data-[size=sm]:py-0.5",
@@ -385,6 +660,158 @@ defmodule CinderUI.Components.Forms do
         class="text-muted-foreground pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 select-none"
         aria-hidden="true"
       />
+    </div>
+    """
+  end
+
+  doc("""
+  Renders a filterable autocomplete input backed by a hidden form value.
+
+  This is intended for searching and selecting from a known set of options. Use
+  `select/1` when you want a trigger-driven listbox instead of a text input.
+
+  ## Examples
+
+  ```heex title="Autocomplete" align="full"
+  <.autocomplete id="team-owner" name="owner" value="levi">
+    <:option value="levi" label="Levi Buzolic" description="Engineering" />
+    <:option value="mira" label="Mira Chen" description="Design" />
+    <:option value="sam" label="Sam Hall" description="Operations" />
+  </.autocomplete>
+  ```
+
+  ```heex title="Loading state" align="full"
+  <.autocomplete id="repo-search" name="repo" loading={true}>
+    <:option value="cinder" label="cinder_ui" />
+  </.autocomplete>
+  ```
+  """)
+
+  attr :id, :string, required: true
+  attr :name, :string, default: nil
+  attr :value, :string, default: nil
+  attr :placeholder, :string, default: "Search options..."
+  attr :disabled, :boolean, default: false
+  attr :loading, :boolean, default: false
+  attr :class, :string, default: nil
+  attr :content_class, :string, default: nil
+  attr :rest, :global, include: ~w(required aria-label)
+
+  slot :option, required: true do
+    attr :value, :string, required: true
+    attr :label, :string, required: true
+    attr :description, :string
+    attr :disabled, :boolean
+  end
+
+  slot :empty
+
+  def autocomplete(assigns) do
+    selected_option = selected_option(assigns.option, assigns.value)
+    selected_label = if selected_option, do: selected_option.label, else: ""
+
+    assigns =
+      assigns
+      |> assign(:selected_label, selected_label)
+      |> assign(:root_classes, ["relative w-full", assigns.class])
+      |> assign(:input_classes, [
+        "border-input bg-background text-foreground h-9 w-full rounded-md border px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+        "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+      ])
+      |> assign(:content_classes, [
+        "bg-popover text-popover-foreground absolute top-full left-0 z-50 mt-2 hidden max-h-72 w-full overflow-y-auto rounded-md border p-1 shadow-md outline-none",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        assigns.content_class
+      ])
+
+    ~H"""
+    <div
+      id={@id}
+      data-slot="autocomplete"
+      data-state="closed"
+      data-selected-label={@selected_label}
+      class={classes(@root_classes)}
+      phx-hook="CuiAutocomplete"
+    >
+      <input
+        :if={@name}
+        data-slot="autocomplete-value"
+        type="hidden"
+        name={@name}
+        value={@value}
+        disabled={@disabled}
+      />
+
+      <input
+        data-slot="autocomplete-input"
+        data-autocomplete-input
+        type="text"
+        value={@selected_label}
+        placeholder={@placeholder}
+        autocomplete="off"
+        aria-autocomplete="list"
+        aria-controls={"#{@id}-content"}
+        aria-expanded="false"
+        disabled={@disabled}
+        class={classes(@input_classes)}
+        {@rest}
+      />
+
+      <div
+        id={"#{@id}-content"}
+        data-slot="autocomplete-content"
+        data-autocomplete-content
+        role="listbox"
+        tabindex="-1"
+        class={classes(@content_classes)}
+      >
+        <div
+          :if={@loading}
+          data-slot="autocomplete-loading"
+          class="text-muted-foreground px-2 py-1.5 text-sm"
+        >
+          Loading...
+        </div>
+
+        <button
+          :for={{option, index} <- Enum.with_index(@option)}
+          id={"#{@id}-autocomplete-option-#{index}"}
+          type="button"
+          role="option"
+          data-slot="autocomplete-item"
+          data-autocomplete-item
+          data-value={option.value}
+          data-label={option.label}
+          data-disabled={option[:disabled] || false}
+          data-selected={@value == option.value}
+          aria-selected={@value == option.value}
+          disabled={option[:disabled] || false}
+          class={
+            classes([
+              "relative flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-hidden select-none",
+              "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+              "disabled:pointer-events-none disabled:opacity-50",
+              @value == option.value && "bg-accent text-accent-foreground"
+            ])
+          }
+        >
+          <span class="min-w-0 flex-1">
+            <span class="block truncate">{option.label}</span>
+            <span :if={option[:description]} class="text-muted-foreground block text-xs">
+              {option.description}
+            </span>
+          </span>
+          <span :if={@value == option.value} class="shrink-0" aria-hidden="true">✓</span>
+        </button>
+
+        <div
+          :if={@empty != []}
+          data-slot="autocomplete-empty"
+          class="text-muted-foreground hidden px-2 py-1.5 text-sm"
+        >
+          {render_slot(@empty)}
+        </div>
+      </div>
     </div>
     """
   end
@@ -583,4 +1010,10 @@ defmodule CinderUI.Components.Forms do
     </div>
     """
   end
+
+  defp selected_option(options, value) when is_list(options) and is_binary(value) do
+    Enum.find(options, &(&1.value == value))
+  end
+
+  defp selected_option(_options, _value), do: nil
 end

@@ -12,49 +12,138 @@ test.describe("interactive previews", () => {
 
   test("dialog opens and closes", async ({ page }) => {
     const root = page.locator("[data-slot='dialog']").first()
+    const trigger = root.locator("[data-dialog-trigger]")
     const content = root.locator("[data-dialog-content]")
+    const close = root.locator("[data-dialog-close]")
 
     await root.scrollIntoViewIfNeeded()
     expect(await hasClass(content, "hidden")).toBe(true)
 
-    await root.locator("[data-dialog-trigger]").click()
+    await trigger.click()
     expect(await hasClass(content, "hidden")).toBe(false)
 
-    await root.locator("[data-dialog-close]").evaluate((el: HTMLElement) => el.click())
+    await page.keyboard.press("Escape")
     expect(await hasClass(content, "hidden")).toBe(true)
+  })
+
+  test("command events control dialog and select consistently", async ({ page }) => {
+    const dialog = page.locator("[data-slot='dialog']").first()
+    const dialogContent = dialog.locator("[data-dialog-content]")
+    const select = page.locator("[data-slot='select']").first()
+    const selectContent = select.locator("[data-select-content]")
+
+    await dialog.scrollIntoViewIfNeeded()
+    await page.evaluate(() => {
+      const dispatch = (selector: string, command: string) => {
+        const target = document.querySelector(selector)
+        target?.dispatchEvent(
+          new CustomEvent("cinder-ui:command", {
+            bubbles: false,
+            detail: { command },
+          }),
+        )
+      }
+
+      dispatch("[data-slot='dialog']", "open")
+      dispatch("[data-slot='select']", "open")
+    })
+
+    expect(await hasClass(dialogContent, "hidden")).toBe(false)
+    expect(await hasClass(selectContent, "hidden")).toBe(false)
+
+    await page.evaluate(() => {
+      const dispatch = (selector: string, command: string) => {
+        const target = document.querySelector(selector)
+        target?.dispatchEvent(
+          new CustomEvent("cinder-ui:command", {
+            bubbles: false,
+            detail: { command },
+          }),
+        )
+      }
+
+      dispatch("[data-slot='dialog']", "close")
+      dispatch("[data-slot='select']", "close")
+    })
+
+    expect(await hasClass(dialogContent, "hidden")).toBe(true)
+    expect(await hasClass(selectContent, "hidden")).toBe(true)
   })
 
   test("drawer opens and closes via overlay", async ({ page }) => {
     const root = page.locator("[data-slot='drawer']").first()
+    const trigger = root.locator("[data-drawer-trigger]")
     const content = root.locator("[data-drawer-content]")
-    const overlay = root.locator("[data-drawer-overlay]")
 
     await root.scrollIntoViewIfNeeded()
     expect(await hasClass(content, "hidden")).toBe(true)
 
-    await root.locator("[data-drawer-trigger]").click()
+    await trigger.click()
     expect(await hasClass(content, "hidden")).toBe(false)
 
-    await overlay.evaluate((el: HTMLElement) => el.click())
+    await page.keyboard.press("Escape")
     expect(await hasClass(content, "hidden")).toBe(true)
   })
 
   test("popover and dropdown toggle", async ({ page }) => {
     const popover = page.locator("[data-slot='popover']").first()
+    const popoverTrigger = popover.locator("[data-popover-trigger]")
     const popoverContent = popover.locator("[data-popover-content]")
 
     await popover.scrollIntoViewIfNeeded()
     expect(await hasClass(popoverContent, "hidden")).toBe(true)
-    await popover.locator("[data-popover-trigger]").click()
+    await popoverTrigger.click()
     expect(await hasClass(popoverContent, "hidden")).toBe(false)
+    await page.keyboard.press("Escape")
+    expect(await hasClass(popoverContent, "hidden")).toBe(true)
 
     const dropdown = page.locator("[data-slot='dropdown-menu']").first()
+    const dropdownTrigger = dropdown.locator("[data-dropdown-trigger]")
     const dropdownContent = dropdown.locator("[data-dropdown-content]")
 
     await dropdown.scrollIntoViewIfNeeded()
     expect(await hasClass(dropdownContent, "hidden")).toBe(true)
-    await dropdown.locator("[data-dropdown-trigger]").click()
+    await dropdownTrigger.click()
     expect(await hasClass(dropdownContent, "hidden")).toBe(false)
+    await page.keyboard.press("Escape")
+    expect(await hasClass(dropdownContent, "hidden")).toBe(true)
+  })
+
+  test("select opens from the keyboard and updates the hidden value", async ({ page }) => {
+    const select = page.locator("[data-slot='select']").first()
+    const trigger = select.locator("[data-select-trigger]")
+    const content = select.locator("[data-select-content]")
+    const hiddenInput = select.locator("[data-slot='select-input']")
+
+    await select.scrollIntoViewIfNeeded()
+    expect(await hasClass(content, "hidden")).toBe(true)
+
+    const initialValue = await hiddenInput.inputValue()
+
+    await trigger.focus()
+    await page.keyboard.press("ArrowDown")
+    expect(await hasClass(content, "hidden")).toBe(false)
+
+    const itemStates = await select.locator("[data-select-item]").evaluateAll((els) =>
+      els.map((el) => ({
+        selected: el.getAttribute("data-selected") === "true",
+        disabled: el.getAttribute("data-disabled") === "true",
+      })),
+    )
+
+    const enabledIndexes = itemStates.flatMap((item, index) => (item.disabled ? [] : [index]))
+    const selectedIndex = itemStates.findIndex((item) => item.selected)
+    const nextEnabledIndex = enabledIndexes.find((index) => index > selectedIndex)
+
+    const targetIndex =
+      nextEnabledIndex !== undefined
+        ? nextEnabledIndex
+        : enabledIndexes.find((index) => index < selectedIndex) ?? enabledIndexes[0]
+
+    await select.locator("[data-select-item]").nth(targetIndex).click()
+
+    await expect(hiddenInput).not.toHaveValue(initialValue)
+    expect(await hasClass(content, "hidden")).toBe(true)
   })
 
   test("combobox filters and selects", async ({ page }) => {
@@ -82,6 +171,35 @@ test.describe("interactive previews", () => {
 
     await combo.locator("[data-slot='combobox-item'][data-value='Free']").click()
     await expect(input).toHaveValue("Free")
+  })
+
+  test("autocomplete filters and updates the hidden value", async ({ page }) => {
+    const autocomplete = page.locator("[data-slot='autocomplete']").first()
+    const input = autocomplete.locator("[data-autocomplete-input]")
+    const content = autocomplete.locator("[data-autocomplete-content]")
+    const hiddenInput = autocomplete.locator("[data-slot='autocomplete-value']")
+
+    await autocomplete.scrollIntoViewIfNeeded()
+    await input.click()
+    expect(await hasClass(content, "hidden")).toBe(false)
+
+    await input.fill("Mira")
+    const itemStates = await autocomplete.locator("[data-slot='autocomplete-item']").evaluateAll((els) =>
+      els.map((el) => ({
+        text: el.getAttribute("data-label") || (el.textContent || "").trim(),
+        hidden: el.classList.contains("hidden"),
+      })),
+    )
+
+    const levi = itemStates.find((item) => item.text.includes("Levi"))
+    const mira = itemStates.find((item) => item.text.includes("Mira"))
+
+    expect(levi?.hidden).toBe(true)
+    expect(mira?.hidden).toBe(false)
+
+    await autocomplete.locator("[data-slot='autocomplete-item'][data-value='mira']").click()
+    await expect(input).toHaveValue("Mira Chen")
+    await expect(hiddenInput).toHaveValue("mira")
   })
 
   test("theme controls apply mode, color, and radius", async ({ page }) => {

@@ -59,7 +59,7 @@ defmodule CinderUI.Components.Overlay do
       </.field>
       <.field>
         <:label><.label for="invite_role">Role</.label></:label>
-        <.select name="invite_role" value="member">
+        <.select id="invite_role" name="invite_role" value="member">
           <:option value="member" label="Member" />
           <:option value="admin" label="Admin" />
         </.select>
@@ -124,6 +124,7 @@ defmodule CinderUI.Components.Overlay do
         data-dialog-content
         role="dialog"
         aria-modal="true"
+        tabindex="-1"
         class={classes(@content_classes)}
       >
         <header data-slot="dialog-header" class="flex flex-col gap-2 text-center sm:text-left">
@@ -248,7 +249,14 @@ defmodule CinderUI.Components.Overlay do
 
       <div data-slot="drawer-overlay" data-drawer-overlay class={classes(@overlay_classes)} />
 
-      <section data-slot="drawer-content" data-drawer-content class={classes(@content_classes)}>
+      <section
+        data-slot="drawer-content"
+        data-drawer-content
+        role="dialog"
+        aria-modal="true"
+        tabindex="-1"
+        class={classes(@content_classes)}
+      >
         <div :if={@side == :bottom} class="bg-muted mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full" />
 
         <header data-slot="drawer-header" class="flex flex-col gap-0.5 p-4 md:gap-1.5 md:text-left">

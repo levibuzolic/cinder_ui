@@ -1243,6 +1243,21 @@ defmodule CinderUI.Docs.Catalog do
   defp sample_assigns(Forms, :checkbox),
     do: %{id: "docs-checkbox", checked: true, inner_block: slot("Accept terms")}
 
+  defp sample_assigns(Forms, :field_control) do
+    %{
+      inner_block: slot(~S(<.input id="docs-field-control" value="levi" />))
+    }
+  end
+
+  defp sample_assigns(Forms, :field_description),
+    do: %{inner_block: slot("Helper copy appears here.")}
+
+  defp sample_assigns(Forms, :field_error),
+    do: %{inner_block: slot("This value is required.")}
+
+  defp sample_assigns(Forms, :field_label),
+    do: %{inner_block: slot(~S(<.label for="docs-field-input">Username</.label>))}
+
   defp sample_assigns(Forms, :field) do
     label_html =
       render_component(Forms, :label, %{for: "docs-field-input", inner_block: slot("Username")})
@@ -1269,6 +1284,20 @@ defmodule CinderUI.Docs.Catalog do
 
   defp sample_assigns(Forms, :input),
     do: %{id: "docs-input", placeholder: "name@example.com", type: "email"}
+
+  defp sample_assigns(Forms, :autocomplete) do
+    %{
+      id: "docs-autocomplete",
+      name: "owner",
+      value: "levi",
+      option: [
+        %{value: "levi", label: "Levi Buzolic", description: "Engineering"},
+        %{value: "mira", label: "Mira Chen", description: "Design"},
+        %{value: "sam", label: "Sam Hall", description: "Operations"}
+      ],
+      empty: [slot("No matching teammates.")]
+    }
+  end
 
   defp sample_assigns(Forms, :input_group) do
     search_input_html = render_component(Forms, :input, %{value: "search"})
@@ -1304,13 +1333,25 @@ defmodule CinderUI.Docs.Catalog do
     }
   end
 
-  defp sample_assigns(Forms, :select) do
+  defp sample_assigns(Forms, :native_select) do
     %{
-      name: "plan",
+      name: "native-plan",
       value: "pro",
       option: [
         %{value: "free", label: "Free"},
         %{value: "pro", label: "Pro"}
+      ]
+    }
+  end
+
+  defp sample_assigns(Forms, :select) do
+    %{
+      id: "docs-select",
+      name: "plan",
+      value: "pro",
+      option: [
+        %{value: "free", label: "Free", description: "For side projects"},
+        %{value: "pro", label: "Pro", description: "For growing teams"}
       ]
     }
   end
@@ -1870,7 +1911,10 @@ defmodule CinderUI.Docs.Catalog do
 
   defp sample_assigns(Advanced, :calendar) do
     not_ready_html =
-      render_component(Feedback, :badge, %{variant: :secondary, inner_block: slot("Not ready yet")})
+      render_component(Feedback, :badge, %{
+        variant: :secondary,
+        inner_block: slot("Not ready yet")
+      })
 
     %{
       inner_block:
