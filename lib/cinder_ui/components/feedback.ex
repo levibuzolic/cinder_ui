@@ -204,7 +204,7 @@ defmodule CinderUI.Components.Feedback do
   doc("""
   Renders a flash notice.
 
-  Uses `alert/1` under the hood, without an alert title.
+  Uses `alert/1` under the hood.
 
   API-compatible with the Phoenix generated core component.
 
@@ -252,6 +252,7 @@ defmodule CinderUI.Components.Feedback do
     >
       <.alert variant={@variant} class={@alert_classes}>
         <CinderUI.Icons.icon name={@icon_name} class="size-4 shrink-0" />
+        <.alert_title :if={@title} class="text-current pr-8">{@title}</.alert_title>
         <.alert_description class="text-current pr-8">{msg}</.alert_description>
         <button
           type="button"

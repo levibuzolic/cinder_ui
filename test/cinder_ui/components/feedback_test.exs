@@ -23,17 +23,18 @@ defmodule CinderUI.Components.FeedbackTest do
     assert html =~ "translateX(-50.0%)"
   end
 
-  test "flash renders from flash map using alert without title" do
+  test "flash renders title when provided" do
     html =
       render_component(&Feedback.flash/1, %{
         kind: :info,
         flash: %{"info" => "Saved successfully"},
-        title: "Ignored title"
+        title: "Saved"
       })
 
     assert html =~ "data-slot=\"alert\""
+    assert html =~ "data-slot=\"alert-title\""
+    assert html =~ "Saved"
     assert html =~ "Saved successfully"
-    refute html =~ "Ignored title"
     assert html =~ "lv:clear-flash"
   end
 
