@@ -21,15 +21,6 @@ config :demo, DemoWeb.Endpoint,
   pubsub_server: Demo.PubSub,
   live_view: [signing_salt: "9bZ2aEiY"]
 
-# Configure the mailer
-#
-# By default it uses the "Local" adapter which stores the emails
-# locally. You can see the emails in your browser, at "/dev/mailbox".
-#
-# For production it's recommended to configure a different adapter
-# at the `config/runtime.exs`.
-config :demo, Demo.Mailer, adapter: Swoosh.Adapters.Local
-
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",

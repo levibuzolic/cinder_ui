@@ -7,12 +7,6 @@ config :demo, DemoWeb.Endpoint,
   secret_key_base: "tiDxi+PYP8RhYEFLqfLppld1Kwz8dX0mWbzcMcFam50otLLHDEkrOH4psgjkpMmL",
   server: false
 
-# In test we don't send emails
-config :demo, Demo.Mailer, adapter: Swoosh.Adapters.Test
-
-# Disable swoosh api client as it is only required for production adapters
-config :swoosh, :api_client, false
-
 # Print only warnings and errors during test
 config :logger, level: :warning
 

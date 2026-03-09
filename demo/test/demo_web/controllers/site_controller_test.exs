@@ -3,6 +3,14 @@ defmodule DemoWeb.SiteControllerTest do
 
   alias Demo.SiteRuntime
 
+  test "GET / renders marketing page", %{conn: conn} do
+    conn = get(conn, ~p"/")
+    body = html_response(conn, 200)
+
+    assert body =~ "Cinder UI"
+    assert body =~ "Browse Component Library"
+  end
+
   test "GET /docs renders component index", %{conn: conn} do
     conn = get(conn, ~p"/docs")
     body = html_response(conn, 200)
