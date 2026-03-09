@@ -3,10 +3,11 @@ defmodule CinderUI.HooksTest do
 
   alias CinderUI.Hooks
   alias CinderUI.JS
+  alias Phoenix.HTML.Safe
 
   defp render_js(js) do
     js
-    |> Phoenix.HTML.Safe.to_iodata()
+    |> Safe.to_iodata()
     |> IO.iodata_to_binary()
   end
 

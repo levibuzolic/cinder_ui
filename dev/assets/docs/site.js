@@ -236,8 +236,8 @@
   const root = document.documentElement
   const sidebar = document.querySelector("[data-docs-sidebar]")
   const modeButtons = qs(document, "[data-theme-mode]")
-  const colorSelect = document.getElementById("theme-color")
-  const radiusSelect = document.getElementById("theme-radius")
+  const colorSelect = document.querySelector("#theme-color [data-slot='select-input']")
+  const radiusSelect = document.querySelector("#theme-radius [data-slot='select-input']")
   const sidebarScrollStorageKey = "cui:docs:sidebar-scroll-top"
 
   const restoreSidebarScroll = () => {

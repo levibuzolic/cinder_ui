@@ -206,13 +206,15 @@ test.describe("interactive previews", () => {
     await page.locator(".theme-mode-btn[data-theme-mode='dark']").first().click()
     await expect(page.locator("html")).toHaveClass(/dark/)
 
-    await page.locator("#theme-color").selectOption("slate")
+    await page.locator("#theme-color [data-select-trigger]").click()
+    await page.locator("#theme-color [data-select-item][data-value='slate']").click()
     const primary = await page
       .locator("html")
       .evaluate((el) => getComputedStyle(el).getPropertyValue("--primary").trim())
     expect(primary).toBe("oklch(0.929 0.013 255.508)")
 
-    await page.locator("#theme-radius").selectOption("vega")
+    await page.locator("#theme-radius [data-select-trigger]").click()
+    await page.locator("#theme-radius [data-select-item][data-value='vega']").click()
     const radius = await page
       .locator("html")
       .evaluate((el) => getComputedStyle(el).getPropertyValue("--radius").trim())
