@@ -154,11 +154,11 @@ const CuiDialog = {
   },
 }
 
-const CuiDrawer = {
+const createPanelHook = (config) => ({
   mounted() {
     this.refreshElements = () => {
-      this.trigger = this.el.querySelector("[data-drawer-trigger]")
-      this.content = this.el.querySelector("[data-drawer-content]")
+      this.trigger = this.el.querySelector(config.triggerSelector)
+      this.content = this.el.querySelector(config.contentSelector)
     }
 
     this.refreshElements()
@@ -166,11 +166,11 @@ const CuiDrawer = {
     this.sync(this.el.dataset.state === "open")
 
     this.handleEvent = (event) => {
-      if (clickClosest(event.target, "[data-drawer-trigger]")) {
+      if (clickClosest(event.target, config.triggerSelector)) {
         this.lastActiveElement = getFocusTarget(this.trigger)
         this.sync(true)
       }
-      if (clickClosest(event.target, "[data-drawer-overlay]")) this.sync(false)
+      if (clickClosest(event.target, config.overlaySelector)) this.sync(false)
     }
 
     this.onKeydown = (event) => {
@@ -205,7 +205,7 @@ const CuiDrawer = {
     }
 
     this.el.dataset.state = open ? "open" : "closed"
-    toggleVisibility(this.el.querySelector("[data-drawer-overlay]"), open)
+    toggleVisibility(this.el.querySelector(config.overlaySelector), open)
     toggleVisibility(this.content, open)
 
     if (open && !wasOpen) {
@@ -222,7 +222,19 @@ const CuiDrawer = {
     document.removeEventListener("keydown", this.onKeydown)
     this.removeCommandListener && this.removeCommandListener()
   },
-}
+})
+
+const CuiDrawer = createPanelHook({
+  triggerSelector: "[data-drawer-trigger]",
+  overlaySelector: "[data-drawer-overlay]",
+  contentSelector: "[data-drawer-content]",
+})
+
+const CuiSheet = createPanelHook({
+  triggerSelector: "[data-sheet-trigger]",
+  overlaySelector: "[data-sheet-overlay]",
+  contentSelector: "[data-sheet-content]",
+})
 
 const CuiPopover = {
   mounted() {
@@ -1185,6 +1197,7 @@ const CuiResizable = {
 export const CinderUIHooks = {
   CuiDialog,
   CuiDrawer,
+  CuiSheet,
   CuiPopover,
   CuiDropdownMenu,
   CuiSelect,

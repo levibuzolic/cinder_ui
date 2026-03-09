@@ -85,6 +85,21 @@ test.describe("interactive previews", () => {
     expect(await hasClass(content, "hidden")).toBe(true)
   })
 
+  test("sheet opens and closes via escape", async ({ page }) => {
+    const root = page.locator("[data-slot='sheet']").first()
+    const trigger = root.locator("[data-sheet-trigger]")
+    const content = root.locator("[data-sheet-content]")
+
+    await root.scrollIntoViewIfNeeded()
+    expect(await hasClass(content, "hidden")).toBe(true)
+
+    await trigger.click()
+    expect(await hasClass(content, "hidden")).toBe(false)
+
+    await page.keyboard.press("Escape")
+    expect(await hasClass(content, "hidden")).toBe(true)
+  })
+
   test("popover and dropdown toggle", async ({ page }) => {
     const popover = page.locator("[data-slot='popover']").first()
     const popoverTrigger = popover.locator("[data-popover-trigger]")

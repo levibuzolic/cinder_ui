@@ -215,12 +215,15 @@ defmodule CinderUI.Components.Overlay do
   doc("""
   Drawer panel component.
 
-  `side` controls placement: `:top`, `:right`, `:bottom`, or `:left`.
+  Drawers are edge-anchored panels intended for mobile-style or bottom-sheet
+  flows. Use `sheet/1` for side panels.
+
+  `side` controls placement: `:top` or `:bottom`.
   """)
 
   attr :id, :string, required: true
   attr :open, :boolean, default: false
-  attr :side, :atom, default: :right, values: [:top, :right, :bottom, :left]
+  attr :side, :atom, default: :bottom, values: [:top, :bottom]
   attr :class, :string, default: nil
   slot :trigger, required: true
   slot :title
@@ -232,9 +235,7 @@ defmodule CinderUI.Components.Overlay do
     side_classes =
       case assigns.side do
         :top -> "inset-x-0 top-0 mb-24 max-h-[80vh] rounded-b-lg border-b"
-        :right -> "inset-y-0 right-0 w-3/4 border-l sm:max-w-sm"
         :bottom -> "inset-x-0 bottom-0 mt-24 max-h-[80vh] rounded-t-lg border-t"
-        :left -> "inset-y-0 left-0 w-3/4 border-r sm:max-w-sm"
       end
 
     assigns =
@@ -245,7 +246,7 @@ defmodule CinderUI.Components.Overlay do
         !assigns.open && "hidden"
       ])
       |> assign(:content_classes, [
-        "group/drawer-content bg-background fixed z-50 flex h-auto flex-col",
+        "group/drawer-content bg-background fixed z-50 flex h-auto w-full flex-col sm:max-w-none",
         side_classes,
         !assigns.open && "hidden",
         assigns.class
@@ -256,6 +257,7 @@ defmodule CinderUI.Components.Overlay do
       id={@id}
       data-slot="drawer"
       data-state={if(@open, do: "open", else: "closed")}
+      data-drawer-side={@side}
       phx-hook="CuiDrawer"
     >
       <div data-slot="drawer-trigger" data-drawer-trigger>{render_slot(@trigger)}</div>
@@ -270,7 +272,7 @@ defmodule CinderUI.Components.Overlay do
         tabindex="-1"
         class={classes(@content_classes)}
       >
-        <div :if={@side == :bottom} class="bg-muted mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full" />
+        <div class="bg-muted mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full" />
 
         <header data-slot="drawer-header" class="flex flex-col gap-0.5 p-4 md:gap-1.5 md:text-left">
           <h2 :if={@title != []} data-slot="drawer-title" class="text-foreground font-semibold">
@@ -296,12 +298,86 @@ defmodule CinderUI.Components.Overlay do
   end
 
   doc("""
-  Sheet alias for drawer behavior.
+  Sheet panel component for side or edge-mounted overlays.
 
-  This mirrors shadcn's `sheet` semantic naming.
+  Use `sheet/1` for desktop-style settings panels and side drawers.
   """)
 
-  def sheet(assigns), do: drawer(assigns)
+  attr :id, :string, required: true
+  attr :open, :boolean, default: false
+  attr :side, :atom, default: :right, values: [:top, :right, :bottom, :left]
+  attr :class, :string, default: nil
+  slot :trigger, required: true
+  slot :title
+  slot :description
+  slot :inner_block, required: true
+  slot :footer
+
+  def sheet(assigns) do
+    side_classes =
+      case assigns.side do
+        :top -> "inset-x-0 top-0 mb-24 max-h-[80vh] rounded-b-lg border-b"
+        :right -> "inset-y-0 right-0 w-3/4 border-l sm:max-w-sm"
+        :bottom -> "inset-x-0 bottom-0 mt-24 max-h-[80vh] rounded-t-lg border-t"
+        :left -> "inset-y-0 left-0 w-3/4 border-r sm:max-w-sm"
+      end
+
+    assigns =
+      assigns
+      |> assign(:side_classes, side_classes)
+      |> assign(:overlay_classes, [
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+        !assigns.open && "hidden"
+      ])
+      |> assign(:content_classes, [
+        "group/sheet-content bg-background fixed z-50 flex h-auto flex-col",
+        side_classes,
+        !assigns.open && "hidden",
+        assigns.class
+      ])
+
+    ~H"""
+    <div
+      id={@id}
+      data-slot="sheet"
+      data-state={if(@open, do: "open", else: "closed")}
+      data-sheet-side={@side}
+      phx-hook="CuiSheet"
+    >
+      <div data-slot="sheet-trigger" data-sheet-trigger>{render_slot(@trigger)}</div>
+
+      <div data-slot="sheet-overlay" data-sheet-overlay class={classes(@overlay_classes)} />
+
+      <section
+        data-slot="sheet-content"
+        data-sheet-content
+        role="dialog"
+        aria-modal="true"
+        tabindex="-1"
+        class={classes(@content_classes)}
+      >
+        <header data-slot="sheet-header" class="flex flex-col gap-0.5 p-4 md:gap-1.5 md:text-left">
+          <h2 :if={@title != []} data-slot="sheet-title" class="text-foreground font-semibold">
+            {render_slot(@title)}
+          </h2>
+          <p
+            :if={@description != []}
+            data-slot="sheet-description"
+            class="text-muted-foreground text-sm"
+          >
+            {render_slot(@description)}
+          </p>
+        </header>
+
+        <div class="px-4">{render_slot(@inner_block)}</div>
+
+        <footer :if={@footer != []} data-slot="sheet-footer" class="mt-auto flex flex-col gap-2 p-4">
+          {render_slot(@footer)}
+        </footer>
+      </section>
+    </div>
+    """
+  end
 
   doc("""
   Popover with trigger and content slots.

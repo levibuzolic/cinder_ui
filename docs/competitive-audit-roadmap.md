@@ -212,7 +212,7 @@ Acceptance criteria:
 - [-] Add focus management expectations for dialog-like components.
 - [x] Review dismissal behavior: close button, escape key, outside click, server-controlled state updates.
 - [x] Ensure patch-safe behavior when LiveView re-renders content.
-- [ ] Revisit `drawer` vs `sheet` semantics and split them if needed.
+- [x] Revisit `drawer` vs `sheet` semantics and split them if needed.
 
 Acceptance criteria:
 

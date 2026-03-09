@@ -36,4 +36,32 @@ defmodule CinderUI.Components.OverlayTest do
     assert html =~ "data-slot=\"dropdown-menu\""
     assert html =~ "Settings"
   end
+
+  test "drawer and sheet render distinct slots" do
+    drawer_html =
+      render_component(&Overlay.drawer/1, %{
+        id: "demo-drawer",
+        open: true,
+        trigger: [%{inner_block: fn _, _ -> "Open drawer" end}],
+        title: [%{inner_block: fn _, _ -> "Drawer" end}],
+        description: [%{inner_block: fn _, _ -> "Drawer desc" end}],
+        inner_block: TestHelpers.slot("Drawer body")
+      })
+
+    sheet_html =
+      render_component(&Overlay.sheet/1, %{
+        id: "demo-sheet",
+        open: true,
+        side: :right,
+        trigger: [%{inner_block: fn _, _ -> "Open sheet" end}],
+        title: [%{inner_block: fn _, _ -> "Sheet" end}],
+        description: [%{inner_block: fn _, _ -> "Sheet desc" end}],
+        inner_block: TestHelpers.slot("Sheet body")
+      })
+
+    assert drawer_html =~ "data-slot=\"drawer\""
+    assert drawer_html =~ "data-drawer-side=\"bottom\""
+    assert sheet_html =~ "data-slot=\"sheet\""
+    assert sheet_html =~ "data-sheet-side=\"right\""
+  end
 end

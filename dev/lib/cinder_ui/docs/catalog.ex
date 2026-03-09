@@ -1848,10 +1848,10 @@ defmodule CinderUI.Docs.Catalog do
     %{
       id: "docs-drawer",
       open: false,
-      side: :right,
+      side: :bottom,
       trigger: slot("Open"),
       title: slot("Drawer"),
-      description: slot("Drawer description"),
+      description: slot("Bottom drawer description"),
       inner_block: slot("Drawer body"),
       footer:
         slot(
@@ -1904,6 +1904,9 @@ defmodule CinderUI.Docs.Catalog do
   defp sample_assigns(Overlay, :sheet) do
     sample_assigns(Overlay, :drawer)
     |> Map.put(:id, "docs-sheet")
+    |> Map.put(:side, :right)
+    |> Map.put(:title, slot("Sheet"))
+    |> Map.put(:description, slot("Side panel description"))
   end
 
   defp sample_assigns(Overlay, :tooltip),
