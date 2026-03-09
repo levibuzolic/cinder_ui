@@ -1,0 +1,108 @@
+name: Autofix
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: autofix-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  ELIXIR_VERSION: "1.19.5"
+  OTP_VERSION: "28.3.2"
+  NODE_VERSION: "25"
+
+jobs:
+  autofix:
+    name: Format and refresh visual artifacts
+    if: github.actor != 'autofix-ci[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          otp-version: ${{ env.OTP_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: demo/package-lock.json
+
+      - name: Cache root Mix dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-autofix-root-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-autofix-root-
+            ${{ runner.os }}-mix-root-
+            ${{ runner.os }}-mix-
+
+      - name: Cache demo Mix dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            demo/deps
+            demo/_build
+          key: ${{ runner.os }}-mix-autofix-demo-${{ hashFiles('demo/mix.lock', 'mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-autofix-demo-
+            ${{ runner.os }}-mix-demo-
+            ${{ runner.os }}-mix-
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-autofix-${{ hashFiles('demo/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-autofix-
+            ${{ runner.os }}-playwright-
+
+      - name: Install root dependencies
+        run: mix deps.get
+
+      - name: Format root project
+        run: mix format
+
+      - name: Install demo dependencies
+        working-directory: demo
+        run: mix deps.get
+
+      - name: Format demo project
+        working-directory: demo
+        run: mix format
+
+      - name: Install demo Node dependencies
+        working-directory: demo
+        run: npm ci
+
+      - name: Build demo assets
+        working-directory: demo
+        run: mix assets.build
+
+      - name: Install Playwright browser
+        working-directory: demo
+        run: npx playwright install --with-deps chromium
+
+      - name: Refresh visual snapshots and docs screenshots
+        working-directory: demo
+        run: npx playwright test tests/browser/visual.spec.ts --update-snapshots
+
+      - name: Push fixes
+        uses: autofix-ci/action@v1
+        with:
+          commit-message: "Apply automated formatting and screenshot updates"
