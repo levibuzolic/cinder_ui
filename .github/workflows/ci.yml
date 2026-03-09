@@ -10,6 +10,9 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   root_quality:
     name: Root Quality (format/lint/docs)
@@ -175,3 +178,80 @@ jobs:
           PLAYWRIGHT_ARTIFACT_URL: ${{ steps.playwright_artifacts.outputs.artifact-url }}
           PLAYWRIGHT_VRT_MAX_INLINE: "6"
         run: node .github/scripts/playwright_vrt_report.mjs
+
+  pr_autofix:
+    name: PR Autofix
+    if: >
+      github.event_name == 'pull_request' &&
+      github.actor != 'github-actions[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      always() &&
+      (
+        needs.root_quality.result == 'failure' ||
+        needs.demo_unit.result == 'failure' ||
+        needs.demo_browser.result == 'failure'
+      )
+    needs:
+      - root_quality
+      - root_tests
+      - demo_unit
+      - demo_typecheck
+      - demo_browser
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup toolchains
+        uses: ./.github/actions/setup-toolchains
+        with:
+          node-cache: npm
+          node-cache-dependency-path: demo/package-lock.json
+
+      - name: Setup root Mix
+        if: ${{ needs.root_quality.result == 'failure' || needs.demo_unit.result == 'failure' }}
+        uses: ./.github/actions/setup-root-mix
+        with:
+          cache-key-prefix: pr-autofix-root
+
+      - name: Setup demo Mix
+        if: ${{ needs.root_quality.result == 'failure' || needs.demo_unit.result == 'failure' || needs.demo_browser.result == 'failure' }}
+        uses: ./.github/actions/setup-demo-mix
+        with:
+          cache-key-prefix: pr-autofix
+
+      - name: Fix formatting
+        if: ${{ needs.root_quality.result == 'failure' || needs.demo_unit.result == 'failure' }}
+        run: |
+          mix format
+          cd demo
+          mix format
+
+      - name: Setup demo browser
+        if: ${{ needs.demo_browser.result == 'failure' }}
+        uses: ./.github/actions/setup-demo-browser
+        with:
+          playwright-cache-key-prefix: pr-autofix
+
+      - name: Refresh visual snapshots and docs screenshots
+        if: ${{ needs.demo_browser.result == 'failure' }}
+        working-directory: demo
+        run: npx playwright test tests/browser/visual.spec.ts --update-snapshots
+
+      - name: Commit fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No autofix changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Apply automated formatting and snapshot updates"
+          git push
