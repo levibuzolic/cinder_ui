@@ -573,6 +573,7 @@ defmodule CinderUI.Components.Forms do
         aria-haspopup="listbox"
         aria-expanded="false"
         aria-controls={"#{@id}-content"}
+        aria-activedescendant=""
         disabled={@disabled}
         class={classes(@trigger_classes)}
         {@rest}
@@ -635,7 +636,7 @@ defmodule CinderUI.Components.Forms do
             class={
               classes([
                 "relative flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-hidden select-none",
-                "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[highlighted=true]:bg-accent data-[highlighted=true]:text-accent-foreground",
                 "disabled:pointer-events-none disabled:opacity-50",
                 @value == option.value && "bg-accent text-accent-foreground"
               ])
@@ -837,6 +838,7 @@ defmodule CinderUI.Components.Forms do
         aria-autocomplete="list"
         aria-controls={"#{@id}-content"}
         aria-expanded="false"
+        aria-activedescendant=""
         disabled={@disabled}
         class={classes(@input_classes)}
         {@rest}
@@ -874,7 +876,7 @@ defmodule CinderUI.Components.Forms do
           class={
             classes([
               "relative flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-hidden select-none",
-              "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+              "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[highlighted=true]:bg-accent data-[highlighted=true]:text-accent-foreground",
               "disabled:pointer-events-none disabled:opacity-50",
               @value == option.value && "bg-accent text-accent-foreground"
             ])
@@ -890,11 +892,10 @@ defmodule CinderUI.Components.Forms do
         </button>
 
         <div
-          :if={@empty != []}
           data-slot="autocomplete-empty"
           class="text-muted-foreground hidden px-2 py-1.5 text-sm"
         >
-          {render_slot(@empty)}
+          {if @empty != [], do: render_slot(@empty), else: "No results found."}
         </div>
       </div>
     </div>

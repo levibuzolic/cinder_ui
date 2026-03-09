@@ -160,7 +160,9 @@ test.describe("interactive previews", () => {
     await trigger.focus()
     await page.keyboard.press("ArrowDown")
     expect(await hasClass(content, "hidden")).toBe(false)
-    await expect(select.locator("[data-select-item][data-highlighted='true']").first()).toBeVisible()
+    const highlightedSelectItem = select.locator("[data-select-item][data-highlighted='true']").first()
+    await expect(highlightedSelectItem).toBeVisible()
+    await expect(trigger).toHaveAttribute("aria-activedescendant", await highlightedSelectItem.getAttribute("id"))
 
     const itemStates = await select.locator("[data-select-item]").evaluateAll((els) =>
       els.map((el) => ({
@@ -243,7 +245,9 @@ test.describe("interactive previews", () => {
 
     await input.fill("Mira")
     await page.keyboard.press("ArrowDown")
-    await expect(autocomplete.locator("[data-slot='autocomplete-item'][data-highlighted='true']").first()).toBeVisible()
+    const highlightedAutocompleteItem = autocomplete.locator("[data-slot='autocomplete-item'][data-highlighted='true']").first()
+    await expect(highlightedAutocompleteItem).toBeVisible()
+    await expect(input).toHaveAttribute("aria-activedescendant", await highlightedAutocompleteItem.getAttribute("id"))
     const itemStates = await autocomplete.locator("[data-slot='autocomplete-item']").evaluateAll((els) =>
       els.map((el) => ({
         text: el.getAttribute("data-label") || (el.textContent || "").trim(),
@@ -260,6 +264,19 @@ test.describe("interactive previews", () => {
     await autocomplete.locator("[data-slot='autocomplete-item'][data-value='mira']").click()
     await expect(input).toHaveValue("Mira Chen")
     await expect(hiddenInput).toHaveValue("mira")
+  })
+
+  test("disabled listbox items are skipped by keyboard navigation", async ({ page }) => {
+    const select = page.locator("[data-slot='select']").filter({ has: page.locator("[data-slot='select-input'][name='plan']") }).first()
+    const trigger = select.locator("[data-select-trigger]")
+
+    await select.scrollIntoViewIfNeeded()
+    await trigger.focus()
+    await page.keyboard.press("ArrowDown")
+
+    const highlighted = select.locator("[data-select-item][data-highlighted='true']").first()
+    await expect(highlighted).toBeVisible()
+    await expect(highlighted).not.toHaveAttribute("data-disabled", "true")
   })
 
   test("theme controls apply mode, color, and radius", async ({ page }) => {

@@ -430,6 +430,8 @@ const CuiSelect = {
     this.sync = () => {
       this.el.dataset.state = this.open ? "open" : "closed"
       if (this.trigger) this.trigger.setAttribute("aria-expanded", this.open ? "true" : "false")
+      const activeItem = this.items.find((item) => item.dataset.highlighted === "true")
+      if (this.trigger) this.trigger.setAttribute("aria-activedescendant", this.open && activeItem ? activeItem.id : "")
       toggleVisibility(this.content, this.open)
     }
 
@@ -596,6 +598,7 @@ const CuiSelect = {
 
     this.onItemFocus = (event) => {
       this.highlightItem(event.currentTarget)
+      this.sync()
     }
 
     this.onDocumentClick = (event) => {
@@ -680,6 +683,8 @@ const CuiAutocomplete = {
     this.sync = () => {
       this.el.dataset.state = this.open ? "open" : "closed"
       if (this.input) this.input.setAttribute("aria-expanded", this.open ? "true" : "false")
+      const activeItem = this.items.find((item) => item.dataset.highlighted === "true")
+      if (this.input) this.input.setAttribute("aria-activedescendant", this.open && activeItem ? activeItem.id : "")
       toggleVisibility(this.content, this.open)
     }
 
@@ -833,6 +838,7 @@ const CuiAutocomplete = {
 
     this.onItemFocus = (event) => {
       this.highlightItem(event.currentTarget)
+      this.sync()
     }
 
     this.onDocumentClick = (event) => {

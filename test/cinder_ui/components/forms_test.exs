@@ -54,6 +54,7 @@ defmodule CinderUI.Components.FormsTest do
     assert html =~ "data-slot=\"select-group\""
     assert html =~ "data-slot=\"select-group-label\""
     assert html =~ "data-slot=\"select-clear\""
+    assert html =~ "aria-activedescendant"
     assert empty_html =~ "No options available."
   end
 
@@ -115,6 +116,17 @@ defmodule CinderUI.Components.FormsTest do
     assert html =~ "data-slot=\"autocomplete-loading\""
     assert html =~ "Searching repositories..."
     assert html =~ "data-slot=\"autocomplete-empty\""
+  end
+
+  test "autocomplete renders a default empty message when none is provided" do
+    html =
+      render_component(&Forms.autocomplete/1, %{
+        id: "empty-autocomplete",
+        option: []
+      })
+
+    assert html =~ "No results found."
+    assert html =~ "aria-activedescendant"
   end
 
   test "field infers invalid state from error slot and renders subcomponents" do

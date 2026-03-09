@@ -222,9 +222,9 @@ Acceptance criteria:
 
 ### 2.3 Improve listbox-like component quality
 
-- [ ] Add active descendant or equivalent keyboard model where appropriate.
-- [ ] Ensure highlighted item state is exposed for styling.
-- [ ] Handle empty, loading, and disabled item states consistently across select/autocomplete/command-like components.
+- [x] Add active descendant or equivalent keyboard model where appropriate.
+- [x] Ensure highlighted item state is exposed for styling.
+- [x] Handle empty, loading, and disabled item states consistently across select/autocomplete/command-like components.
 
 Acceptance criteria:
 
