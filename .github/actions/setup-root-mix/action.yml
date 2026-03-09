@@ -1,0 +1,26 @@
+name: Setup Root Mix
+description: Restore root Mix caches and install root dependencies.
+
+inputs:
+  cache-key-prefix:
+    description: Prefix used for the root Mix cache key.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Cache root Mix dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          deps
+          _build
+        key: ${{ runner.os }}-mix-${{ inputs.cache-key-prefix }}-${{ hashFiles('mix.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-mix-${{ inputs.cache-key-prefix }}-
+          ${{ runner.os }}-mix-root-
+          ${{ runner.os }}-mix-
+
+    - name: Install root dependencies
+      shell: bash
+      run: mix deps.get

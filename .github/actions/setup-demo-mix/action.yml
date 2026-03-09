@@ -1,0 +1,27 @@
+name: Setup Demo Mix
+description: Restore demo Mix caches and install demo dependencies.
+
+inputs:
+  cache-key-prefix:
+    description: Prefix used for the demo Mix cache key.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Cache demo Mix dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          demo/deps
+          demo/_build
+        key: ${{ runner.os }}-mix-demo-${{ inputs.cache-key-prefix }}-${{ hashFiles('demo/mix.lock', 'mix.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-mix-demo-${{ inputs.cache-key-prefix }}-
+          ${{ runner.os }}-mix-demo-
+          ${{ runner.os }}-mix-
+
+    - name: Install demo dependencies
+      shell: bash
+      working-directory: demo
+      run: mix deps.get

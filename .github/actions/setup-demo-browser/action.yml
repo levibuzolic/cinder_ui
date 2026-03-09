@@ -1,0 +1,34 @@
+name: Setup Demo Browser
+description: Prepare demo browser test dependencies, assets, and Playwright browser.
+
+inputs:
+  playwright-cache-key-prefix:
+    description: Prefix used for the Playwright browser cache key.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ inputs.playwright-cache-key-prefix }}-${{ hashFiles('demo/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-${{ inputs.playwright-cache-key-prefix }}-
+          ${{ runner.os }}-playwright-
+
+    - name: Install demo Node dependencies
+      shell: bash
+      working-directory: demo
+      run: npm ci
+
+    - name: Build demo assets
+      shell: bash
+      working-directory: demo
+      run: mix assets.build
+
+    - name: Install Playwright browser
+      shell: bash
+      working-directory: demo
+      run: npx playwright install --with-deps chromium

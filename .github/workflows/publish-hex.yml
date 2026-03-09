@@ -12,11 +12,6 @@ concurrency:
   group: hex-publish-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  ELIXIR_VERSION: "1.19.5"
-  OTP_VERSION: "28.0"
-  NODE_VERSION: "22"
-
 jobs:
   publish:
     name: Publish Hex Package + Docs
@@ -27,63 +22,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup BEAM
-        uses: erlef/setup-beam@v1
+      - name: Setup toolchains
+        uses: ./.github/actions/setup-toolchains
         with:
-          elixir-version: ${{ env.ELIXIR_VERSION }}
-          otp-version: ${{ env.OTP_VERSION }}
+          node-cache: npm
+          node-cache-dependency-path: demo/package-lock.json
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup root Mix
+        uses: ./.github/actions/setup-root-mix
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: demo/package-lock.json
+          cache-key-prefix: hex-publish
 
-      - name: Cache Mix dependencies
-        uses: actions/cache@v4
+      - name: Setup demo Mix
+        uses: ./.github/actions/setup-demo-mix
         with:
-          path: |
-            deps
-            _build
-          key: ${{ runner.os }}-mix-hex-publish-${{ hashFiles('mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-hex-publish-
-            ${{ runner.os }}-mix-
+          cache-key-prefix: hex-publish
 
-      - name: Cache demo Mix dependencies
-        uses: actions/cache@v4
+      - name: Setup demo browser
+        uses: ./.github/actions/setup-demo-browser
         with:
-          path: |
-            demo/deps
-            demo/_build
-          key: ${{ runner.os }}-mix-demo-hex-publish-${{ hashFiles('demo/mix.lock', 'mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-demo-hex-publish-
-            ${{ runner.os }}-mix-demo-
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-hex-publish-${{ hashFiles('demo/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-hex-publish-
-            ${{ runner.os }}-playwright-
-
-      - name: Install dependencies
-        run: mix deps.get
-
-      - name: Install demo dependencies
-        working-directory: demo
-        run: |
-          mix deps.get
-          npm ci
-          mix assets.build
-
-      - name: Install Playwright browser
-        working-directory: demo
-        run: npx playwright install --with-deps chromium
+          playwright-cache-key-prefix: hex-publish
 
       - name: Generate docs screenshots
         working-directory: demo

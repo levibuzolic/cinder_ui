@@ -17,11 +17,6 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
-env:
-  ELIXIR_VERSION: "1.19.5"
-  OTP_VERSION: "28.0"
-  NODE_VERSION: "22"
-
 jobs:
   build:
     name: Build Static Site
@@ -30,47 +25,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup BEAM
-        uses: erlef/setup-beam@v1
+      - name: Setup toolchains
+        uses: ./.github/actions/setup-toolchains
         with:
-          elixir-version: ${{ env.ELIXIR_VERSION }}
-          otp-version: ${{ env.OTP_VERSION }}
+          node-cache: npm
+          node-cache-dependency-path: demo/package-lock.json
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup root Mix
+        uses: ./.github/actions/setup-root-mix
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: demo/package-lock.json
+          cache-key-prefix: site
 
-      - name: Cache Mix dependencies
-        uses: actions/cache@v4
+      - name: Setup demo Mix
+        uses: ./.github/actions/setup-demo-mix
         with:
-          path: |
-            deps
-            _build
-          key: ${{ runner.os }}-mix-site-${{ hashFiles('mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-site-
-
-      - name: Cache demo Mix dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            demo/deps
-            demo/_build
-          key: ${{ runner.os }}-mix-demo-site-${{ hashFiles('demo/mix.lock', 'mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-demo-site-
-            ${{ runner.os }}-mix-demo-
-
-      - name: Install dependencies
-        run: mix deps.get
+          cache-key-prefix: site
 
       - name: Build static site from demo app
         working-directory: demo
         run: |
-          mix deps.get
           npm ci
           mix assets.build
           mix site.export

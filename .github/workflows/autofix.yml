@@ -1,0 +1,59 @@
+name: autofix.ci
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: autofix-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  autofix:
+    name: Format and refresh visual artifacts
+    if: github.actor != 'autofix-ci[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup toolchains
+        uses: ./.github/actions/setup-toolchains
+        with:
+          node-cache: npm
+          node-cache-dependency-path: demo/package-lock.json
+
+      - name: Setup root Mix
+        uses: ./.github/actions/setup-root-mix
+        with:
+          cache-key-prefix: autofix-root
+
+      - name: Setup demo Mix
+        uses: ./.github/actions/setup-demo-mix
+        with:
+          cache-key-prefix: autofix
+
+      - name: Setup demo browser
+        uses: ./.github/actions/setup-demo-browser
+        with:
+          playwright-cache-key-prefix: autofix
+
+      - name: Format root project
+        run: mix format
+
+      - name: Format demo project
+        working-directory: demo
+        run: mix format
+
+      - name: Refresh visual snapshots and docs screenshots
+        working-directory: demo
+        run: npx playwright test tests/browser/visual.spec.ts --update-snapshots
+
+      - name: Push fixes
+        uses: autofix-ci/action@v1
+        with:
+          commit-message: "Apply automated formatting and screenshot updates"

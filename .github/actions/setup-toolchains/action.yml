@@ -1,0 +1,47 @@
+name: Setup Toolchains
+description: Set up shared BEAM and Node toolchains for repository workflows.
+
+inputs:
+  node-cache:
+    description: Enable npm cache in setup-node.
+    required: false
+    default: ""
+  node-cache-dependency-path:
+    description: Dependency file used by setup-node cache.
+    required: false
+    default: ""
+  elixir-version:
+    description: Elixir version to install.
+    required: false
+    default: "1.19.5"
+  otp-version:
+    description: Erlang/OTP version to install.
+    required: false
+    default: "28.3.2"
+  node-version:
+    description: Node.js version to install.
+    required: false
+    default: "25"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup BEAM
+      uses: erlef/setup-beam@v1
+      with:
+        elixir-version: ${{ inputs.elixir-version }}
+        otp-version: ${{ inputs.otp-version }}
+
+    - name: Setup Node
+      if: ${{ inputs.node-cache == '' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Setup Node with cache
+      if: ${{ inputs.node-cache != '' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ inputs.node-cache }}
+        cache-dependency-path: ${{ inputs.node-cache-dependency-path }}
