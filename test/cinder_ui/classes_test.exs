@@ -5,7 +5,7 @@ defmodule CinderUI.ClassesTest do
 
   test "classes/1 joins class lists and filters falsy values" do
     assert Classes.classes(["a", nil, false, "", ["b", "c"]]) == "a b c"
-    assert   Classes.classes("solo")=="solo"
+    assert Classes.classes("solo") == "solo"
     assert Classes.classes([:ignore, "keep"]) == "keep"
   end
 
