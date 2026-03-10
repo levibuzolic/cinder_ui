@@ -89,6 +89,43 @@ defmodule CinderUI.InstallTaskTest do
     assert npm_args =~ "tailwindcss-animate"
   end
 
+  test "skips package installation when dependency is already declared", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+    bin_dir = Path.join(project, "bin")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.mkdir_p!(bin_dir)
+
+    File.write!(
+      Path.join(project, "package.json"),
+      """
+      {
+        "private": true,
+        "devDependencies": {
+          "tailwindcss-animate": "^1.0.7"
+        }
+      }
+      """
+    )
+
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+    File.write!(Path.join(assets, "js/app.js"), "let Hooks = {}\n")
+
+    write_fake_npm!(bin_dir)
+
+    with_fake_path(bin_dir, fn ->
+      File.cd!(project, fn ->
+        Mix.Task.reenable(@task)
+        Mix.Task.run(@task, ["--assets-path", "assets", "--package-manager", "npm"])
+      end)
+    end)
+
+    refute File.exists?(Path.join(project, ".npm-args"))
+    refute File.exists?(Path.join(assets, ".npm-args"))
+  end
+
   test "merges Cinder UI hooks into colocated hooks live socket config", %{tmp_dir: tmp_dir} do
     project = Path.join(tmp_dir, "project")
     assets = Path.join(project, "assets")
@@ -158,6 +195,41 @@ defmodule CinderUI.InstallTaskTest do
 
     assert File.read!(Path.join(assets, "css/cinder_ui.css")) == "/* sentinel css */\n"
     assert File.read!(Path.join(assets, "js/cinder_ui.js")) == "// sentinel js\n"
+  end
+
+  test "skip-patching preserves app files", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+    bin_dir = Path.join(project, "bin")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.mkdir_p!(bin_dir)
+
+    File.write!(Path.join(project, "package.json"), "{\n  \"private\": true\n}\n")
+    original_app_css = "@import \"tailwindcss\";\n/* keep */\n"
+    original_app_js = "import {LiveSocket} from \"phoenix_live_view\"\nlet Hooks = {}\n"
+    File.write!(Path.join(assets, "css/app.css"), original_app_css)
+    File.write!(Path.join(assets, "js/app.js"), original_app_js)
+
+    write_fake_npm!(bin_dir)
+
+    with_fake_path(bin_dir, fn ->
+      File.cd!(project, fn ->
+        Mix.Task.reenable(@task)
+
+        Mix.Task.run(@task, [
+          "--assets-path",
+          "assets",
+          "--package-manager",
+          "npm",
+          "--skip-patching"
+        ])
+      end)
+    end)
+
+    assert File.read!(Path.join(assets, "css/app.css")) == original_app_css
+    assert File.read!(Path.join(assets, "js/app.js")) == original_app_js
   end
 
   test "help flag prints task docs", %{tmp_dir: tmp_dir} do

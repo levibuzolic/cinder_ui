@@ -15,3 +15,5 @@
 /*.tar
 /*.dump
 /docs/plans/
+/demo/assets/css/cinder_ui.css
+/demo/assets/js/cinder_ui.js

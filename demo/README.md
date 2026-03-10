@@ -6,7 +6,7 @@ Phoenix host app for Cinder UI marketing/docs pages and browser tests.
 
 ```bash
 mix setup
-mix phx.server
+../bin/demo
 ```
 
 Open [http://localhost:4000](http://localhost:4000):

@@ -19,6 +19,7 @@ defmodule Mix.Tasks.CinderUi.Install do
     * `--assets-path` - path to the assets directory (default: `assets`)
     * `--package-manager` - `npm`, `pnpm`, `yarn`, or `bun`
     * `--skip-existing` - do not overwrite Cinder UI generated files if they already exist
+    * `--skip-patching` - do not patch `assets/css/app.css` or `assets/js/app.js`
 
   ## Example
 
@@ -38,6 +39,7 @@ defmodule Mix.Tasks.CinderUi.Install do
           assets_path: :string,
           package_manager: :string,
           skip_existing: :boolean,
+          skip_patching: :boolean,
           help: :boolean
         ]
       )
@@ -49,13 +51,18 @@ defmodule Mix.Tasks.CinderUi.Install do
       package_install_path = resolve_package_install_path!(assets_path)
       package_manager = normalize_package_manager(opts[:package_manager], package_install_path)
       skip_existing = opts[:skip_existing] || false
+      skip_patching = opts[:skip_patching] || false
 
       ensure_assets_dir!(assets_path)
 
       install_css!(assets_path, skip_existing)
       install_js!(assets_path, skip_existing)
-      patch_app_css!(assets_path)
-      patch_app_js!(assets_path)
+
+      unless skip_patching do
+        patch_app_css!(assets_path)
+        patch_app_js!(assets_path)
+      end
+
       maybe_install_package!(package_install_path, package_manager, "tailwindcss-animate")
       Mix.shell().info("Cinder UI install complete.")
     end
@@ -86,37 +93,37 @@ defmodule Mix.Tasks.CinderUi.Install do
   defp patch_app_css!(assets_path) do
     app_css_path = Path.join([assets_path, "css", "app.css"])
 
-    base =
+    base_content =
       if File.exists?(app_css_path) do
         File.read!(app_css_path)
       else
         "@import \"tailwindcss\";\n"
       end
 
-    base = ensure_line(base, "@source \"../../deps/cinder_ui\";")
-    base = ensure_line(base, "@import \"./cinder_ui.css\";")
+    updated_content =
+      base_content
+      |> ensure_line("@source \"../../deps/cinder_ui\";")
+      |> ensure_line("@import \"./cinder_ui.css\";")
 
-    File.write!(app_css_path, base)
-    Mix.shell().info("updated #{relative(app_css_path)}")
+    write_if_changed!(app_css_path, base_content, updated_content)
   end
 
   defp patch_app_js!(assets_path) do
     app_js_path = Path.join([assets_path, "js", "app.js"])
 
-    content =
+    base_content =
       if File.exists?(app_js_path) do
         File.read!(app_js_path)
       else
         "import { LiveSocket } from \"phoenix_live_view\"\nlet Hooks = {}\n"
       end
 
-    content =
-      content
+    updated_content =
+      base_content
       |> ensure_line("import { CinderUIHooks } from \"./cinder_ui\"")
       |> inject_hooks_merge()
 
-    File.write!(app_js_path, content)
-    Mix.shell().info("updated #{relative(app_js_path)}")
+    write_if_changed!(app_js_path, base_content, updated_content)
   end
 
   defp inject_hooks_merge(content) do
@@ -160,18 +167,51 @@ defmodule Mix.Tasks.CinderUi.Install do
       else: String.trim_trailing(content) <> "\n" <> line <> "\n"
   end
 
-  defp maybe_install_package!(install_path, package_manager, package) do
-    {cmd, args} = package_command(package_manager, package)
-    Mix.shell().info("running #{cmd} #{Enum.join(args, " ")} (in #{relative(install_path)})")
-    {output, status} = System.cmd(cmd, args, cd: install_path, stderr_to_stdout: true)
+  defp write_if_changed!(path, content, content) do
+    Mix.shell().info("already up to date #{relative(path)}")
+  end
 
-    if status == 0 do
-      Mix.shell().info(String.trim(output))
+  defp write_if_changed!(path, _old_content, new_content) do
+    File.write!(path, new_content)
+    Mix.shell().info("updated #{relative(path)}")
+  end
+
+  defp maybe_install_package!(install_path, package_manager, package) do
+    if package_installed?(install_path, package) do
+      Mix.shell().info("already present #{package} (in #{relative(install_path)})")
+      :ok
     else
-      Mix.shell().error(String.trim(output))
-      Mix.raise("failed to install #{package} using #{package_manager}")
+      {cmd, args} = package_command(package_manager, package)
+      Mix.shell().info("running #{cmd} #{Enum.join(args, " ")} (in #{relative(install_path)})")
+      {output, status} = System.cmd(cmd, args, cd: install_path, stderr_to_stdout: true)
+
+      if status == 0 do
+        Mix.shell().info(String.trim(output))
+      else
+        Mix.shell().error(String.trim(output))
+        Mix.raise("failed to install #{package} using #{package_manager}")
+      end
     end
   end
+
+  defp package_installed?(install_path, package) do
+    package_json_path = Path.join(install_path, "package.json")
+
+    with true <- File.exists?(package_json_path),
+         {:ok, content} <- File.read(package_json_path),
+         {:ok, package_json} <- Jason.decode(content) do
+      declared_dependency?(package_json["dependencies"], package) ||
+        declared_dependency?(package_json["devDependencies"], package)
+    else
+      _ -> false
+    end
+  end
+
+  defp declared_dependency?(dependencies, package) when is_map(dependencies) do
+    Map.has_key?(dependencies, package)
+  end
+
+  defp declared_dependency?(_, _package), do: false
 
   defp resolve_package_install_path!(assets_path) do
     assets_package_json = Path.join(assets_path, "package.json")
