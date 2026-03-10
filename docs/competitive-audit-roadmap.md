@@ -209,7 +209,7 @@ Acceptance criteria:
 
 ### 2.2 Improve overlay behavior quality
 
-- [-] Add focus management expectations for dialog-like components.
+- [x] Add focus management expectations for dialog-like components.
 - [x] Review dismissal behavior: close button, escape key, outside click, server-controlled state updates.
 - [x] Ensure patch-safe behavior when LiveView re-renders content.
 - [x] Revisit `drawer` vs `sheet` semantics and split them if needed.
@@ -407,6 +407,13 @@ Use this section to record actual work as it lands.
 - Expanded `field/1` with explicit field subcomponents and shared invalid-state styling hooks for inputs, select, and autocomplete.
 - Added Phoenix validation examples for the expanded field composition model in module docs and the README.
 - Added a shared `cinder-ui:command` event model plus JS helper exports for commandable interactive components.
+
+### 2026-03-10
+
+- Added `inert` attribute management to modal overlay components (Dialog, Alert Dialog, Drawer, Sheet).
+- Background content is natively inaccessible while a modal is open.
+- Pre-existing `inert` elements are preserved when the modal closes.
+- Browser tests added for inert behavior on dialog and drawer.
 
 ## Source Links
 
