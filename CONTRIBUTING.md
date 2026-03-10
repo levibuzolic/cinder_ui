@@ -20,11 +20,12 @@ Thanks for contributing. This guide is for humans first: the goal is to help you
 
 ```bash
 ./bin/bootstrap
+./bin/demo
 ```
 
 Notes:
 
-- `./bin/bootstrap` runs `mise trust`, `mise install`, and dependency installation for both the repo root and `demo`.
+- `./bin/bootstrap` runs `mise trust`, `mise install`, dependency installation for both the repo root and `demo`, and `mix cinder_ui.install --assets-path assets --skip-patching` in `demo`.
 - `./bin/bootstrap` also installs git hooks via `lefthook install`.
 - Root package includes `lucide_icons` as an optional dependency for `CinderUI.Icons.icon/1` and icon-backed component primitives.
 - Demo includes `lucide_icons` directly so browser/docs examples always render icon previews.

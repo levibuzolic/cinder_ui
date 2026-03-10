@@ -133,6 +133,12 @@ To re-run without overwriting customized files:
 mix cinder_ui.install --skip-existing
 ```
 
+To only (re)copy `cinder_ui.css` and `cinder_ui.js` without patching `app.css`/`app.js`:
+
+```bash
+mix cinder_ui.install --skip-patching
+```
+
 ### 4. Configure your app
 
 Add `use CinderUI` to your app's `html_helpers` in `lib/my_app_web.ex`:

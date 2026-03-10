@@ -65,6 +65,17 @@ run_node_install() {
   fi
 }
 
+run_demo_cinder_ui_install() {
+  local dir="$1"
+
+  if [[ -f "${dir}/mix.exs" ]]; then
+    echo "==> demo: mix cinder_ui.install --assets-path assets --skip-patching"
+    run_with_mise "$dir" mix cinder_ui.install --assets-path assets --skip-patching
+  else
+    echo "==> demo: no mix.exs found, skipping Cinder UI asset install"
+  fi
+}
+
 require_cmd mise
 
 echo "Bootstrapping repository at ${ROOT_DIR}"
@@ -76,6 +87,7 @@ run_mix_deps_get "$DEMO_DIR" "demo"
 
 run_node_install "$ROOT_DIR" "root"
 run_node_install "$DEMO_DIR" "demo"
+run_demo_cinder_ui_install "$DEMO_DIR"
 
 echo "==> root: lefthook install"
 run_with_mise "$ROOT_DIR" lefthook install

@@ -68,8 +68,14 @@ defmodule Demo.MixProject do
     [
       setup: ["deps.get", "assets.setup", "assets.build"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["compile", "tailwind demo", "esbuild demo"],
+      "assets.build": [
+        "cinder_ui.install --assets-path assets --skip-patching",
+        "compile",
+        "tailwind demo",
+        "esbuild demo"
+      ],
       "assets.deploy": [
+        "cinder_ui.install --assets-path assets --skip-patching",
         "tailwind demo --minify",
         "esbuild demo --minify",
         "phx.digest"
