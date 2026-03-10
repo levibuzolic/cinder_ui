@@ -1,9 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:petal.build)",
       "Bash(mix compile:*)",
-      "Bash(mix test:*)"
+      "Bash(mix test:*)",
+      "WebSearch",
+      "WebFetch(domain:hexdocs.pm)"
     ]
   }
 }

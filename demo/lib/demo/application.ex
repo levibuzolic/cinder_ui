@@ -11,7 +11,9 @@ defmodule Demo.Application do
       [
         {DNSCluster, query: Application.get_env(:demo, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: Demo.PubSub},
-        if(Application.get_env(:demo, DemoWeb.Endpoint)[:code_reloader], do: Demo.CatalogReloader),
+        if(Application.get_env(:demo, DemoWeb.Endpoint)[:code_reloader],
+          do: Demo.CatalogReloader
+        ),
         DemoWeb.Endpoint
       ]
       |> Enum.reject(&is_nil/1)
