@@ -1,8 +1,35 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
 
 const fixedPreviewWidthPx = 550
+const screenshotCss = `
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    caret-color: transparent !important;
+  }
+
+  body, button, input, select, textarea {
+    font-family: Arial, Helvetica, sans-serif !important;
+  }
+
+  code, pre {
+    font-family: "Courier New", monospace !important;
+  }
+
+  [data-component-example] [data-slot="preview"] {
+    width: ${fixedPreviewWidthPx}px !important;
+    min-width: ${fixedPreviewWidthPx}px !important;
+    max-width: ${fixedPreviewWidthPx}px !important;
+    overflow: hidden !important;
+  }
+`
 
 const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+
+const gotoWithStableStyles = async (page: Page, path: string) => {
+  await page.goto(path)
+  await page.addStyleTag({ content: screenshotCss })
+}
 
 test.describe("promoted example visual regression", () => {
   test.use({
@@ -16,35 +43,10 @@ test.describe("promoted example visual regression", () => {
       localStorage.setItem("cui:theme:color", "neutral")
       localStorage.setItem("cui:theme:radius", "nova")
     })
-
-    await page.addStyleTag({
-      content: `
-        *, *::before, *::after {
-          animation: none !important;
-          transition: none !important;
-          caret-color: transparent !important;
-        }
-
-        body, button, input, select, textarea {
-          font-family: Arial, Helvetica, sans-serif !important;
-        }
-
-        code, pre {
-          font-family: "Courier New", monospace !important;
-        }
-
-        [data-component-example] [data-slot="preview"] {
-          width: ${fixedPreviewWidthPx}px !important;
-          min-width: ${fixedPreviewWidthPx}px !important;
-          max-width: ${fixedPreviewWidthPx}px !important;
-          overflow: hidden !important;
-        }
-      `,
-    })
   })
 
   test("captures docs examples marked with the vrt fence flag", async ({ page }) => {
-    await page.goto("/docs/")
+    await gotoWithStableStyles(page, "/docs/")
 
     const componentPaths = await page.locator("nav[aria-label='Component sections'] a[href^='/docs/']").evaluateAll(
       (links) =>
@@ -60,7 +62,7 @@ test.describe("promoted example visual regression", () => {
     const promotedExamples: Array<{ componentId: string; exampleId: string; exampleTitle: string; path: string }> = []
 
     for (const path of componentPaths) {
-      await page.goto(path)
+      await gotoWithStableStyles(page, path)
 
       const examples = await page.locator("[data-component-example][data-promoted-visual]").evaluateAll((nodes) =>
         nodes.map((node) => ({
@@ -76,7 +78,7 @@ test.describe("promoted example visual regression", () => {
     expect(promotedExamples.length).toBeGreaterThan(0)
 
     for (const { componentId, exampleId, exampleTitle, path } of promotedExamples) {
-      await page.goto(path)
+      await gotoWithStableStyles(page, path)
 
       const example = page.locator(
         `[data-component-example][data-component-id="${componentId}"][data-example-id="${exampleId}"][data-promoted-visual]`,
