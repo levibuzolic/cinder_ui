@@ -28,9 +28,12 @@ defmodule Demo.SiteRenderer do
       body_content: docs_index_body(sections, root_prefix),
       sections: sections,
       active_entry_id: nil,
+      active_page: :overview,
       root_prefix: root_prefix,
       home_url: "../",
-      asset_prefix: asset_prefix
+      asset_prefix: asset_prefix,
+      github_url: SiteRuntime.github_url(),
+      hex_package_url: SiteRuntime.hex_package_url()
     )
   end
 
@@ -45,9 +48,12 @@ defmodule Demo.SiteRenderer do
       body_content: docs_component_body(entry, sections, root_prefix),
       sections: sections,
       active_entry_id: entry.id,
+      active_page: nil,
       root_prefix: root_prefix,
       home_url: "../../",
-      asset_prefix: asset_prefix
+      asset_prefix: asset_prefix,
+      github_url: SiteRuntime.github_url(),
+      hex_package_url: SiteRuntime.hex_package_url()
     )
   end
 
@@ -62,9 +68,12 @@ defmodule Demo.SiteRenderer do
       body_content: install_body(),
       sections: sections,
       active_entry_id: nil,
+      active_page: :install,
       root_prefix: root_prefix,
       home_url: "../../",
-      asset_prefix: asset_prefix
+      asset_prefix: asset_prefix,
+      github_url: SiteRuntime.github_url(),
+      hex_package_url: SiteRuntime.hex_package_url()
     )
   end
 
@@ -75,9 +84,12 @@ defmodule Demo.SiteRenderer do
       body_content: opts[:body_content],
       sections: opts[:sections],
       active_entry_id: opts[:active_entry_id],
+      active_page: opts[:active_page],
       root_prefix: opts[:root_prefix],
       home_url: opts[:home_url],
-      asset_prefix: opts[:asset_prefix]
+      asset_prefix: opts[:asset_prefix],
+      github_url: opts[:github_url],
+      hex_package_url: opts[:hex_package_url]
     }
 
     ~H"""
@@ -97,9 +109,10 @@ defmodule Demo.SiteRenderer do
           mode={:static}
           root_prefix={@root_prefix}
           active_entry_id={@active_entry_id}
+          active_page={@active_page}
           home_url={@home_url}
-          github_url={project_source_url()}
-          hex_package_url="https://hex.pm/packages/cinder_ui"
+          github_url={@github_url}
+          hex_package_url={@hex_package_url}
         >
           {rendered(@body_content)}
         </UIComponents.docs_layout>
@@ -158,7 +171,7 @@ defmodule Demo.SiteRenderer do
 
       <h2 id="prerequisites">Prerequisites</h2>
       <p>You need an existing Phoenix 1.7+ project. If you don't have one yet:</p>
-      <pre><code>{"mix phx.new my_app\ncd my_app"}</code></pre>
+      <pre><code class="language-bash">{"mix phx.new my_app\ncd my_app"}</code></pre>
 
       <h2 id="tailwind-css">1. Set up Tailwind CSS</h2>
       <p>
@@ -176,7 +189,7 @@ defmodule Demo.SiteRenderer do
       <p>Add Tailwind to the deployment alias in <code>mix.exs</code>:</p>
       <pre><code class="language-elixir">{"defp aliases do\n  [\n    \"assets.deploy\": [\n      \"tailwind my_app --minify\",\n      \"esbuild my_app --minify\",\n      \"phx.digest\"\n    ]\n  ]\nend"}</code></pre>
       <p>Install Tailwind and fetch dependencies:</p>
-      <pre><code>{"mix deps.get\nmix tailwind.install"}</code></pre>
+      <pre><code class="language-bash">{"mix deps.get\nmix tailwind.install"}</code></pre>
       <p>Set up <code>assets/css/app.css</code>:</p>
       <pre><code class="language-css">@import "tailwindcss";</code></pre>
       <p>
@@ -189,14 +202,14 @@ defmodule Demo.SiteRenderer do
       <p>Add the dependency to your <code>mix.exs</code>:</p>
       <pre><code class="language-elixir">{"defp deps do\n  [\n    {:cinder_ui, \"~> 0.1.0\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.0\"},\n    # ...\n  ]\nend"}</code></pre>
       <p>Fetch dependencies:</p>
-      <pre><code>mix deps.get</code></pre>
+      <pre><code class="language-bash">mix deps.get</code></pre>
 
       <h2 id="run-installer">3. Run the installer</h2>
       <p>
         Cinder UI includes a Mix task that sets up CSS, JavaScript hooks,
         and Tailwind plugins automatically:
       </p>
-      <pre><code>mix cinder_ui.install</code></pre>
+      <pre><code class="language-bash">mix cinder_ui.install</code></pre>
       <p>This will:</p>
       <ul>
         <li>
@@ -224,9 +237,9 @@ defmodule Demo.SiteRenderer do
       <p>
         The installer auto-detects your package manager (npm, pnpm, yarn, or bun). To specify one explicitly:
       </p>
-      <pre><code>mix cinder_ui.install --package-manager pnpm</code></pre>
+      <pre><code class="language-bash">mix cinder_ui.install --package-manager pnpm</code></pre>
       <p>To re-run without overwriting customized files:</p>
-      <pre><code>mix cinder_ui.install --skip-existing</code></pre>
+      <pre><code class="language-bash">mix cinder_ui.install --skip-existing</code></pre>
 
       <h2 id="configure-app">4. Configure your app</h2>
       <p>
@@ -240,7 +253,7 @@ defmodule Demo.SiteRenderer do
 
       <h2 id="verify">5. Start building</h2>
       <p>Start your Phoenix server:</p>
-      <pre><code>mix phx.server</code></pre>
+      <pre><code class="language-bash">mix phx.server</code></pre>
       <p>Try a component in any template:</p>
       <pre><code class="language-heex">&lt;.button&gt;Click me&lt;/.button&gt;</code></pre>
     </div>
@@ -254,10 +267,5 @@ defmodule Demo.SiteRenderer do
     rendered
     |> Safe.to_iodata()
     |> IO.iodata_to_binary()
-  end
-
-  defp project_source_url do
-    Mix.Project.config()[:source_url]
-    |> to_string()
   end
 end

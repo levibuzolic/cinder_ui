@@ -34,6 +34,7 @@ defmodule CinderUI.Docs.UIComponents do
   attr :mode, :atom, default: :static
   attr :root_prefix, :string, default: "."
   attr :active_entry_id, :string, default: nil
+  attr :active_page, :atom, default: nil
 
   attr :home_url, :string, default: nil
   attr :github_url, :string, default: nil
@@ -72,6 +73,7 @@ defmodule CinderUI.Docs.UIComponents do
             mode={@mode}
             root_prefix={@root_prefix}
             active_entry_id={@active_entry_id}
+            active_page={@active_page}
           />
         </nav>
         <script>
@@ -134,9 +136,19 @@ defmodule CinderUI.Docs.UIComponents do
     ~H"""
     <div>
       <a
+        href={install_href(@mode, @root_prefix)}
+        class={sidebar_link_class(@active_page == :install)}
+        aria-current={if @active_page == :install, do: "page", else: nil}
+      >
+        Installation
+      </a>
+    </div>
+
+    <div>
+      <a
         href={overview_href(@mode, @root_prefix)}
-        class={sidebar_link_class(is_nil(@active_entry_id))}
-        aria-current={if is_nil(@active_entry_id), do: "page", else: nil}
+        class={sidebar_link_class(@active_page == :overview)}
+        aria-current={if @active_page == :overview, do: "page", else: nil}
       >
         Overview
       </a>
@@ -144,7 +156,10 @@ defmodule CinderUI.Docs.UIComponents do
 
     <%= for section <- @sections do %>
       <div>
-        <a href={section_href(@mode, @root_prefix, section.id)} class="sidebar-section-link text-sm font-semibold">
+        <a
+          href={section_href(@mode, @root_prefix, section.id)}
+          class="sidebar-section-link text-sm font-semibold"
+        >
           {section.title}
         </a>
         <ul class="mt-2 space-y-1">
@@ -256,7 +271,12 @@ defmodule CinderUI.Docs.UIComponents do
       <section id={section.id} class="mb-12">
         <h3 class="mb-4 text-xl font-semibold">{section.title}</h3>
         <div class="grid gap-4 md:grid-cols-2">
-          <.docs_overview_entry :for={entry <- section.entries} entry={entry} mode={@mode} root_prefix={@root_prefix} />
+          <.docs_overview_entry
+            :for={entry <- section.entries}
+            entry={entry}
+            mode={@mode}
+            root_prefix={@root_prefix}
+          />
         </div>
       </section>
     <% end %>
@@ -303,14 +323,18 @@ defmodule CinderUI.Docs.UIComponents do
     </section>
 
     <section :if={@residual_docs != ""} class="mb-6">
-      <div class="space-y-3 text-sm docs-markdown">{rendered(summary_markdown_html(@residual_docs))}</div>
+      <div class="space-y-3 text-sm docs-markdown">
+        {rendered(summary_markdown_html(@residual_docs))}
+      </div>
     </section>
 
     <section class="mb-8 space-y-4">
       <%= for {example, index} <- Enum.with_index(@entry.examples, 1) do %>
         <section class="mb-10">
           <header>
-            <h3 class="text-sm font-semibold">{example_heading(example.title, index, length(@entry.examples))}</h3>
+            <h3 class="text-sm font-semibold">
+              {example_heading(example.title, index, length(@entry.examples))}
+            </h3>
             <p
               :if={is_binary(example.description) and example.description != ""}
               class="text-muted-foreground mt-1 text-xs"
@@ -387,7 +411,10 @@ defmodule CinderUI.Docs.UIComponents do
                     —
                   <% else %>
                     <%= for {value, idx} <- Enum.with_index(attr.values) do %>
-                      <%= if idx > 0 do %>, <% end %><code>{inspect(value)}</code>
+                      <%= if idx > 0 do %>
+                        ,
+                      <% end %>
+                      <code>{inspect(value)}</code>
                     <% end %>
                   <% end %>
                 </td>
@@ -396,7 +423,10 @@ defmodule CinderUI.Docs.UIComponents do
                     —
                   <% else %>
                     <%= for {include, idx} <- Enum.with_index(attr.includes) do %>
-                      <%= if idx > 0 do %>, <% end %><code>{include}</code>
+                      <%= if idx > 0 do %>
+                        ,
+                      <% end %>
+                      <code>{include}</code>
                     <% end %>
                   <% end %>
                 </td>
@@ -463,11 +493,15 @@ defmodule CinderUI.Docs.UIComponents do
       |> assign(
         :preview_classes,
         if(assigns.entry.preview_align == :center,
-          do: "bg-background border-border/70 flex min-h-[7rem] flex-1 px-4 py-4 items-center justify-center",
+          do:
+            "bg-background border-border/70 flex min-h-[7rem] flex-1 px-4 py-4 items-center justify-center",
           else: "bg-background border-border/70 flex min-h-[7rem] flex-1 px-4 py-4"
         )
       )
-      |> assign(:entry_href, overview_entry_href(assigns.mode, assigns.root_prefix, assigns.entry))
+      |> assign(
+        :entry_href,
+        overview_entry_href(assigns.mode, assigns.root_prefix, assigns.entry)
+      )
 
     ~H"""
     <article
@@ -476,58 +510,56 @@ defmodule CinderUI.Docs.UIComponents do
       data-component-name={@entry.title}
     >
       <Layout.card class="h-full gap-0 py-0">
-      <Layout.card_header class="border-border/70 border-b px-4 py-3">
-        <div class="flex flex-wrap items-start justify-between gap-2">
-          <h4 class="font-medium">
-            <a href={@entry_href} class="hover:underline underline-offset-4">
-              <code>{@entry.module_name}.{@entry.title}</code>
-            </a>
-          </h4>
-          <div class="flex items-center gap-1">
-            <Actions.button
-              as="a"
-              href={@entry_href}
-              variant={:outline}
-              size={:xs}
-            >
-              Open docs
-            </Actions.button>
+        <Layout.card_header class="border-border/70 border-b px-4 py-3">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <h4 class="font-medium">
+              <a href={@entry_href} class="hover:underline underline-offset-4">
+                <code>{@entry.module_name}.{@entry.title}</code>
+              </a>
+            </h4>
+            <div class="flex items-center gap-1">
+              <Actions.button
+                as="a"
+                href={@entry_href}
+                variant={:outline}
+                size={:xs}
+              >
+                Open docs
+              </Actions.button>
+            </div>
           </div>
-        </div>
-        <div class="docs-markdown mt-2 text-sm">{rendered(@docs_html)}</div>
-      </Layout.card_header>
+          <div class="docs-markdown mt-2 text-sm">{rendered(@docs_html)}</div>
+        </Layout.card_header>
 
-      <Layout.card_content
-        class={@preview_classes}
-      >
-        <div
-          data-preview-align={@preview_align}
-          class={["w-full", @preview_align == :center && "flex justify-center"]}
-        >
-          {rendered(@entry.preview_html)}
+        <Layout.card_content class={@preview_classes}>
+          <div
+            data-preview-align={@preview_align}
+            class={["w-full", @preview_align == :center && "flex justify-center"]}
+          >
+            {rendered(@entry.preview_html)}
+          </div>
+        </Layout.card_content>
+        <div class="relative min-w-0 border-t border-b border-border/70">
+          <Actions.button
+            as="button"
+            variant={:outline}
+            size={:icon_sm}
+            data-copy-template={@entry.id}
+            aria-label="Copy HEEx"
+            title="Copy HEEx"
+            class="absolute top-2.5 right-2 z-10 bg-background/80"
+          >
+            <Icons.icon name="copy" class="size-4" />
+          </Actions.button>
+          <pre class="min-w-0 max-w-full max-h-56 overflow-x-auto overflow-y-auto p-4 pr-12 text-xs"><code id={"code-#{@entry.id}"} class="block min-w-max whitespace-pre"><%= rendered(@template_html) %></code></pre>
         </div>
-      </Layout.card_content>
-      <div class="relative min-w-0 border-t border-b border-border/70">
-        <Actions.button
-          as="button"
-          variant={:outline}
-          size={:icon_sm}
-          data-copy-template={@entry.id}
-          aria-label="Copy HEEx"
-          title="Copy HEEx"
-          class="absolute top-2.5 right-2 z-10 bg-background/80"
-        >
-          <Icons.icon name="copy" class="size-4" />
-        </Actions.button>
-        <pre class="min-w-0 max-w-full max-h-56 overflow-x-auto overflow-y-auto p-4 pr-12 text-xs"><code id={"code-#{@entry.id}"} class="block min-w-max whitespace-pre"><%= rendered(@template_html) %></code></pre>
-      </div>
-      <div class="flex flex-wrap items-center justify-between gap-2 p-4 text-xs">
-        <span class="text-muted-foreground">
-          examples: <span class="font-medium text-foreground">{@examples_count}</span>
-          · attrs: <span class="font-medium text-foreground">{@attrs_count}</span>
-          · slots: <span class="font-medium text-foreground">{@slots_count}</span>
-        </span>
-      </div>
+        <div class="flex flex-wrap items-center justify-between gap-2 p-4 text-xs">
+          <span class="text-muted-foreground">
+            examples: <span class="font-medium text-foreground">{@examples_count}</span>
+            · attrs: <span class="font-medium text-foreground">{@attrs_count}</span>
+            · slots: <span class="font-medium text-foreground">{@slots_count}</span>
+          </span>
+        </div>
       </Layout.card>
     </article>
     """
@@ -555,10 +587,15 @@ defmodule CinderUI.Docs.UIComponents do
   defp overview_href(:static, root_prefix), do: "#{root_prefix}/"
   defp overview_href(:live, _root_prefix), do: "/docs"
 
+  defp install_href(:static, root_prefix), do: "#{root_prefix}/install/"
+  defp install_href(:live, _root_prefix), do: "/docs/install"
+
   defp section_href(:static, root_prefix, section_id), do: "#{root_prefix}/##{section_id}"
   defp section_href(:live, _root_prefix, section_id), do: "/docs/##{section_id}"
 
-  defp entry_href(:static, root_prefix, entry), do: "#{root_prefix}/#{pretty_docs_path(entry.docs_path)}"
+  defp entry_href(:static, root_prefix, entry),
+    do: "#{root_prefix}/#{pretty_docs_path(entry.docs_path)}"
+
   defp entry_href(:live, _root_prefix, entry), do: "/docs/#{entry.id}/"
 
   defp overview_entry_href(:static, root_prefix, entry),

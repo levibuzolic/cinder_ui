@@ -1,4 +1,11 @@
-<Docs.docs_layout sections={@sections} mode={:live} home_url="/">
+<Docs.docs_layout
+  sections={@sections}
+  mode={:live}
+  active_page={:install}
+  home_url="/"
+  github_url={@github_url}
+  hex_package_url={@hex_package_url}
+>
   <div class="docs-markdown prose prose-neutral dark:prose-invert max-w-3xl">
     <h1>Installation</h1>
     <p>
@@ -8,7 +15,7 @@
 
     <h2 id="prerequisites">Prerequisites</h2>
     <p>You need an existing Phoenix 1.7+ project. If you don't have one yet:</p>
-    <pre><code>{"mix phx.new my_app\ncd my_app"}</code></pre>
+    <pre><code class="language-bash">{"mix phx.new my_app\ncd my_app"}</code></pre>
 
     <h2 id="tailwind-css">1. Set up Tailwind CSS</h2>
     <p>
@@ -26,7 +33,7 @@
     <p>Add Tailwind to the deployment alias in <code>mix.exs</code>:</p>
     <pre><code class="language-elixir">{"defp aliases do\n  [\n    \"assets.deploy\": [\n      \"tailwind my_app --minify\",\n      \"esbuild my_app --minify\",\n      \"phx.digest\"\n    ]\n  ]\nend"}</code></pre>
     <p>Install Tailwind and fetch dependencies:</p>
-    <pre><code>{"mix deps.get\nmix tailwind.install"}</code></pre>
+    <pre><code class="language-bash">{"mix deps.get\nmix tailwind.install"}</code></pre>
     <p>Set up <code>assets/css/app.css</code>:</p>
     <pre><code class="language-css">@import "tailwindcss";</code></pre>
     <p>
@@ -39,14 +46,14 @@
     <p>Add the dependency to your <code>mix.exs</code>:</p>
     <pre><code class="language-elixir">{"defp deps do\n  [\n    {:cinder_ui, \"~> 0.1.0\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.0\"},\n    # ...\n  ]\nend"}</code></pre>
     <p>Fetch dependencies:</p>
-    <pre><code>mix deps.get</code></pre>
+    <pre><code class="language-bash">mix deps.get</code></pre>
 
     <h2 id="run-installer">3. Run the installer</h2>
     <p>
       Cinder UI includes a Mix task that sets up CSS, JavaScript hooks,
       and Tailwind plugins automatically:
     </p>
-    <pre><code>mix cinder_ui.install</code></pre>
+    <pre><code class="language-bash">mix cinder_ui.install</code></pre>
     <p>This will:</p>
     <ul>
       <li>
@@ -74,9 +81,9 @@
     <p>
       The installer auto-detects your package manager (npm, pnpm, yarn, or bun). To specify one explicitly:
     </p>
-    <pre><code>mix cinder_ui.install --package-manager pnpm</code></pre>
+    <pre><code class="language-bash">mix cinder_ui.install --package-manager pnpm</code></pre>
     <p>To re-run without overwriting customized files:</p>
-    <pre><code>mix cinder_ui.install --skip-existing</code></pre>
+    <pre><code class="language-bash">mix cinder_ui.install --skip-existing</code></pre>
 
     <h2 id="configure-app">4. Configure your app</h2>
     <p>
@@ -90,7 +97,7 @@
 
     <h2 id="verify">5. Start building</h2>
     <p>Start your Phoenix server:</p>
-    <pre><code>mix phx.server</code></pre>
+    <pre><code class="language-bash">mix phx.server</code></pre>
     <p>Try a component in any template:</p>
     <pre><code class="language-heex">&lt;.button&gt;Click me&lt;/.button&gt;</code></pre>
   </div>
