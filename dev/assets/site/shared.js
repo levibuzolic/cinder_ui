@@ -1,5 +1,9 @@
 (() => {
   const keywordPattern = /^(true|false|nil|do|end|fn|if|else|case|when|with|for|in)$/
+  const elixirKeywordPattern =
+    /^(true|false|nil|do|end|fn|if|else|case|when|with|for|in|def|defp|defmodule|use|alias|import|require|quote|unquote|try|catch|rescue|receive|after|cond)$/
+  const cssKeywordPattern =
+    /^(auto|inherit|initial|unset|none|block|inline|flex|grid|relative|absolute|fixed|sticky|rem|em|vh|vw|min|max)$/
   const qs = (selector) => Array.from(document.querySelectorAll(selector))
   const escapeHtml = (value) =>
     value
@@ -248,6 +252,269 @@
     return out
   }
 
+  const highlightElixir = (source) => {
+    let out = ""
+    let i = 0
+
+    while (i < source.length) {
+      const char = source[i]
+
+      if (char === "#") {
+        let j = i + 1
+        while (j < source.length && source[j] !== "\n") j += 1
+        out += `<span class="tok-comment">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (char === '"' || char === "'") {
+        let j = i + 1
+        while (j < source.length) {
+          if (source[j] === "\\") {
+            j += 2
+            continue
+          }
+          if (source[j] === char) {
+            j += 1
+            break
+          }
+          j += 1
+        }
+        out += `<span class="tok-string">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (char === ":" && /[A-Za-z_]/.test(source[i + 1] || "")) {
+        let j = i + 2
+        while (j < source.length && /[A-Za-z0-9_?!]/.test(source[j])) j += 1
+        out += `<span class="tok-atom">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (/[0-9]/.test(char)) {
+        let j = i + 1
+        while (j < source.length && /[0-9._]/.test(source[j])) j += 1
+        out += `<span class="tok-number">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (/[A-Z]/.test(char)) {
+        let j = i + 1
+        while (j < source.length && /[A-Za-z0-9_.]/.test(source[j])) j += 1
+        out += `<span class="tok-tag">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (/[a-z_]/.test(char)) {
+        let j = i + 1
+        while (j < source.length && /[A-Za-z0-9_?!]/.test(source[j])) j += 1
+        const word = source.slice(i, j)
+        const klass = elixirKeywordPattern.test(word) ? "tok-keyword" : "tok-ident"
+        out += `<span class="${klass}">${escapeHtml(word)}</span>`
+        i = j
+        continue
+      }
+
+      if (/[=+\-*/<>!|&]/.test(char)) {
+        let j = i + 1
+        while (j < source.length && /[=+\-*/<>!|&]/.test(source[j])) j += 1
+        out += `<span class="tok-operator">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (/[()[\]{}.,%]/.test(char)) {
+        out += `<span class="tok-punct">${escapeHtml(char)}</span>`
+        i += 1
+        continue
+      }
+
+      out += escapeHtml(char)
+      i += 1
+    }
+
+    return out
+  }
+
+  const highlightCss = (source) => {
+    let out = ""
+    let i = 0
+
+    while (i < source.length) {
+      if (source.startsWith("/*", i)) {
+        const end = source.indexOf("*/", i + 2)
+        const j = end === -1 ? source.length : end + 2
+        out += `<span class="tok-comment">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      const char = source[i]
+
+      if (char === '"' || char === "'") {
+        let j = i + 1
+        while (j < source.length) {
+          if (source[j] === "\\") {
+            j += 2
+            continue
+          }
+          if (source[j] === char) {
+            j += 1
+            break
+          }
+          j += 1
+        }
+        out += `<span class="tok-string">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (char === "-" && source[i + 1] === "-") {
+        let j = i + 2
+        while (j < source.length && /[A-Za-z0-9-]/.test(source[j])) j += 1
+        out += `<span class="tok-attr">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (/[0-9]/.test(char)) {
+        let j = i + 1
+        while (j < source.length && /[0-9.%a-zA-Z_-]/.test(source[j])) j += 1
+        out += `<span class="tok-number">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (/[A-Za-z@.#]/.test(char)) {
+        let j = i + 1
+        while (j < source.length && /[A-Za-z0-9@._#-]/.test(source[j])) j += 1
+        const word = source.slice(i, j)
+        const next = source[j] || ""
+        const klass = next === ":" ? "tok-attr" : cssKeywordPattern.test(word) ? "tok-keyword" : "tok-ident"
+        out += `<span class="${klass}">${escapeHtml(word)}</span>`
+        i = j
+        continue
+      }
+
+      if (/[{}():;,]/.test(char)) {
+        out += `<span class="tok-punct">${escapeHtml(char)}</span>`
+        i += 1
+        continue
+      }
+
+      out += escapeHtml(char)
+      i += 1
+    }
+
+    return out
+  }
+
+  const highlightBash = (source) => {
+    let out = ""
+    let i = 0
+
+    while (i < source.length) {
+      const char = source[i]
+
+      if (char === "#") {
+        let j = i + 1
+        while (j < source.length && source[j] !== "\n") j += 1
+        out += `<span class="tok-comment">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (char === '"' || char === "'") {
+        let j = i + 1
+        while (j < source.length) {
+          if (source[j] === "\\") {
+            j += 2
+            continue
+          }
+          if (source[j] === char) {
+            j += 1
+            break
+          }
+          j += 1
+        }
+        out += `<span class="tok-string">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (char === "$" && /[A-Za-z_{]/.test(source[i + 1] || "")) {
+        let j = i + 1
+        if (source[j] === "{") {
+          j += 1
+          while (j < source.length && source[j] !== "}") j += 1
+          if (source[j] === "}") j += 1
+        } else {
+          while (j < source.length && /[A-Za-z0-9_]/.test(source[j])) j += 1
+        }
+        out += `<span class="tok-atom">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (char === "-" && source[i + 1] === "-") {
+        let j = i + 2
+        while (j < source.length && /[A-Za-z0-9-]/.test(source[j])) j += 1
+        out += `<span class="tok-attr">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (/[0-9]/.test(char)) {
+        let j = i + 1
+        while (j < source.length && /[0-9._]/.test(source[j])) j += 1
+        out += `<span class="tok-number">${escapeHtml(source.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      if (/[A-Za-z_./]/.test(char)) {
+        let j = i + 1
+        while (j < source.length && /[A-Za-z0-9_./:-]/.test(source[j])) j += 1
+        const word = source.slice(i, j)
+        const klass = /^(mix|cd|npm|pnpm|yarn|bun)$/.test(word) ? "tok-keyword" : "tok-ident"
+        out += `<span class="${klass}">${escapeHtml(word)}</span>`
+        i = j
+        continue
+      }
+
+      if (/[|&=]/.test(char)) {
+        out += `<span class="tok-operator">${escapeHtml(char)}</span>`
+        i += 1
+        continue
+      }
+
+      if (/[()[\]{}]/.test(char)) {
+        out += `<span class="tok-punct">${escapeHtml(char)}</span>`
+        i += 1
+        continue
+      }
+
+      out += escapeHtml(char)
+      i += 1
+    }
+
+    return out
+  }
+
+  const blockLanguage = (block, source) => {
+    const classes = Array.from(block.classList)
+    const explicit = classes.find((klass) => klass.startsWith("language-"))
+
+    if (explicit) return explicit.replace("language-", "")
+    if (source.includes("<.") || source.includes("</.") || source.includes("<:") || source.includes("</:")) return "heex"
+
+    return "plain"
+  }
+
   const highlightCodeBlocks = () => {
     qs("pre code").forEach((block) => {
       if (block.dataset.highlighted === "true") return
@@ -255,10 +522,25 @@
       const source = block.textContent || ""
       if (source.trim() === "") return
 
-      const isHeexLike =
-        source.includes("<.") || source.includes("</.") || source.includes("<:") || source.includes("</:")
+      switch (blockLanguage(block, source)) {
+        case "heex":
+          block.innerHTML = highlightHeex(source)
+          break
+        case "elixir":
+          block.innerHTML = highlightElixir(source)
+          break
+        case "css":
+          block.innerHTML = highlightCss(source)
+          break
+        case "bash":
+        case "shell":
+        case "sh":
+          block.innerHTML = highlightBash(source)
+          break
+        default:
+          block.innerHTML = escapeHtml(source)
+      }
 
-      block.innerHTML = isHeexLike ? highlightHeex(source) : escapeHtml(source)
       block.classList.add("code-highlight")
       block.dataset.highlighted = "true"
     })

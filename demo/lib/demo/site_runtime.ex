@@ -7,6 +7,8 @@ defmodule Demo.SiteRuntime do
   @docs_assets_dir Path.join(@repo_root, "dev/assets/docs")
   @site_assets_dir Path.join(@repo_root, "dev/assets/site")
   @theme_css_fallback Path.expand("../../priv/static/assets/css/app.css", __DIR__)
+  @github_url "https://github.com/levibuzolic/cinder_ui"
+  @hex_package_url "https://hex.pm/packages/cinder_ui"
 
   @catalog_sections_key {__MODULE__, :catalog_sections}
   @catalog_count_key {__MODULE__, :catalog_count}
@@ -64,6 +66,10 @@ defmodule Demo.SiteRuntime do
         "/docs/#{entry.id}/"
       end)
   end
+
+  def github_url, do: @github_url
+
+  def hex_package_url, do: @hex_package_url
 
   def clear_catalog_cache do
     :persistent_term.erase(@catalog_sections_key)

@@ -1,4 +1,11 @@
-<Docs.docs_layout sections={@sections} mode={:live} home_url="/">
+<Docs.docs_layout
+  sections={@sections}
+  mode={:live}
+  active_page={:overview}
+  home_url="/"
+  github_url={@github_url}
+  hex_package_url={@hex_package_url}
+>
   <Docs.docs_overview_intro component_count={@component_count} show_count={true} />
   <Docs.docs_overview_sections sections={@sections} mode={:live} />
 </Docs.docs_layout>

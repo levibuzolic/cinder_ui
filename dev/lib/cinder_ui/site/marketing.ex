@@ -90,7 +90,7 @@ defmodule CinderUI.Site.Marketing do
       shadcn_url: shadcn_url,
       hero_html: hero_html(version, component_count, shadcn_url, docs_path),
       component_examples_html: component_examples_html(shadcn_url),
-      install_html: install_html(version),
+      install_html: install_html(version, docs_path),
       theme_tokens_html: theme_tokens_html(),
       features_html: features_html(shadcn_url),
       theme_toggle_script: theme_toggle_script()
@@ -154,7 +154,8 @@ defmodule CinderUI.Site.Marketing do
       version: version,
       component_count: component_count,
       shadcn_url: shadcn_url,
-      docs_path: docs_path
+      docs_path: docs_path,
+      install_docs_path: Path.join(docs_path, "install/")
     }
 
     ~H"""
@@ -188,6 +189,9 @@ defmodule CinderUI.Site.Marketing do
           <div class="flex flex-wrap gap-2">
             <Actions.button as="a" href={@docs_path}>
               Browse Component Library
+            </Actions.button>
+            <Actions.button as="a" variant={:outline} href={@install_docs_path}>
+              Installation Guide
             </Actions.button>
             <Actions.button as="a" variant={:outline} href="#install">
               Quick Start
@@ -391,7 +395,7 @@ defmodule CinderUI.Site.Marketing do
     """
   end
 
-  defp install_html(version) do
+  defp install_html(version, docs_path) do
     deps_code = """
     def deps do
       [
@@ -406,11 +410,18 @@ defmodule CinderUI.Site.Marketing do
     mix cinder_ui.install --skip-existing
     """
 
-    assigns = %{deps_code: deps_code, terminal_code: terminal_code}
+    assigns = %{
+      deps_code: deps_code,
+      terminal_code: terminal_code,
+      install_docs_path: Path.join(docs_path, "install/")
+    }
 
     ~H"""
     <section id="install" class="space-y-3">
       <h2 class="text-2xl font-semibold tracking-tight">Install in your Phoenix app</h2>
+      <p class="text-sm text-muted-foreground">
+        Need the full setup flow? <a href={@install_docs_path} class="underline underline-offset-4">Read the installation guide</a>.
+      </p>
       <div class="space-y-2">
         <p class="text-sm font-medium text-foreground">1) Add dependencies to <code>mix.exs</code></p>
         <DataDisplay.code_block>{@deps_code}</DataDisplay.code_block>
@@ -494,7 +505,8 @@ defmodule CinderUI.Site.Marketing do
       features: [
         %{
           title: "Phoenix-native API",
-          body_html: "Typed HEEx function components with predictable attrs/slots and composable primitives."
+          body_html:
+            "Typed HEEx function components with predictable attrs/slots and composable primitives."
         },
         %{
           title: "Fast app integration",
@@ -508,7 +520,8 @@ defmodule CinderUI.Site.Marketing do
         },
         %{
           title: "Production confidence",
-          body_html: "Unit, browser, and visual regression coverage keeps components stable as your app evolves."
+          body_html:
+            "Unit, browser, and visual regression coverage keeps components stable as your app evolves."
         }
       ]
     }

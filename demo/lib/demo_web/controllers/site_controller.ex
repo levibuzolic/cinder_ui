@@ -14,7 +14,9 @@ defmodule DemoWeb.SiteController do
     else
       render(conn, :docs_index,
         sections: SiteRuntime.catalog_sections(),
-        component_count: SiteRuntime.catalog_component_count()
+        component_count: SiteRuntime.catalog_component_count(),
+        github_url: SiteRuntime.github_url(),
+        hex_package_url: SiteRuntime.hex_package_url()
       )
     end
   end
@@ -23,7 +25,11 @@ defmodule DemoWeb.SiteController do
     if static_render?(params) do
       render_html(conn, SiteRenderer.install_html())
     else
-      render(conn, :install, sections: SiteRuntime.catalog_sections())
+      render(conn, :install,
+        sections: SiteRuntime.catalog_sections(),
+        github_url: SiteRuntime.github_url(),
+        hex_package_url: SiteRuntime.hex_package_url()
+      )
     end
   end
 
@@ -38,7 +44,9 @@ defmodule DemoWeb.SiteController do
         else
           render(conn, :component,
             sections: SiteRuntime.catalog_sections(),
-            entry: entry
+            entry: entry,
+            github_url: SiteRuntime.github_url(),
+            hex_package_url: SiteRuntime.hex_package_url()
           )
         end
     end
