@@ -1,3 +1,24 @@
+// -----------------------------------------------------------------------------
+// MARK: Constants
+// -----------------------------------------------------------------------------
+
+/** Custom event name used for imperative component commands. */
+const COMMAND_EVENT = "cinder-ui:command"
+
+/** Selector matching all natively focusable, non-disabled elements. */
+const FOCUSABLE_SELECTOR =
+  "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
+
+// -----------------------------------------------------------------------------
+// MARK: Utilities
+// -----------------------------------------------------------------------------
+
+/**
+ * Toggle an element's visibility by adding/removing the `hidden` class and
+ * setting `data-state` to `"open"` or `"closed"`.
+ * @param {HTMLElement | null} el
+ * @param {boolean} visible
+ */
 const toggleVisibility = (el, visible) => {
   if (!el) return
   if (visible) {
@@ -9,18 +30,43 @@ const toggleVisibility = (el, visible) => {
   }
 }
 
+/**
+ * Walk up from `target` to find the nearest ancestor matching `selector`.
+ * Returns the matched element or `null`.
+ * @param {EventTarget | null} target
+ * @param {string} selector
+ * @returns {HTMLElement | null}
+ */
 const clickClosest = (target, selector) => target && target.closest(selector)
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
-const COMMAND_EVENT = "cinder-ui:command"
-const FOCUSABLE_SELECTOR =
-  "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
 
+/**
+ * Clamp `value` between `min` and `max` (inclusive).
+ * @param {number} value
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
+
+/**
+ * Parse a string as a percentage number, returning `fallback` when the value
+ * is empty or not a finite number.
+ * @param {string | null | undefined} value
+ * @param {number} fallback
+ * @returns {number}
+ */
 const parsePercentage = (value, fallback) => {
   if (value === null || value === undefined || value === "") return fallback
   const parsed = Number.parseFloat(value)
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
+/**
+ * Normalize an array of percentage values so they sum to 100.
+ * If the total is zero or negative, distributes equally.
+ * @param {number[]} values
+ * @returns {number[]}
+ */
 const normalizePercentages = (values) => {
   if (!values.length) return values
   const total = values.reduce((sum, value) => sum + value, 0)
@@ -28,6 +74,20 @@ const normalizePercentages = (values) => {
   return values.map((value) => (value / total) * 100)
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Command System
+// -----------------------------------------------------------------------------
+
+/**
+ * Register a listener for {@link COMMAND_EVENT} on `root`.
+ *
+ * Commands are dispatched as `CustomEvent` instances whose `detail.command`
+ * string is looked up in the `handlers` map.
+ *
+ * @param {HTMLElement} root - Element to listen on (events do not bubble).
+ * @param {Record<string, (detail: object) => void>} handlers
+ * @returns {() => void} Cleanup function that removes the listener.
+ */
 const registerCommandListener = (root, handlers) => {
   const onCommand = (event) => {
     const command = event.detail?.command
@@ -43,6 +103,19 @@ const registerCommandListener = (root, handlers) => {
   return () => root.removeEventListener(COMMAND_EVENT, onCommand)
 }
 
+/**
+ * Dispatch a command to a component's root element.
+ *
+ * @example
+ * ```js
+ * CinderUI.dispatchCommand(selectEl, "open")
+ * CinderUI.dispatchCommand(dialogEl, "close")
+ * ```
+ *
+ * @param {HTMLElement | null} target
+ * @param {string} command
+ * @param {object} [detail={}]
+ */
 const dispatchCommand = (target, command, detail = {}) => {
   if (!target) return
   target.dispatchEvent(
@@ -53,9 +126,24 @@ const dispatchCommand = (target, command, detail = {}) => {
   )
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Focus Management
+// -----------------------------------------------------------------------------
+
+/**
+ * Return all focusable, visible elements inside `root`.
+ * @param {HTMLElement | null} root
+ * @returns {HTMLElement[]}
+ */
 const getFocusableElements = (root) =>
   root ? Array.from(root.querySelectorAll(FOCUSABLE_SELECTOR)).filter((el) => !el.hasAttribute("hidden")) : []
 
+/**
+ * Focus the first focusable element inside `root`. Falls back to focusing
+ * `root` itself if no focusable children exist.
+ * @param {HTMLElement | null} root
+ * @returns {boolean} Whether an element was focused.
+ */
 const focusFirst = (root) => {
   const first = getFocusableElements(root)[0]
   if (first) {
@@ -71,8 +159,19 @@ const focusFirst = (root) => {
   return false
 }
 
+/**
+ * Return the first focusable element inside `root`, or `root` itself.
+ * @param {HTMLElement | null} root
+ * @returns {HTMLElement | null}
+ */
 const getFocusTarget = (root) => getFocusableElements(root)[0] || root || null
 
+/**
+ * Restore focus to `preferred` if it is still in the DOM, otherwise fall back
+ * to `fallback`.
+ * @param {HTMLElement | null} preferred
+ * @param {HTMLElement | null} fallback
+ */
 const restoreFocus = (preferred, fallback) => {
   if (preferred && document.contains(preferred) && typeof preferred.focus === "function") {
     preferred.focus()
@@ -84,6 +183,17 @@ const restoreFocus = (preferred, fallback) => {
   }
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Inert Management
+// -----------------------------------------------------------------------------
+
+/**
+ * Apply the `inert` attribute to all sibling branches of `overlayEl` up to
+ * `document.body`, effectively trapping interaction inside the overlay.
+ *
+ * @param {HTMLElement} overlayEl
+ * @returns {HTMLElement[]} Elements that were marked inert (for later cleanup).
+ */
 const applyInert = (overlayEl) => {
   const inertedElements = []
   let current = overlayEl
@@ -104,6 +214,11 @@ const applyInert = (overlayEl) => {
   return inertedElements
 }
 
+/**
+ * Remove the `inert` attribute from elements previously marked by
+ * {@link applyInert}.
+ * @param {HTMLElement[] | null} inertedElements
+ */
 const removeInert = (inertedElements) => {
   if (!inertedElements) return
   for (const el of inertedElements) {
@@ -111,6 +226,22 @@ const removeInert = (inertedElements) => {
   }
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Dialog
+// -----------------------------------------------------------------------------
+
+/**
+ * Phoenix LiveView hook for the `dialog` component.
+ *
+ * Manages open/close state, focus trapping via `inert`, and focus restoration.
+ *
+ * **Data attributes:** `data-dialog-trigger`, `data-dialog-overlay`,
+ * `data-dialog-content`, `data-dialog-close`.
+ *
+ * **Commands:** `open`, `close`, `toggle`, `focus`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiDialog = {
   mounted() {
     this.refreshElements = () => {
@@ -153,6 +284,7 @@ const CuiDialog = {
     this.sync(this.el.dataset.state === "open")
   },
 
+  /** @param {boolean} open */
   sync(open) {
     const wasOpen = this.el.dataset.state === "open"
 
@@ -192,6 +324,21 @@ const CuiDialog = {
   },
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Panel (Drawer & Sheet)
+// -----------------------------------------------------------------------------
+
+/**
+ * Factory that creates a LiveView hook for overlay panel components (drawer,
+ * sheet). Panels share identical open/close, focus-trap, and inert logic —
+ * only the data-attribute selectors differ.
+ *
+ * @param {object} config
+ * @param {string} config.triggerSelector
+ * @param {string} config.overlaySelector
+ * @param {string} config.contentSelector
+ * @returns {import("phoenix_live_view").ViewHookInterface}
+ */
 const createPanelHook = (config) => ({
   mounted() {
     this.refreshElements = () => {
@@ -234,6 +381,7 @@ const createPanelHook = (config) => ({
     this.sync(this.el.dataset.state === "open")
   },
 
+  /** @param {boolean} open */
   sync(open) {
     const wasOpen = this.el.dataset.state === "open"
 
@@ -273,18 +421,48 @@ const createPanelHook = (config) => ({
   },
 })
 
+/**
+ * Phoenix LiveView hook for the `drawer` component.
+ *
+ * **Commands:** `open`, `close`, `toggle`, `focus`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiDrawer = createPanelHook({
   triggerSelector: "[data-drawer-trigger]",
   overlaySelector: "[data-drawer-overlay]",
   contentSelector: "[data-drawer-content]",
 })
 
+/**
+ * Phoenix LiveView hook for the `sheet` component.
+ *
+ * **Commands:** `open`, `close`, `toggle`, `focus`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiSheet = createPanelHook({
   triggerSelector: "[data-sheet-trigger]",
   overlaySelector: "[data-sheet-overlay]",
   contentSelector: "[data-sheet-content]",
 })
 
+// -----------------------------------------------------------------------------
+// MARK: Popover
+// -----------------------------------------------------------------------------
+
+/**
+ * Phoenix LiveView hook for the `popover` component.
+ *
+ * Toggles a floating content panel anchored to a trigger button. Closes on
+ * outside click or Escape.
+ *
+ * **Data attributes:** `data-popover-trigger`, `data-popover-content`.
+ *
+ * **Commands:** `open`, `close`, `toggle`, `focus`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiPopover = {
   mounted() {
     this.open = false
@@ -341,6 +519,7 @@ const CuiPopover = {
     this.sync(this.open)
   },
 
+  /** @param {boolean} open */
   sync(open) {
     const wasOpen = this.open
 
@@ -369,6 +548,22 @@ const CuiPopover = {
   },
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Dropdown Menu
+// -----------------------------------------------------------------------------
+
+/**
+ * Phoenix LiveView hook for the `dropdown_menu` component.
+ *
+ * Behaviour is identical to {@link CuiPopover} but uses dropdown-specific
+ * data attributes.
+ *
+ * **Data attributes:** `data-dropdown-trigger`, `data-dropdown-content`.
+ *
+ * **Commands:** `open`, `close`, `toggle`, `focus`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiDropdownMenu = {
   mounted() {
     this.open = false
@@ -425,6 +620,7 @@ const CuiDropdownMenu = {
     this.sync(this.open)
   },
 
+  /** @param {boolean} open */
   sync(open) {
     const wasOpen = this.open
 
@@ -453,6 +649,24 @@ const CuiDropdownMenu = {
   },
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Select
+// -----------------------------------------------------------------------------
+
+/**
+ * Phoenix LiveView hook for the custom `select` component.
+ *
+ * Renders a button trigger with a listbox dropdown. Supports keyboard
+ * navigation (Arrow keys, Home, End, Enter, Space, Escape), single selection,
+ * and an optional clear button.
+ *
+ * **Data attributes:** `data-select-trigger`, `data-select-content`,
+ * `data-select-item`, `data-select-clear`.
+ *
+ * **Commands:** `open`, `close`, `toggle`, `focus`, `clear`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiSelect = {
   mounted() {
     this.open = false
@@ -464,11 +678,17 @@ const CuiSelect = {
       this.items = Array.from(this.el.querySelectorAll("[data-select-item]"))
     }
 
+    /** @returns {HTMLElement[]} Enabled (non-disabled) option items. */
     this.enabledItems = () => this.items.filter((item) => item.dataset.disabled !== "true" && !item.disabled)
 
+    /** @returns {number} Index of the currently selected item, or -1. */
     this.selectedIndex = () =>
       this.items.findIndex((item) => item.dataset.selected === "true")
 
+    /**
+     * Mark `target` as the highlighted item, clearing all others.
+     * @param {HTMLElement} target
+     */
     this.highlightItem = (target) => {
       this.items.forEach((item) => {
         const highlighted = item === target
@@ -476,6 +696,7 @@ const CuiSelect = {
       })
     }
 
+    /** Synchronize DOM state (visibility, ARIA attributes) with `this.open`. */
     this.sync = () => {
       this.el.dataset.state = this.open ? "open" : "closed"
       if (this.trigger) this.trigger.setAttribute("aria-expanded", this.open ? "true" : "false")
@@ -484,6 +705,10 @@ const CuiSelect = {
       toggleVisibility(this.content, this.open)
     }
 
+    /**
+     * Focus an item by index within the enabled items list.
+     * @param {number} index
+     */
     this.focusItem = (index) => {
       const enabledItems = this.enabledItems()
       if (!enabledItems.length) return
@@ -493,6 +718,7 @@ const CuiSelect = {
       enabledItems[nextIndex].focus()
     }
 
+    /** Open the dropdown and focus the selected or first item. */
     this.openMenu = () => {
       if (this.open) return
       this.open = true
@@ -506,12 +732,17 @@ const CuiSelect = {
       window.requestAnimationFrame(() => selectedItem && selectedItem.focus())
     }
 
+    /** Close the dropdown. */
     this.closeMenu = () => {
       if (!this.open) return
       this.open = false
       this.sync()
     }
 
+    /**
+     * Commit a selection, update the hidden input, and close the menu.
+     * @param {HTMLElement} item
+     */
     this.selectItem = (item) => {
       const value = item.dataset.value || ""
       const label = item.dataset.label || item.textContent.trim()
@@ -538,6 +769,7 @@ const CuiSelect = {
       }
     }
 
+    /** Reset to the placeholder and clear the hidden input value. */
     this.clearSelection = () => {
       const placeholder = this.el.dataset.placeholder || ""
       if (this.input) this.input.value = ""
@@ -558,6 +790,11 @@ const CuiSelect = {
       }
     }
 
+    /**
+     * Move focus by `delta` positions within the enabled items list.
+     * @param {number} delta - +1 for next, -1 for previous.
+     * @param {HTMLElement} current - Currently focused item.
+     */
     this.move = (delta, current) => {
       const enabledItems = this.enabledItems()
       if (!enabledItems.length) return
@@ -566,6 +803,8 @@ const CuiSelect = {
       const nextIndex = currentIndex === -1 ? 0 : (currentIndex + delta + enabledItems.length) % enabledItems.length
       enabledItems[nextIndex].focus()
     }
+
+    // -- Event handlers -------------------------------------------------------
 
     this.onTriggerClick = () => {
       if (this.open) {
@@ -582,6 +821,7 @@ const CuiSelect = {
       this.trigger?.focus()
     }
 
+    /** @param {KeyboardEvent} event */
     this.onTriggerKeyDown = (event) => {
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault()
@@ -603,6 +843,7 @@ const CuiSelect = {
       }
     }
 
+    /** @param {KeyboardEvent} event */
     this.onContentKeyDown = (event) => {
       const current = event.target.closest("[data-select-item]")
       if (!current) return
@@ -653,6 +894,8 @@ const CuiSelect = {
     this.onDocumentClick = (event) => {
       if (!this.el.contains(event.target)) this.closeMenu()
     }
+
+    // -- Lifecycle ------------------------------------------------------------
 
     this.bindEvents = () => {
       this.trigger && this.trigger.addEventListener("click", this.onTriggerClick)
@@ -705,6 +948,25 @@ const CuiSelect = {
   },
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Autocomplete
+// -----------------------------------------------------------------------------
+
+/**
+ * Phoenix LiveView hook for the `autocomplete` component.
+ *
+ * Combines a text input with a filterable listbox. Typing filters options
+ * client-side; selecting an option writes to a hidden input for form
+ * submission. Supports keyboard navigation and server-driven option lists
+ * via LiveView updates.
+ *
+ * **Data attributes:** `data-autocomplete-input`, `data-autocomplete-content`,
+ * `data-autocomplete-item`.
+ *
+ * **Commands:** `open`, `close`, `toggle`, `focus`, `clear`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiAutocomplete = {
   mounted() {
     this.selectedLabel = this.el.dataset.selectedLabel || ""
@@ -719,9 +981,14 @@ const CuiAutocomplete = {
       this.loading = this.el.querySelector("[data-slot='autocomplete-loading']")
     }
 
+    /** @returns {HTMLElement[]} Visible, enabled option items. */
     this.visibleItems = () =>
       this.items.filter((item) => !item.classList.contains("hidden") && item.dataset.disabled !== "true" && !item.disabled)
 
+    /**
+     * Mark `target` as the highlighted item, clearing all others.
+     * @param {HTMLElement} target
+     */
     this.highlightItem = (target) => {
       this.items.forEach((item) => {
         const highlighted = item === target
@@ -729,6 +996,7 @@ const CuiAutocomplete = {
       })
     }
 
+    /** Synchronize DOM state (visibility, ARIA attributes) with `this.open`. */
     this.sync = () => {
       this.el.dataset.state = this.open ? "open" : "closed"
       if (this.input) this.input.setAttribute("aria-expanded", this.open ? "true" : "false")
@@ -737,6 +1005,7 @@ const CuiAutocomplete = {
       toggleVisibility(this.content, this.open)
     }
 
+    /** Show or hide the "no results" empty state based on visible items. */
     this.syncEmpty = () => {
       if (!this.empty) return
       if (this.el.dataset.loading === "true") {
@@ -747,6 +1016,10 @@ const CuiAutocomplete = {
       this.empty.classList.toggle("hidden", hasVisibleItems)
     }
 
+    /**
+     * Commit a selection, update hidden and visible inputs, and close.
+     * @param {HTMLElement} item
+     */
     this.applySelection = (item) => {
       const value = item.dataset.value || ""
       const label = item.dataset.label || item.textContent.trim()
@@ -773,6 +1046,7 @@ const CuiAutocomplete = {
       }
     }
 
+    /** Filter the option list by the current input value. */
     this.filterItems = () => {
       const query = (this.input?.value || "").toLowerCase()
 
@@ -790,6 +1064,10 @@ const CuiAutocomplete = {
       this.sync()
     }
 
+    /**
+     * Move focus by `delta` positions within the visible items list.
+     * @param {number} delta
+     */
     this.move = (delta) => {
       const visibleItems = this.visibleItems()
       if (!visibleItems.length) return
@@ -799,6 +1077,8 @@ const CuiAutocomplete = {
       this.highlightItem(visibleItems[nextIndex])
       visibleItems[nextIndex].focus()
     }
+
+    // -- Event handlers -------------------------------------------------------
 
     this.onFocus = () => {
       if (this.skipFocusOpen) {
@@ -813,6 +1093,7 @@ const CuiAutocomplete = {
       this.filterItems()
     }
 
+    /** @param {KeyboardEvent} event */
     this.onKeyDown = (event) => {
       if (event.key === "ArrowDown") {
         event.preventDefault()
@@ -849,6 +1130,7 @@ const CuiAutocomplete = {
       }
     }
 
+    /** @param {KeyboardEvent} event */
     this.onContentKeyDown = (event) => {
       if (event.key === "ArrowDown") {
         event.preventDefault()
@@ -901,6 +1183,8 @@ const CuiAutocomplete = {
       this.open = false
       this.sync()
     }
+
+    // -- Lifecycle ------------------------------------------------------------
 
     this.bindEvents = () => {
       this.input?.addEventListener("focus", this.onFocus)
@@ -965,6 +1249,24 @@ const CuiAutocomplete = {
   },
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Combobox
+// -----------------------------------------------------------------------------
+
+/**
+ * Phoenix LiveView hook for the `combobox` component.
+ *
+ * A lightweight text-input + dropdown that filters items by their text content.
+ * Unlike {@link CuiAutocomplete}, this does not manage a hidden value input or
+ * support keyboard item navigation — it is a simpler filter-and-pick control.
+ *
+ * **Data attributes:** `data-combobox-input`, `data-combobox-content`,
+ * `data-slot="combobox-item"`.
+ *
+ * **Commands:** `open`, `close`, `toggle`, `focus`, `clear`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiCombobox = {
   mounted() {
     this.input = this.el.querySelector("[data-combobox-input]")
@@ -1017,6 +1319,20 @@ const CuiCombobox = {
   },
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Carousel
+// -----------------------------------------------------------------------------
+
+/**
+ * Phoenix LiveView hook for the `carousel` component.
+ *
+ * Translates a horizontal track by 100% per slide. Wraps around at both ends.
+ *
+ * **Data attributes:** `data-carousel-track`, `data-slot="carousel-item"`,
+ * `data-carousel-prev`, `data-carousel-next`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiCarousel = {
   mounted() {
     this.index = 0
@@ -1025,6 +1341,7 @@ const CuiCarousel = {
     this.prev = this.el.querySelector("[data-carousel-prev]")
     this.next = this.el.querySelector("[data-carousel-next]")
 
+    /** Apply the CSS transform to show the current slide. */
     this.sync = () => {
       if (!this.track || this.items.length === 0) return
       const percentage = this.index * 100
@@ -1053,6 +1370,24 @@ const CuiCarousel = {
   },
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Resizable
+// -----------------------------------------------------------------------------
+
+/**
+ * Phoenix LiveView hook for the `resizable` panel group component.
+ *
+ * Manages a set of adjacent panels separated by draggable handles. Supports
+ * both horizontal and vertical layouts, per-panel minimum sizes, keyboard
+ * resizing (Arrow keys, Shift for larger steps), and optional `localStorage`
+ * persistence of panel sizes.
+ *
+ * **Data attributes:** `data-slot="resizable-panel"`,
+ * `data-slot="resizable-handle"`, `data-direction`, `data-storage-key`,
+ * `data-size`, `data-min-size`.
+ *
+ * @type {import("phoenix_live_view").ViewHookInterface}
+ */
 const CuiResizable = {
   mounted() {
     this.setup()
@@ -1062,6 +1397,7 @@ const CuiResizable = {
     this.setup()
   },
 
+  /** (Re-)initialize panels, handles, sizes, and event bindings. */
   setup() {
     this.teardown()
 
@@ -1077,6 +1413,12 @@ const CuiResizable = {
     this.bindHandles()
   },
 
+  /**
+   * Load initial sizes from localStorage (if available), then from
+   * `data-size` attributes, then from `flex-basis`, falling back to an
+   * equal split.
+   * @returns {number[]}
+   */
   loadSizes() {
     const fromStorage = this.loadSizesFromStorage()
     if (fromStorage) return fromStorage
@@ -1094,6 +1436,10 @@ const CuiResizable = {
     return normalizePercentages(fallback)
   },
 
+  /**
+   * Attempt to restore sizes from `localStorage` using `this.storageKey`.
+   * @returns {number[] | null}
+   */
   loadSizesFromStorage() {
     if (!this.storageKey || !window.localStorage) return null
 
@@ -1110,6 +1456,7 @@ const CuiResizable = {
     }
   },
 
+  /** Persist current sizes to `localStorage`. */
   saveSizes() {
     if (!this.storageKey || !window.localStorage) return
     try {
@@ -1120,19 +1467,37 @@ const CuiResizable = {
     }
   },
 
+  /**
+   * Return the minimum percentage size for the panel at `index`.
+   * @param {number} index
+   * @returns {number}
+   */
   panelMinSize(index) {
     return parsePercentage(this.panels[index]?.dataset.minSize, 10)
   },
 
+  /**
+   * Return the pointer coordinate along the resize axis.
+   * @param {PointerEvent} event
+   * @returns {number}
+   */
   axisCoordinate(event) {
     return this.direction === "horizontal" ? event.clientX : event.clientY
   },
 
+  /**
+   * Return the container's pixel length along the resize axis.
+   * @returns {number}
+   */
   axisLength() {
     const rect = this.el.getBoundingClientRect()
     return this.direction === "horizontal" ? rect.width : rect.height
   },
 
+  /**
+   * Apply a new set of panel sizes, normalizing them and updating the DOM.
+   * @param {number[]} nextSizes
+   */
   applySizes(nextSizes) {
     this.sizes = normalizePercentages(nextSizes)
     this.panels.forEach((panel, index) => {
@@ -1142,6 +1507,12 @@ const CuiResizable = {
     })
   },
 
+  /**
+   * Resize the panel pair at `index` / `index + 1` by `deltaPercent`,
+   * respecting minimum sizes.
+   * @param {number} index
+   * @param {number} deltaPercent
+   */
   adjustPair(index, deltaPercent) {
     const leftIndex = index
     const rightIndex = index + 1
@@ -1160,6 +1531,7 @@ const CuiResizable = {
     this.saveSizes()
   },
 
+  /** Bind pointer and keyboard events to each resize handle. */
   bindHandles() {
     this.cleanups = []
 
@@ -1203,6 +1575,7 @@ const CuiResizable = {
         window.addEventListener("pointercancel", onPointerUp)
       }
 
+      /** @param {KeyboardEvent} event */
       const onKeyDown = (event) => {
         const step = event.shiftKey ? 10 : 2
 
@@ -1237,6 +1610,7 @@ const CuiResizable = {
     })
   },
 
+  /** Remove all handle event listeners. */
   teardown() {
     if (this.cleanups) {
       this.cleanups.forEach((cleanup) => cleanup())
@@ -1249,6 +1623,20 @@ const CuiResizable = {
   },
 }
 
+// -----------------------------------------------------------------------------
+// MARK: Exports
+// -----------------------------------------------------------------------------
+
+/**
+ * All CinderUI Phoenix LiveView hooks. Register these with your LiveSocket:
+ *
+ * ```js
+ * import { CinderUIHooks } from "./cinder_ui"
+ * const liveSocket = new LiveSocket("/live", Socket, {
+ *   hooks: { ...CinderUIHooks },
+ * })
+ * ```
+ */
 export const CinderUIHooks = {
   CuiDialog,
   CuiDrawer,
@@ -1262,6 +1650,14 @@ export const CinderUIHooks = {
   CuiResizable,
 }
 
+/**
+ * Public API for imperative component control from outside LiveView hooks.
+ *
+ * ```js
+ * import { CinderUI } from "./cinder_ui"
+ * CinderUI.dispatchCommand(document.getElementById("my-dialog"), "open")
+ * ```
+ */
 export const CinderUI = {
   dispatchCommand,
 }
