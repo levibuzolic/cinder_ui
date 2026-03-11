@@ -1025,10 +1025,10 @@ defmodule CinderUI.Components.Forms do
 
   attr :id, :string, default: nil
   attr :name, :string, default: nil
-  attr :value, :integer, default: 0
-  attr :min, :integer, default: 0
-  attr :max, :integer, default: 100
-  attr :step, :integer, default: 1
+  attr :value, :any, default: 0
+  attr :min, :any, default: 0
+  attr :max, :any, default: 100
+  attr :step, :any, default: 1
   attr :class, :string, default: nil
   attr :rest, :global
 

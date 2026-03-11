@@ -178,6 +178,23 @@ defmodule CinderUI.Components.FormsTest do
     assert html =~ "peer-checked:translate-x-[calc(100%-2px)]"
   end
 
+  test "slider accepts fractional values" do
+    html =
+      render_component(&Forms.slider/1, %{
+        id: "temperature",
+        value: 0.5,
+        min: 0.0,
+        max: 1.0,
+        step: 0.1
+      })
+
+    assert html =~ "data-slot=\"slider\""
+    assert html =~ "value=\"0.5\""
+    assert html =~ "min=\"0.0\""
+    assert html =~ "max=\"1.0\""
+    assert html =~ "step=\"0.1\""
+  end
+
   test "input_group renders a unified control shell" do
     html =
       render_component(&Forms.input_group/1, %{
