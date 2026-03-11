@@ -657,7 +657,7 @@ defmodule CinderUI.Components.DataDisplay do
   def code_block(assigns) do
     assigns =
       assigns
-      |> assign_new(:id, fn -> "cinder-ui-code-block-#{System.unique_integer([:positive])}" end)
+      |> assign(:id, assigns.id || "cinder-ui-code-block-#{System.unique_integer([:positive])}")
       |> assign(:classes, [
         "relative rounded-lg border bg-muted/30 px-4 py-3 font-mono text-sm text-foreground",
         assigns.class

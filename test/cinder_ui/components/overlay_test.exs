@@ -126,6 +126,18 @@ defmodule CinderUI.Components.OverlayTest do
     assert html =~ ~s(role="menu")
   end
 
+  test "menubar generates an id when omitted" do
+    html =
+      render_component(&Overlay.menubar/1, %{
+        menu: [
+          %{label: "File", inner_block: fn _, _ -> "New project" end}
+        ]
+      })
+
+    assert html =~ ~r/id="cinder-ui-menubar-\d+"/
+    assert html =~ ~r/aria-controls="cinder-ui-menubar-\d+-menu-0"/
+  end
+
   test "popover renders trigger and hook-backed content" do
     html =
       render_component(&Overlay.popover/1, %{

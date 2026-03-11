@@ -91,6 +91,7 @@ defmodule CinderUI.Components.DataDisplayTest do
     assert html =~ "data-slot=\"code-block-copy\""
     assert html =~ "data-code-block-content"
     assert html =~ "Copy"
+    assert html =~ ~r/id="cinder-ui-code-block-\d+"/
   end
 
   test "table renders slots" do

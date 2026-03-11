@@ -840,6 +840,51 @@ qs(document, "[data-slot='autocomplete']").forEach((root) => {
 })
 
 // ---------------------------------------------------------------------------
+// Tabs previews — switch active trigger/panel state in static docs examples.
+// ---------------------------------------------------------------------------
+
+const syncTabsPreview = (root, nextTrigger) => {
+  const triggers = qs(root, "[data-slot='tabs-trigger']")
+  const panels = qs(root, "[data-slot='tabs-content']")
+  const controls = nextTrigger.getAttribute("aria-controls")
+
+  triggers.forEach((trigger) => {
+    const active = trigger === nextTrigger
+    trigger.dataset.state = active ? "active" : "inactive"
+    trigger.setAttribute("aria-selected", active ? "true" : "false")
+    trigger.tabIndex = active ? 0 : -1
+  })
+
+  panels.forEach((panel) => {
+    const active = panel.id === controls
+    panel.dataset.state = active ? "active" : "inactive"
+    panel.classList.toggle("hidden", !active)
+  })
+}
+
+qs(document, "[data-slot='tabs']").forEach((root) => {
+  const triggers = qs(root, "[data-slot='tabs-trigger']")
+  const panels = qs(root, "[data-slot='tabs-content']")
+
+  if (triggers.length === 0 || panels.length === 0) return
+
+  syncTabsPreview(root, triggers.find((trigger) => trigger.getAttribute("aria-selected") === "true") || triggers[0])
+})
+
+document.addEventListener("click", (event) => {
+  const trigger = event.target instanceof Element ? event.target.closest("[data-slot='tabs-trigger']") : null
+  if (!trigger) return
+
+  const root = trigger.closest("[data-slot='tabs']")
+  if (!root) return
+
+  const panels = qs(root, "[data-slot='tabs-content']")
+  if (panels.length === 0) return
+
+  syncTabsPreview(root, trigger)
+})
+
+// ---------------------------------------------------------------------------
 // Carousel previews — simple prev/next navigation with CSS transform sliding.
 // ---------------------------------------------------------------------------
 

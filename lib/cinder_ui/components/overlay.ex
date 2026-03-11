@@ -706,7 +706,7 @@ defmodule CinderUI.Components.Overlay do
   def menubar(assigns) do
     assigns =
       assigns
-      |> assign_new(:id, fn -> "cinder-ui-menubar-#{System.unique_integer([:positive])}" end)
+      |> assign(:id, assigns.id || "cinder-ui-menubar-#{System.unique_integer([:positive])}")
       |> assign(:classes, [
         "bg-background flex items-center gap-1 rounded-md border p-1",
         assigns.class

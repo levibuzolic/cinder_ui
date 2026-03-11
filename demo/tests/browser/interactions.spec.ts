@@ -264,6 +264,55 @@ test.describe("interactive previews", () => {
     await expect(hiddenInput).toHaveValue("mira")
   })
 
+  test("tabs switch active panel content", async ({ page }) => {
+    await page.goto("/docs/navigation-tabs/")
+
+    const tabs = page
+      .locator("[data-slot='tabs']")
+      .filter({ hasText: "Overview content" })
+      .first()
+    const overviewTrigger = tabs.locator("[data-slot='tabs-trigger']").first()
+    const usageTrigger = tabs.locator("[data-slot='tabs-trigger']").nth(1)
+    const overviewPanel = tabs.locator("[data-slot='tabs-content']").first()
+    const usagePanel = tabs.locator("[data-slot='tabs-content']").nth(1)
+
+    await tabs.scrollIntoViewIfNeeded()
+    await expect(overviewTrigger).toHaveAttribute("aria-selected", "true")
+    await expect(usageTrigger).toHaveAttribute("aria-selected", "false")
+    await expect(overviewPanel).toBeVisible()
+    await expect(usagePanel).toHaveClass(/hidden/)
+
+    await usageTrigger.click()
+
+    await expect(overviewTrigger).toHaveAttribute("aria-selected", "false")
+    await expect(usageTrigger).toHaveAttribute("aria-selected", "true")
+    await expect(overviewPanel).toHaveClass(/hidden/)
+    await expect(usagePanel).toBeVisible()
+  })
+
+  test("carousel previous and next controls update the active slide", async ({ page }) => {
+    await page.goto("/docs/advanced-carousel/")
+
+    const carousel = page.locator("[data-slot='carousel']").first()
+    const track = carousel.locator("[data-carousel-track]")
+    const prev = carousel.locator("[data-carousel-prev]")
+    const next = carousel.locator("[data-carousel-next]")
+    const items = carousel.locator("[data-slot='carousel-item']")
+
+    await carousel.scrollIntoViewIfNeeded()
+    const lastIndex = (await items.count()) - 1
+    expect(await track.evaluate((el) => (el as HTMLElement).style.transform)).toBe("translateX(0%)")
+
+    await next.click()
+    expect(await track.evaluate((el) => (el as HTMLElement).style.transform)).toBe("translateX(-100%)")
+
+    await prev.click()
+    expect(await track.evaluate((el) => (el as HTMLElement).style.transform)).toBe("translateX(0%)")
+
+    await prev.click()
+    expect(await track.evaluate((el) => (el as HTMLElement).style.transform)).toBe(`translateX(-${lastIndex * 100}%)`)
+  })
+
   test("disabled listbox items are skipped by keyboard navigation", async ({ page }) => {
     const select = page.locator("[data-slot='select']").filter({ has: page.locator("[data-slot='select-input'][name='plan']") }).first()
     const trigger = select.locator("[data-select-trigger]")

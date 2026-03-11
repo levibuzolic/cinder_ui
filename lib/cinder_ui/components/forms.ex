@@ -1153,7 +1153,7 @@ defmodule CinderUI.Components.Forms do
   def input_otp(assigns) do
     assigns =
       assigns
-      |> assign_new(:id, fn -> "cinder-ui-input-otp-#{System.unique_integer([:positive])}" end)
+      |> assign(:id, assigns.id || "cinder-ui-input-otp-#{System.unique_integer([:positive])}")
       |> assign(:separator_indexes, input_otp_separator_indexes(assigns.groups, assigns.length))
       |> assign(:classes, [
         "flex items-center gap-2",

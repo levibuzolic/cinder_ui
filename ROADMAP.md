@@ -76,7 +76,7 @@ After editing, run `mix assets.build` from `demo/` to regenerate copies.
 ## Phase 8: Testing
 
 - [x] 8.1 **Expand unit tests** — Add structural assertions beyond `data-slot` presence for: button_group, toggle_group, accordion, collapsible, code_block, avatar_group, popover, tooltip, hover_card, alert_dialog, menubar, pagination, combobox, carousel, chart, sidebar, checkbox, radio_group, slider, input_otp, label, field_label, field_description, field_message
-- [ ] 8.2 **Playwright interaction tests** — Add browser tests for: dialog open/close, select keyboard navigation, autocomplete filtering, dropdown menu, tabs switching, carousel prev/next
+- [x] 8.2 **Playwright interaction tests** — Add browser tests for: dialog open/close, select keyboard navigation, autocomplete filtering, dropdown menu, tabs switching, carousel prev/next
 - [ ] 8.3 **JS hook unit tests** — Set up a test harness for client-side behavior in `priv/templates/cinder_ui.js` (consider vitest or playwright component testing), covering hooks like `CuiAutocomplete`, `CuiSelect`, `CuiInputOtp`, `CuiMenubar`, `CuiCarousel`, and `CuiResizable`
 
 ## Phase 9: Install task improvements

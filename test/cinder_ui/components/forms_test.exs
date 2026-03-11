@@ -278,6 +278,7 @@ defmodule CinderUI.Components.FormsTest do
     assert html =~ "data-input-otp-index=\"3\""
     assert html =~ "value=\"1\""
     assert html =~ "value=\"3\""
+    assert html =~ ~r/id="cinder-ui-input-otp-\d+"/
   end
 
   test "input_otp supports grouped separators" do
