@@ -3,7 +3,7 @@ defmodule CinderUI.Docs.UIComponents do
 
   use Phoenix.Component
 
-  alias CinderUI.Components.{Actions, Feedback, Forms, Layout, Navigation}
+  alias CinderUI.Components.{Actions, Feedback, Forms, Layout, Navigation, Overlay}
   alias CinderUI.Docs.CodeHighlighter
   alias CinderUI.Icons
   alias Phoenix.HTML
@@ -701,10 +701,14 @@ defmodule CinderUI.Docs.UIComponents do
       data-runtime-kind={@runtime.kind}
       class="flex flex-wrap items-center gap-2"
     >
-      <Feedback.badge variant={:outline} class={@badge_class}>
-        <span aria-hidden="true" class={@dot_class} />
-        {@runtime.label}
-      </Feedback.badge>
+      <Overlay.tooltip text={@runtime.summary}>
+        <span class="inline-flex" tabindex="0">
+          <Feedback.badge variant={:outline} class={@badge_class}>
+            <span aria-hidden="true" class={@dot_class} />
+            {@runtime.label}
+          </Feedback.badge>
+        </span>
+      </Overlay.tooltip>
       <p :if={@show_summary} class="text-muted-foreground text-xs">
         {@runtime.summary}
       </p>
