@@ -280,6 +280,7 @@ defmodule CinderUI.InstallTaskTest do
       [
         {"pnpm-lock.yaml", "pnpm", "add -D"},
         {"yarn.lock", "yarn", "add -D"},
+        {"bun.lock", "bun", "add -d"},
         {"bun.lockb", "bun", "add -d"}
       ],
       fn {lockfile, pm, expected_args} ->

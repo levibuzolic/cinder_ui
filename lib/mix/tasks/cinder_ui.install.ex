@@ -255,6 +255,7 @@ defmodule Mix.Tasks.CinderUi.Install do
     cond do
       File.exists?(Path.join(assets_path, "pnpm-lock.yaml")) -> "pnpm"
       File.exists?(Path.join(assets_path, "yarn.lock")) -> "yarn"
+      File.exists?(Path.join(assets_path, "bun.lock")) -> "bun"
       File.exists?(Path.join(assets_path, "bun.lockb")) -> "bun"
       true -> "npm"
     end
