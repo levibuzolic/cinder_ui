@@ -35,4 +35,14 @@ test.describe("component catalog", () => {
     const code = firstCard.locator("code[id^='code-']").first()
     await expect(code).toContainText("<.")
   })
+
+  test("overview and detail pages show runtime badges", async ({ page }) => {
+    const progressiveBadge = page.locator("[data-component-runtime][data-runtime-kind='progressive']").first()
+    await expect(progressiveBadge).toBeVisible()
+    await expect(progressiveBadge).toContainText("Progressive")
+
+    await page.getByRole("link", { name: /Forms\.select/i }).click()
+    await expect(page.locator("[data-component-runtime][data-runtime-kind='progressive']")).toBeVisible()
+    await expect(page.getByText("optional LiveView hooks for richer behavior")).toBeVisible()
+  })
 })

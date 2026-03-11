@@ -346,6 +346,9 @@ defmodule CinderUI.Docs.UIComponents do
       <h2 class="mt-1 text-2xl font-semibold tracking-tight">
         <code>{@entry.module_name}.{@entry.title}</code>
       </h2>
+      <div class="mt-3">
+        <.docs_runtime_badge runtime={@entry.runtime} show_summary />
+      </div>
       <div class="docs-markdown mt-3 text-sm">{rendered(@docs_html)}</div>
     </section>
 
@@ -514,11 +517,14 @@ defmodule CinderUI.Docs.UIComponents do
       <Layout.panel class="h-full divide-y">
         <div class="p-4">
           <div class="flex flex-wrap items-start justify-between gap-2">
-            <h4 class="font-medium">
-              <a href={@entry_href} class="hover:underline underline-offset-4">
-                <code>{@entry.module_name}.{@entry.title}</code>
-              </a>
-            </h4>
+            <div class="space-y-2">
+              <h4 class="font-medium">
+                <a href={@entry_href} class="hover:underline underline-offset-4">
+                  <code>{@entry.module_name}.{@entry.title}</code>
+                </a>
+              </h4>
+              <.docs_runtime_badge runtime={@entry.runtime} />
+            </div>
             <div class="flex items-center gap-1">
               <Actions.button
                 as="a"
@@ -680,6 +686,32 @@ defmodule CinderUI.Docs.UIComponents do
     """
   end
 
+  attr :runtime, :map, required: true
+  attr :show_summary, :boolean, default: false
+
+  defp docs_runtime_badge(assigns) do
+    assigns =
+      assigns
+      |> assign(:dot_class, runtime_dot_class(assigns.runtime.kind))
+      |> assign(:badge_class, runtime_badge_class(assigns.runtime.kind))
+
+    ~H"""
+    <div
+      data-component-runtime
+      data-runtime-kind={@runtime.kind}
+      class="flex flex-wrap items-center gap-2"
+    >
+      <Feedback.badge variant={:outline} class={@badge_class}>
+        <span aria-hidden="true" class={@dot_class} />
+        {@runtime.label}
+      </Feedback.badge>
+      <p :if={@show_summary} class="text-muted-foreground text-xs">
+        {@runtime.summary}
+      </p>
+    </div>
+    """
+  end
+
   defp section_id_for_entry(sections, entry_id) do
     Enum.find_value(sections, "actions", fn section ->
       if Enum.any?(section.entries, &(&1.id == entry_id)), do: section.id
@@ -743,4 +775,28 @@ defmodule CinderUI.Docs.UIComponents do
   end
 
   defp escape(text), do: text |> HTML.html_escape() |> HTML.safe_to_string()
+
+  defp runtime_badge_class(:server) do
+    "gap-1.5 border-emerald-200 bg-emerald-50/80 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/40 dark:text-emerald-300"
+  end
+
+  defp runtime_badge_class(:progressive) do
+    "gap-1.5 border-sky-200 bg-sky-50/80 text-sky-700 dark:border-sky-900/70 dark:bg-sky-950/40 dark:text-sky-300"
+  end
+
+  defp runtime_badge_class(:scaffold) do
+    "gap-1.5 border-amber-200 bg-amber-50/80 text-amber-700 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-300"
+  end
+
+  defp runtime_dot_class(:server) do
+    "size-1.5 rounded-full bg-current"
+  end
+
+  defp runtime_dot_class(:progressive) do
+    "size-1.5 rounded-full bg-current shadow-[0_0_0_3px_rgba(14,165,233,0.14)] dark:shadow-[0_0_0_3px_rgba(56,189,248,0.18)]"
+  end
+
+  defp runtime_dot_class(:scaffold) do
+    "size-1.5 rounded-full bg-current shadow-[0_0_0_3px_rgba(245,158,11,0.14)] dark:shadow-[0_0_0_3px_rgba(251,191,36,0.18)]"
+  end
 end

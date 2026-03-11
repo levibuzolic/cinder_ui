@@ -54,6 +54,26 @@ defmodule CinderUI.Docs.Catalog do
     %{id: "overlay", title: "Overlay", module: Overlay},
     %{id: "advanced", title: "Advanced", module: Advanced}
   ]
+  @component_runtimes %{
+    {Forms, :autocomplete} => :progressive,
+    {Forms, :input_otp} => :progressive,
+    {Forms, :select} => :progressive,
+    {Layout, :resizable} => :progressive,
+    {DataDisplay, :code_block} => :progressive,
+    {Navigation, :navigation_menu} => :scaffold,
+    {Overlay, :alert_dialog} => :progressive,
+    {Overlay, :dialog} => :progressive,
+    {Overlay, :drawer} => :progressive,
+    {Overlay, :dropdown_menu} => :progressive,
+    {Overlay, :menubar} => :progressive,
+    {Overlay, :popover} => :progressive,
+    {Overlay, :sheet} => :progressive,
+    {Advanced, :calendar} => :scaffold,
+    {Advanced, :carousel} => :progressive,
+    {Advanced, :chart} => :scaffold,
+    {Advanced, :combobox} => :progressive,
+    {Advanced, :sidebar} => :scaffold
+  }
 
   @doc """
   Returns catalog sections and pre-rendered component entries.
@@ -146,6 +166,7 @@ defmodule CinderUI.Docs.Catalog do
       attributes: component_attributes(module, function),
       slots: component_slots(module, function),
       source_line: component_line(module, function),
+      runtime: component_runtime(module, function),
       shadcn_slug: slug,
       shadcn_url: shadcn_url(slug),
       docs_path: "#{id}/index.html"
@@ -234,6 +255,36 @@ defmodule CinderUI.Docs.Catalog do
         |> Atom.to_string()
         |> slug_from_name()
     end
+  end
+
+  defp component_runtime(module, function) do
+    module
+    |> then(&Map.get(@component_runtimes, {&1, function}, :server))
+    |> runtime_definition()
+  end
+
+  defp runtime_definition(:server) do
+    %{
+      kind: :server,
+      label: "Server-rendered",
+      summary: "Works with plain server-rendered HEEx and no client hook."
+    }
+  end
+
+  defp runtime_definition(:progressive) do
+    %{
+      kind: :progressive,
+      label: "Progressive",
+      summary: "Server-rendered first, with optional LiveView hooks for richer behavior."
+    }
+  end
+
+  defp runtime_definition(:scaffold) do
+    %{
+      kind: :scaffold,
+      label: "Scaffold",
+      summary: "Provides the styled API shell; application logic or extra JS is still up to you."
+    }
   end
 
   defp slug_from_name(name) do

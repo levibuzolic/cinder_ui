@@ -83,6 +83,26 @@ defmodule CinderUI.Docs.CatalogTest do
     assert "variant" in attribute_names
     assert "size" in attribute_names
     assert "inner_block" in Enum.map(button_entry.slots, & &1.name)
+    assert button_entry.runtime.kind == :server
+    assert button_entry.runtime.label == "Server-rendered"
+  end
+
+  test "component runtime metadata distinguishes server, progressive, and scaffold entries" do
+    entries = Catalog.sections() |> Enum.flat_map(& &1.entries)
+
+    select_entry = find_entry(entries, CinderUI.Components.Forms, :select)
+    calendar_entry = find_entry(entries, CinderUI.Components.Advanced, :calendar)
+    code_block_entry = find_entry(entries, CinderUI.Components.DataDisplay, :code_block)
+
+    assert select_entry.runtime.kind == :progressive
+    assert select_entry.runtime.label == "Progressive"
+    assert select_entry.runtime.summary =~ "LiveView hooks"
+
+    assert calendar_entry.runtime.kind == :scaffold
+    assert calendar_entry.runtime.label == "Scaffold"
+    assert calendar_entry.runtime.summary =~ "extra JS"
+
+    assert code_block_entry.runtime.kind == :progressive
   end
 
   test "core families expose generated examples extracted from function docs" do
