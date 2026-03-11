@@ -164,8 +164,11 @@ defmodule CinderUI.Components.Actions do
   def button_group(assigns) do
     orientation_classes =
       case assigns.orientation do
-        :horizontal -> "inline-flex items-center gap-2"
-        :vertical -> "inline-flex flex-col gap-2"
+        :horizontal ->
+          "inline-flex items-center [&>*]:relative [&>*]:z-0 [&>*:hover]:z-10 [&>*:focus-visible]:z-10 [&>*:not(:first-child)]:-ml-px [&>*:first-child]:rounded-r-none [&>*:not(:first-child):not(:last-child)]:rounded-none [&>*:last-child]:rounded-l-none"
+
+        :vertical ->
+          "inline-flex flex-col [&>*]:relative [&>*]:z-0 [&>*:hover]:z-10 [&>*:focus-visible]:z-10 [&>*:not(:first-child)]:-mt-px [&>*:first-child]:rounded-b-none [&>*:not(:first-child):not(:last-child)]:rounded-none [&>*:last-child]:rounded-t-none"
       end
 
     assigns = assign(assigns, :classes, [orientation_classes, assigns.class])
