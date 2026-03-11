@@ -20,6 +20,31 @@ defmodule CinderUI.Components.FormsTest do
     assert html =~ "max=\"10\""
   end
 
+  test "number_field renders buttons and forwards numeric constraints" do
+    html =
+      render_component(&Forms.number_field/1, %{
+        id: "seat-count",
+        name: "seats",
+        value: 3,
+        min: 1,
+        max: 10,
+        step: 0.5
+      })
+
+    assert html =~ "data-slot=\"number-field\""
+    assert html =~ "data-slot=\"number-field-decrement\""
+    assert html =~ "data-slot=\"number-field-input\""
+    assert html =~ "data-slot=\"number-field-increment\""
+    assert html =~ "type=\"number\""
+    assert html =~ "min=\"1\""
+    assert html =~ "max=\"10\""
+    assert html =~ "step=\"0.5\""
+    assert html =~ "Decrease value"
+    assert html =~ "Increase value"
+    assert html =~ "stepDown()"
+    assert html =~ "stepUp()"
+  end
+
   test "select renders custom trigger, hidden input, and items" do
     html =
       render_component(&Forms.select/1, %{
@@ -166,6 +191,7 @@ defmodule CinderUI.Components.FormsTest do
 
     assert html =~ "data-slot=\"field-control\""
     assert html =~ "data-slot=select-trigger"
+    assert html =~ "data-slot=number-field-input"
     assert html =~ "data-slot=native-select"
     assert html =~ "data-slot=autocomplete-input"
     assert html =~ "data-slot=combobox-input"

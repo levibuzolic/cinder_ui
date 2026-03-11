@@ -12,6 +12,7 @@ defmodule CinderUI.Components.Forms do
   - `field_message/1`
   - `field_error/1`
   - `input/1`
+  - `number_field/1`
   - `textarea/1`
   - `checkbox/1`
   - `switch/1`
@@ -203,7 +204,7 @@ defmodule CinderUI.Components.Forms do
   def field_control(assigns) do
     assigns =
       assign(assigns, :classes, [
-        "group-data-[invalid=true]:[&_[data-slot=input]]:border-destructive group-data-[invalid=true]:[&_[data-slot=input]]:ring-destructive/20 group-data-[invalid=true]:[&_[data-slot=textarea]]:border-destructive group-data-[invalid=true]:[&_[data-slot=textarea]]:ring-destructive/20 group-data-[invalid=true]:[&_[data-slot=select-trigger]]:border-destructive group-data-[invalid=true]:[&_[data-slot=native-select]]:border-destructive group-data-[invalid=true]:[&_[data-slot=native-select]]:ring-destructive/20 group-data-[invalid=true]:[&_[data-slot=autocomplete-input]]:border-destructive group-data-[invalid=true]:[&_[data-slot=combobox-input]]:border-destructive group-data-[invalid=true]:[&_[data-slot=switch]]:border-destructive group-data-[invalid=true]:[&_[data-slot=checkbox]]:border-destructive group-data-[invalid=true]:[&_[data-slot=radio-group-item]]:border-destructive",
+        "group-data-[invalid=true]:[&_[data-slot=input]]:border-destructive group-data-[invalid=true]:[&_[data-slot=input]]:ring-destructive/20 group-data-[invalid=true]:[&_[data-slot=number-field-input]]:border-destructive group-data-[invalid=true]:[&_[data-slot=number-field-input]]:ring-destructive/20 group-data-[invalid=true]:[&_[data-slot=textarea]]:border-destructive group-data-[invalid=true]:[&_[data-slot=textarea]]:ring-destructive/20 group-data-[invalid=true]:[&_[data-slot=select-trigger]]:border-destructive group-data-[invalid=true]:[&_[data-slot=native-select]]:border-destructive group-data-[invalid=true]:[&_[data-slot=native-select]]:ring-destructive/20 group-data-[invalid=true]:[&_[data-slot=autocomplete-input]]:border-destructive group-data-[invalid=true]:[&_[data-slot=combobox-input]]:border-destructive group-data-[invalid=true]:[&_[data-slot=switch]]:border-destructive group-data-[invalid=true]:[&_[data-slot=checkbox]]:border-destructive group-data-[invalid=true]:[&_[data-slot=radio-group-item]]:border-destructive",
         assigns.class
       ])
 
@@ -321,6 +322,105 @@ defmodule CinderUI.Components.Forms do
       class={classes(@classes)}
       {@rest}
     />
+    """
+  end
+
+  doc("""
+  Renders a number input with increment and decrement controls.
+
+  Keyboard interaction comes from the native `type="number"` input, so arrow
+  keys, min/max constraints, and step behavior stay browser-native while the
+  buttons provide a touch-friendly affordance.
+
+  ## Examples
+
+  ```heex title="Basic number field" align="full"
+  <.number_field id="seat-count" name="seats" value={3} min={1} max={10} />
+  ```
+
+  ```heex title="Fractional step" align="full"
+  <.number_field
+    id="discount"
+    name="discount"
+    value={1.5}
+    min={0}
+    max={5}
+    step={0.5}
+  />
+  ```
+  """)
+
+  attr :id, :string, required: true
+  attr :name, :string, default: nil
+  attr :value, :any, default: nil
+  attr :min, :any, default: nil
+  attr :max, :any, default: nil
+  attr :step, :any, default: 1
+  attr :placeholder, :string, default: nil
+  attr :disabled, :boolean, default: false
+  attr :class, :string, default: nil
+  attr :input_class, :string, default: nil
+  attr :decrement_label, :string, default: "Decrease value"
+  attr :increment_label, :string, default: "Increase value"
+  attr :rest, :global, include: ~w(autocomplete readonly required inputmode aria-label)
+
+  def number_field(assigns) do
+    assigns =
+      assigns
+      |> assign(:root_classes, [
+        "flex items-center gap-0",
+        assigns.class
+      ])
+      |> assign(:button_classes, [
+        "border-input bg-background text-muted-foreground hover:text-foreground inline-flex h-9 w-9 shrink-0 items-center justify-center border shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+      ])
+      |> assign(:input_classes, [
+        "border-input dark:bg-input/30 h-9 w-full min-w-0 rounded-none border-y border-x-0 bg-transparent px-3 py-1 text-center text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+        assigns.input_class
+      ])
+
+    ~H"""
+    <div data-slot="number-field" class={classes(@root_classes)}>
+      <button
+        type="button"
+        data-slot="number-field-decrement"
+        aria-label={@decrement_label}
+        disabled={@disabled}
+        class={classes([@button_classes, "rounded-l-md"])}
+        onclick="const input = this.closest('[data-slot=number-field]')?.querySelector('[data-slot=number-field-input]'); if (input) { input.stepDown(); input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); input.focus(); }"
+      >
+        <Icons.icon name="minus" class="size-4" />
+      </button>
+
+      <input
+        id={@id}
+        type="number"
+        data-slot="number-field-input"
+        name={@name}
+        value={@value}
+        min={@min}
+        max={@max}
+        step={@step}
+        placeholder={@placeholder}
+        disabled={@disabled}
+        class={classes(@input_classes)}
+        {@rest}
+      />
+
+      <button
+        type="button"
+        data-slot="number-field-increment"
+        aria-label={@increment_label}
+        disabled={@disabled}
+        class={classes([@button_classes, "rounded-r-md"])}
+        onclick="const input = this.closest('[data-slot=number-field]')?.querySelector('[data-slot=number-field-input]'); if (input) { input.stepUp(); input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); input.focus(); }"
+      >
+        <Icons.icon name="plus" class="size-4" />
+      </button>
+    </div>
     """
   end
 

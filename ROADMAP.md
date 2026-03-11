@@ -93,7 +93,7 @@ Lower priority. Each is a standalone task.
 - [ ] 10.2 **Toast/Sonner** — Stacking toast notification system with auto-dismiss, progress, and swipe-to-dismiss
 - [ ] 10.3 **Date Picker** — Compose Calendar + Popover with full date selection (single, range), month/year navigation
 - [ ] 10.4 **Data Table** — Compose table/1 with sortable headers, filtering, and pagination. LiveView-friendly with server-side data handling
-- [ ] 10.5 **Number Field** — Increment/decrement input with keyboard support and min/max/step
+- [x] 10.5 **Number Field** — Increment/decrement input with keyboard support and min/max/step
 - [ ] 10.6 **File Upload / Dropzone** — Styled drag-and-drop zone wrapping Phoenix `allow_upload/3`
 - [ ] 10.7 **Stepper** — Multi-step progress indicator for wizard flows
 - [ ] 10.8 **Calendar: full implementation** — Week/month navigation, single/range/multi select, server state integration
