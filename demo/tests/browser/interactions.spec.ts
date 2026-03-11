@@ -147,7 +147,7 @@ test.describe("interactive previews", () => {
   })
 
   test("select opens from the keyboard and updates the hidden value", async ({ page }) => {
-    const select = page.locator("#docs-select")
+    const select = page.locator("#team-plan")
     const trigger = select.locator("[data-select-trigger]")
     const content = select.locator("[data-select-content]")
     const hiddenInput = select.locator("[data-slot='select-input']")
@@ -234,7 +234,7 @@ test.describe("interactive previews", () => {
   })
 
   test("autocomplete filters and updates the hidden value", async ({ page }) => {
-    const autocomplete = page.locator("#docs-autocomplete")
+    const autocomplete = page.locator("#team-owner")
     const input = autocomplete.locator("[data-autocomplete-input]")
     const content = autocomplete.locator("[data-autocomplete-content]")
     const hiddenInput = autocomplete.locator("[data-slot='autocomplete-value']")
@@ -305,6 +305,9 @@ test.describe("interactive previews", () => {
     const shell = page.locator(".docs-k")
     const input = page.locator(".docs-k-input")
     const listItems = page.locator(".docs-k-item")
+
+    // Wait for the command palette JS to initialise (it creates the .docs-k shell)
+    await shell.waitFor({ state: "attached" })
 
     await trigger.scrollIntoViewIfNeeded()
     await expect(trigger).toBeVisible()

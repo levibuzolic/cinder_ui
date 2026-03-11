@@ -1,5 +1,12 @@
 (() => {
   const qs = (root, selector) => Array.from(root.querySelectorAll(selector))
+  const escapeHtml = (value) =>
+    value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;")
   const toggleVisibility = (el, visible) => {
     if (!el) return
     el.classList.toggle("hidden", !visible)

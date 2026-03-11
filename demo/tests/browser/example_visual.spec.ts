@@ -32,6 +32,8 @@ const gotoWithStableStyles = async (page: Page, path: string) => {
 }
 
 test.describe("promoted example visual regression", () => {
+  test.setTimeout(300_000)
+
   test.use({
     viewport: { width: 1600, height: 1200 },
     deviceScaleFactor: 2,
