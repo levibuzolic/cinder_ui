@@ -255,36 +255,14 @@ defmodule CinderUI.Components.Feedback do
   slot :inner_block, doc: "the optional inner block that renders the flash message"
 
   def flash(assigns) do
+    flash_config = flash_config(assigns.kind)
+
     assigns =
       assigns
       |> assign_new(:id, fn -> "flash-#{assigns.kind}" end)
-      |> assign(
-        :variant,
-        case assigns.kind do
-          :error -> :destructive
-          :success -> :success
-          :warning -> :warning
-          _ -> :default
-        end
-      )
-      |> assign(
-        :style_classes,
-        case assigns.kind do
-          :error -> "border-destructive/40 bg-destructive/10 text-destructive"
-          :success -> "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
-          :warning -> "border-amber-500/30 bg-amber-500/10 text-amber-700"
-          _ -> "border-primary/20 bg-primary/10 text-primary"
-        end
-      )
-      |> assign(
-        :icon_name,
-        case assigns.kind do
-          :error -> "circle-alert"
-          :success -> "circle-check-big"
-          :warning -> "triangle-alert"
-          _ -> "info"
-        end
-      )
+      |> assign(:variant, flash_config.variant)
+      |> assign(:style_classes, flash_config.style_classes)
+      |> assign(:icon_name, flash_config.icon_name)
 
     ~H"""
     <.alert
@@ -312,6 +290,38 @@ defmodule CinderUI.Components.Feedback do
       </button>
     </.alert>
     """
+  end
+
+  defp flash_config(:error) do
+    %{
+      variant: :destructive,
+      style_classes: "border-destructive/40 bg-destructive/10 text-destructive",
+      icon_name: "circle-alert"
+    }
+  end
+
+  defp flash_config(:success) do
+    %{
+      variant: :success,
+      style_classes: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700",
+      icon_name: "circle-check-big"
+    }
+  end
+
+  defp flash_config(:warning) do
+    %{
+      variant: :warning,
+      style_classes: "border-amber-500/30 bg-amber-500/10 text-amber-700",
+      icon_name: "triangle-alert"
+    }
+  end
+
+  defp flash_config(_kind) do
+    %{
+      variant: :default,
+      style_classes: "border-primary/20 bg-primary/10 text-primary",
+      icon_name: "info"
+    }
   end
 
   doc("""

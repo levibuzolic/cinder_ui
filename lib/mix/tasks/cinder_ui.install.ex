@@ -145,30 +145,12 @@ defmodule Mix.Tasks.CinderUi.Install do
 
   defp inject_hooks_merge(content) do
     cond do
-      String.contains?(content, "...CinderUIHooks") ->
+      String.contains?(content, "...CinderUIHooks") or
+          String.contains?(content, "Object.assign(Hooks, CinderUIHooks)") ->
         content
 
       Regex.match?(~r/hooks:\s*\{(?<hooks_body>[^}]*)\}/s, content) ->
-        Regex.replace(
-          ~r/hooks:\s*\{(?<hooks_body>[^}]*)\}/s,
-          content,
-          fn _match, hooks_body ->
-            merged_body =
-              case String.trim(hooks_body) do
-                "" ->
-                  "...CinderUIHooks"
-
-                trimmed ->
-                  if String.ends_with?(trimmed, ",") do
-                    "#{String.trim_trailing(hooks_body)} ...CinderUIHooks"
-                  else
-                    "#{String.trim_trailing(hooks_body)}, ...CinderUIHooks"
-                  end
-              end
-
-            "hooks: {#{merged_body}}"
-          end
-        )
+        merge_hooks_object(content)
 
       Regex.match?(~r/hooks:\s*\{\s*\.\.\.colocatedHooks\s*\}/, content) ->
         Regex.replace(
@@ -176,9 +158,6 @@ defmodule Mix.Tasks.CinderUi.Install do
           content,
           "hooks: {...colocatedHooks, ...CinderUIHooks}"
         )
-
-      String.contains?(content, "Object.assign(Hooks, CinderUIHooks)") ->
-        content
 
       String.contains?(content, "let Hooks = {}") ->
         String.replace(
@@ -195,9 +174,34 @@ defmodule Mix.Tasks.CinderUi.Install do
         )
 
       true ->
-        content <>
-          "\nlet Hooks = window.Hooks || {}\nObject.assign(Hooks, CinderUIHooks)\nwindow.Hooks = Hooks\n"
+        append_hooks_fallback(content)
     end
+  end
+
+  defp merge_hooks_object(content) do
+    Regex.replace(~r/hooks:\s*\{(?<hooks_body>[^}]*)\}/s, content, fn _match, hooks_body ->
+      "hooks: {#{merged_hooks_body(hooks_body)}}"
+    end)
+  end
+
+  defp merged_hooks_body(hooks_body) do
+    hooks_body
+    |> String.trim()
+    |> case do
+      "" ->
+        "...CinderUIHooks"
+
+      trimmed when String.ends_with?(trimmed, ",") ->
+        "#{String.trim_trailing(hooks_body)} ...CinderUIHooks"
+
+      _trimmed ->
+        "#{String.trim_trailing(hooks_body)}, ...CinderUIHooks"
+    end
+  end
+
+  defp append_hooks_fallback(content) do
+    content <>
+      "\nlet Hooks = window.Hooks || {}\nObject.assign(Hooks, CinderUIHooks)\nwindow.Hooks = Hooks\n"
   end
 
   defp ensure_line(content, line) do
@@ -220,27 +224,38 @@ defmodule Mix.Tasks.CinderUi.Install do
   end
 
   defp maybe_install_package!(install_path, package_manager, package, dry_run) do
-    if package_installed?(install_path, package) do
-      Mix.shell().info("already present #{package} (in #{relative(install_path)})")
-      :ok
-    else
-      {cmd, args} = package_command(package_manager, package)
+    cond do
+      package_installed?(install_path, package) ->
+        Mix.shell().info("already present #{package} (in #{relative(install_path)})")
+        :ok
 
-      if dry_run do
+      dry_run ->
+        {cmd, args} = package_command(package_manager, package)
+
         Mix.shell().info(
           "would run #{cmd} #{Enum.join(args, " ")} (in #{relative(install_path)})"
         )
-      else
-        Mix.shell().info("running #{cmd} #{Enum.join(args, " ")} (in #{relative(install_path)})")
-        {output, status} = System.cmd(cmd, args, cd: install_path, stderr_to_stdout: true)
 
-        if status == 0 do
-          Mix.shell().info(String.trim(output))
-        else
-          Mix.shell().error(String.trim(output))
-          Mix.raise("failed to install #{package} using #{package_manager}")
-        end
-      end
+        :ok
+
+      true ->
+        install_package!(install_path, package_manager, package)
+    end
+  end
+
+  defp install_package!(install_path, package_manager, package) do
+    {cmd, args} = package_command(package_manager, package)
+    Mix.shell().info("running #{cmd} #{Enum.join(args, " ")} (in #{relative(install_path)})")
+
+    {output, status} = System.cmd(cmd, args, cd: install_path, stderr_to_stdout: true)
+
+    case status do
+      0 ->
+        Mix.shell().info(String.trim(output))
+
+      _ ->
+        Mix.shell().error(String.trim(output))
+        Mix.raise("failed to install #{package} using #{package_manager}")
     end
   end
 
