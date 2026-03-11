@@ -101,6 +101,6 @@ Lower priority. Each is a standalone task.
 ## Phase 11: Documentation
 
 - [x] 11.1 **Clarify combobox vs autocomplete** — Add "when to use which" guidance to both component docs
-- [ ] 11.2 **Fix select README description** — README incorrectly says "native select style variant" for select/1
+- [x] 11.2 **Fix select README description** — README incorrectly says "native select style variant" for select/1
 - [ ] 11.3 **Update resizable status** — Either promote from "In Progress" or document what's specifically incomplete
 - [ ] 11.4 **Popover/dropdown positioning** — Document the limitation of hardcoded `mt-2` positioning and plans for viewport-aware placement

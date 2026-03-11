@@ -407,7 +407,7 @@ Legend:
 | Radio Group | ✅ Full | Server-rendered | - |
 | Resizable | 🚧 In Progress | Not ready for use | `resizable/1` is currently in progress and not ready for production use |
 | Scroll Area | ✅ Full | Server-rendered | - |
-| Select | ✅ Full | Server-rendered | Implemented as native select style variant |
+| Select | ✅ Full | Server + hooks | Custom trigger + listbox with hidden input and keyboard support |
 | Separator | ✅ Full | Server-rendered | - |
 | Sheet | ✅ Full | Server-rendered | Drawer alias semantics |
 | Sidebar | 🧱 Scaffold | Static shell | Complex interactions require host-side logic |
