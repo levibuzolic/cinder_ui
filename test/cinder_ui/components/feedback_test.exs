@@ -49,6 +49,16 @@ defmodule CinderUI.Components.FeedbackTest do
     assert html =~ "circle-alert"
   end
 
+  test "flash close button uses consistent aria-label casing" do
+    html =
+      render_component(&Feedback.flash/1, %{
+        kind: :info,
+        inner_block: TestHelpers.slot("Saved")
+      })
+
+    assert html =~ ~s(aria-label="Close")
+  end
+
   test "flash_group renders drop-in ids and wrappers" do
     html = render_component(&Feedback.flash_group/1, %{flash: %{"info" => "Hi"}})
 

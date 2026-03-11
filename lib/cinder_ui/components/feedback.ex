@@ -253,7 +253,12 @@ defmodule CinderUI.Components.Feedback do
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> JS.hide(to: "##{@id}")}
       role="alert"
-      class={classes(["fixed top-2 right-2 z-50 w-80 sm:w-96 rounded-lg border px-4 py-3 text-sm", @style_classes])}
+      class={
+        classes([
+          "fixed top-2 right-2 z-50 w-80 sm:w-96 rounded-lg border px-4 py-3 text-sm",
+          @style_classes
+        ])
+      }
       {@rest}
     >
       <div class="flex items-center gap-3">
@@ -265,7 +270,7 @@ defmodule CinderUI.Components.Feedback do
         <button
           type="button"
           class="-mr-1 shrink-0 rounded-md p-1 hover:bg-black/10 dark:hover:bg-white/10"
-          aria-label="close"
+          aria-label="Close"
         >
           <CinderUI.Icons.icon name="x" class="size-4 opacity-60" />
         </button>

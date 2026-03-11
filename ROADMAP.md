@@ -18,7 +18,7 @@ Small fixes that reduce tech debt. Each is independent — can be done in parall
 - [x] 1.1 **Unify HEEx syntax** — Convert remaining `<%= %>` to `{}` syntax in `overlay.ex` (lines 586-614), `layout.ex` (lines 614-676), `navigation.ex` (lines 544-553), `data_display.ex` (line 647)
 - [x] 1.2 **Remove redundant disabled class in dropdown_menu** — `overlay.ex` items apply both `disabled` HTML attr and manual `pointer-events-none opacity-50` class. The HTML attr already triggers Tailwind `disabled:` utilities. Remove the manual class
 - [x] 1.3 **Remove dead switch thumb_position case** — `forms.ex` lines 459-463: both `:sm` and `:default` return the same value. Collapse to a single constant
-- [ ] 1.4 **Consistent aria-label casing** — Standardize to `aria-label="Close"` (capitalized) on flash close button (`feedback.ex`) to match dialog (`overlay.ex`)
+- [x] 1.4 **Consistent aria-label casing** — Standardize to `aria-label="Close"` (capitalized) on flash close button (`feedback.ex`) to match dialog (`overlay.ex`)
 - [ ] 1.5 **Input: add min/max to rest includes** — `forms.ex` input `@rest` include list omits `min` and `max`, needed for number/date inputs
 - [ ] 1.6 **Slider: accept float values** — `forms.ex` slider uses `attr :value, :integer`, change to `:any` or `:float`
 - [ ] 1.7 **Radio group: add per-option disabled** — Add `disabled` attribute to `forms.ex` radio_group option slot
