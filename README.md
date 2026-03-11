@@ -1,8 +1,8 @@
 # Cinder UI
 
-Shadcn-inspired UI components for Phoenix + LiveView.
+[shadcn/ui](https://ui.shadcn.com/docs) components for Phoenix + LiveView.
 
-Cinder UI is a Hex-oriented component library that ports shadcn/ui design patterns, classes, tokens, and compositional structure into Elixir function components.
+Cinder UI is a Hex-oriented component library that ports [shadcn/ui](https://ui.shadcn.com/docs) design patterns, classes, tokens, and compositional structure into Elixir function components.
 
 ## Installation
 
