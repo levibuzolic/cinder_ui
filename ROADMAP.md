@@ -30,7 +30,7 @@ for each pattern. These are template-only changes (no JS).
 
 - [x] 2.1 **Tabs** — `navigation.ex`: add `role="tablist"` on list, `role="tab"` on triggers with `aria-selected`, `role="tabpanel"` on content panels with `aria-labelledby`
 - [x] 2.2 **Dialog/Sheet/Drawer** — `overlay.ex`: generate stable ids for title and description elements, add `aria-labelledby` and `aria-describedby` on the dialog container
-- [ ] 2.3 **Dropdown menu** — `overlay.ex`: add `role="menu"` on content, `role="menuitem"` on items
+- [x] 2.3 **Dropdown menu** — `overlay.ex`: add `role="menu"` on content, `role="menuitem"` on items
 - [ ] 2.4 **Tooltip** — `overlay.ex`: add `role="tooltip"` and `id` on tooltip content, `aria-describedby` on trigger
 - [ ] 2.5 **Autocomplete** — `forms.ex`: add `role="combobox"` on the input element
 - [ ] 2.6 **Carousel** — `advanced.ex`: add `aria-label` on prev/next buttons, `aria-roledescription="carousel"` on root, `aria-roledescription="slide"` on items

@@ -39,6 +39,8 @@ defmodule CinderUI.Components.OverlayTest do
       })
 
     assert html =~ "data-slot=\"dropdown-menu\""
+    assert html =~ ~s(role="menu")
+    assert html =~ ~s(role="menuitem")
     assert html =~ "Settings"
     assert html =~ "Archive"
     assert html =~ "disabled"

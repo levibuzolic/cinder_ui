@@ -615,7 +615,12 @@ defmodule CinderUI.Components.Overlay do
     ~H"""
     <div id={@id} data-slot="dropdown-menu" class={classes(@classes)} phx-hook="CuiDropdownMenu">
       <div data-slot="dropdown-menu-trigger" data-dropdown-trigger>{render_slot(@trigger)}</div>
-      <div data-slot="dropdown-menu-content" data-dropdown-content class={classes(@content_classes)}>
+      <div
+        data-slot="dropdown-menu-content"
+        data-dropdown-content
+        role="menu"
+        class={classes(@content_classes)}
+      >
         <.dropdown_menu_item :for={item <- @item} item={item} />
       </div>
     </div>
@@ -629,6 +634,7 @@ defmodule CinderUI.Components.Overlay do
     <a
       :if={@item[:href]}
       data-slot="dropdown-menu-item"
+      role="menuitem"
       href={@item[:href]}
       class={
         classes([
@@ -644,6 +650,7 @@ defmodule CinderUI.Components.Overlay do
       :if={!@item[:href]}
       type="button"
       data-slot="dropdown-menu-item"
+      role="menuitem"
       disabled={@item[:disabled]}
       class={
         classes([
