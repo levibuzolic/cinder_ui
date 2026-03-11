@@ -46,8 +46,11 @@ test.describe("component catalog", () => {
     await expect(progressiveBadge.locator("[role='tooltip']").first()).toBeVisible()
 
     await page.getByRole("link", { name: /Forms\.select/i }).click()
-    const detailRuntime = page.locator("[data-component-runtime][data-runtime-kind='progressive']").first()
-    await expect(detailRuntime).toBeVisible()
-    await expect(detailRuntime.locator("p")).toContainText("optional LiveView hooks for richer behavior")
+    const detailRuntime = page.locator("section").filter({ has: page.locator("[data-component-runtime][data-runtime-kind='progressive']") }).first()
+    const detailRuntimeBadge = detailRuntime.locator("[data-component-runtime][data-runtime-kind='progressive']")
+    await expect(detailRuntimeBadge).toBeVisible()
+    await expect(detailRuntimeBadge.locator("p.text-muted-foreground.text-xs")).toContainText(
+      "optional LiveView hooks for richer behavior",
+    )
   })
 })
