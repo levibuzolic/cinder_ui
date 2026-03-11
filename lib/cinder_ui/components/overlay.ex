@@ -74,7 +74,7 @@ defmodule CinderUI.Components.Overlay do
   ```
 
   ```heex title="Server-controlled open state" vrt
-  <.dialog id="billing-dialog" open={true}>
+  <.dialog id="billing-dialog">
     <:trigger><.button>Open billing</.button></:trigger>
     <:title>Billing details</:title>
     <:description>Review your subscription and payment method.</:description>
@@ -87,7 +87,7 @@ defmodule CinderUI.Components.Overlay do
     Open account dialog
   </.button>
 
-  <.dialog id="account-dialog" open={true}>
+  <.dialog id="account-dialog">
     <:trigger><span class="hidden" /></:trigger>
     <:title>Account</:title>
     <:description>Managed from LiveView state.</:description>
@@ -238,7 +238,7 @@ defmodule CinderUI.Components.Overlay do
   ## Example
 
   ```heex title="Bottom drawer" vrt
-  <.drawer id="mobile-filters" open={true}>
+  <.drawer id="mobile-filters">
     <:trigger><.button variant={:outline}>Filters</.button></:trigger>
     <:title>Filter results</:title>
     <:description>Refine issues by status and owner.</:description>
@@ -334,7 +334,7 @@ defmodule CinderUI.Components.Overlay do
   ## Example
 
   ```heex title="Right sheet" vrt
-  <.sheet id="settings-sheet" open={true}>
+  <.sheet id="settings-sheet">
     <:trigger><.button variant={:outline}>Open settings</.button></:trigger>
     <:title>Workspace settings</:title>
     <:description>Manage defaults for the current workspace.</:description>
