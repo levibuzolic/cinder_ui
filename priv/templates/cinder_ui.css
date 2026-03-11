@@ -123,3 +123,29 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  @layer base {
+    [data-slot].animate-in,
+    [data-slot].animate-out,
+    [data-slot].animate-pulse,
+    [data-slot].animate-spin,
+    [data-slot] [class*="animate-"],
+    [data-slot] [class*="transition"],
+    [data-slot][class*="transition"] {
+      animation: none !important;
+      transition-duration: 0ms !important;
+      transition-delay: 0ms !important;
+    }
+
+    [data-slot] [class*="fade-in-"],
+    [data-slot] [class*="fade-out-"],
+    [data-slot] [class*="zoom-in-"],
+    [data-slot] [class*="zoom-out-"] {
+      --tw-enter-opacity: 1 !important;
+      --tw-exit-opacity: 1 !important;
+      --tw-enter-scale: 1 !important;
+      --tw-exit-scale: 1 !important;
+    }
+  }
+}
