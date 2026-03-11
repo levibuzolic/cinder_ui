@@ -12,6 +12,7 @@
 ## Working Rules
 
 - Edit `priv/templates/cinder_ui.js` and `priv/templates/cinder_ui.css`; do not edit `demo/assets/js/cinder_ui.js` or `demo/assets/css/cinder_ui.css` because they are generated copies.
+- Use `mise` for repo-managed tooling. On a fresh clone or whenever `.mise.toml` changes, run `mise trust` before `mise install` so the configured tasks and tool versions are allowed. Inside the repository working directory, plain `mix`, `elixir`, `erl`, and `node` commands will use the `mise` toolchain automatically.
 - Keep APIs Phoenix-first: HEEx function components, predictable assigns, typed `attr` and `slot`.
 - Prefer composing with existing components in docs and examples; use raw HTML only when necessary.
 - Keep demo and static docs behavior aligned, including snippets, theme controls, and interactions.
@@ -24,8 +25,9 @@
 
 Run from the repository root unless noted.
 
+- Initial setup: `mise trust && mise install`
 - `mix quality`
-- `MIX_ENV=test mix coveralls.cobertura --raise`
+- `env MIX_ENV=test mix coveralls.cobertura --raise`
 - `mix cinder_ui.docs.build`
 - `cd demo && mix format --check-formatted && mix test`
 - `cd demo && npm ci && mix assets.build && npx playwright test`
