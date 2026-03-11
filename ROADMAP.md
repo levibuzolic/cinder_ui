@@ -69,7 +69,7 @@ After editing, run `mix assets.build` from `demo/` to regenerate copies.
 
 ## Phase 7: CSS fixes
 
-- [ ] 7.1 **Reconcile dark mode** — `cinder_ui.css` defines `@custom-variant dark` for `[data-theme=dark]` but CSS variables switch under `.dark` class. Make these consistent
+- [x] 7.1 **Reconcile dark mode** — `cinder_ui.css` defines `@custom-variant dark` for `[data-theme=dark]` but CSS variables switch under `.dark` class. Make these consistent
 - [ ] 7.2 **Map chart/sidebar CSS vars to Tailwind** — Add `--chart-1` through `--chart-5` and `--sidebar-*` variables to `@theme inline` so they work as `bg-chart-1` etc.
 - [ ] 7.3 **prefers-reduced-motion** — Add `motion-reduce:` overrides for animated components or disable `tailwindcss-animate` transitions when reduced motion is preferred
 
