@@ -364,75 +364,9 @@ Cinder UI uses shadcn-style CSS variables (`--background`, `--foreground`, `--pr
 
 Set your preferred corner scale by changing `--radius`; component classes (`rounded-md`, `rounded-lg`, etc.) derive from that value through the Tailwind token mapping in `assets/css/cinder_ui.css`.
 
-## Component Coverage
-
-Legend:
-
-- `✅ Full`: production-ready server-rendered implementation
-- `⚡ Progressive`: server-rendered base with optional LiveView hook enhancement
-- `🧱 Scaffold`: layout + API contract ready; full behavior needs host-side JS integration
-- `🚧 Not Yet`: intentionally not implemented yet
-
-| shadcn component family | Coverage | Interactivity model | Compatibility / limitations |
-| --- | --- | --- | --- |
-| Accordion | ✅ Full | Server-rendered | Matches core usage patterns |
-| Alert | ✅ Full | Server-rendered | - |
-| Alert Dialog | ✅ Full | Server-rendered | - |
-| Aspect Ratio | ✅ Full | Server-rendered | - |
-| Avatar | ✅ Full | Server-rendered | - |
-| Badge | ✅ Full | Server-rendered | - |
-| Breadcrumb | ✅ Full | Server-rendered | - |
-| Button / Button Group | ✅ Full | Server-rendered | - |
-| Calendar | 🧱 Scaffold | Static shell | Full date-picker behavior requires additional JS |
-| Carousel | ⚡ Progressive | Server + hooks | Hook layer drives controls/slide state |
-| Chart | 🧱 Scaffold | Static shell | Requires external chart engine integration |
-| Checkbox | ✅ Full | Server-rendered | - |
-| Collapsible | ✅ Full | Server-rendered | - |
-| Combobox | ⚡ Progressive | Server + hooks | Hook layer handles filtering/select behavior |
-| Command | ✅ Full | Server-rendered | - |
-| Context Menu | 🚧 Not Yet | N/A | JS-heavy semantics still pending |
-| Dialog | ⚡ Progressive | Server + hooks | Hook layer handles open/close behavior |
-| Drawer | ⚡ Progressive | Server + hooks | Hook layer handles panel/overlay behavior |
-| Dropdown Menu | ⚡ Progressive | Server + hooks | Hook layer handles menu toggling |
-| Empty | ✅ Full | Server-rendered | - |
-| Field / Form primitives | ✅ Full | Server-rendered | - |
-| Flash (`Feedback.flash/1`, `Feedback.flash_group/1`) | ✅ Full | Server-rendered + LiveView events | API-compatible with Phoenix generated flash components |
-| Hover Card | ✅ Full | Server-rendered | - |
-| Input Group | ✅ Full | Server-rendered | - |
-| Input OTP | ✅ Full | Server-rendered | - |
-| Input | ✅ Full | Server-rendered | - |
-| Icons (`CinderUI.Icons.icon/1`) | ✅ Full | Server-rendered | Requires optional `lucide_icons` dependency |
-| Item | ✅ Full | Server-rendered | - |
-| Kbd | ✅ Full | Server-rendered | - |
-| Label | ✅ Full | Server-rendered | - |
-| Menubar | ⚡ Progressive | Server + hooks | Hook layer handles interactive menu behavior |
-| Menu | ✅ Full | Server-rendered | daisyUI-inspired navigation list primitive |
-| Navigation Menu | ✅ Full | Server-rendered | - |
-| Pagination | ✅ Full | Server-rendered | - |
-| Popover | ⚡ Progressive | Server + hooks | Hook layer handles open/close behavior |
-| Progress | ✅ Full | Server-rendered | - |
-| Radio Group | ✅ Full | Server-rendered | - |
-| Resizable | 🧱 Scaffold | Server + hooks | Supports adjacent panel resizing, keyboard handles, and persisted sizes; collapsed panels and richer panel APIs are still missing |
-| Scroll Area | ✅ Full | Server-rendered | - |
-| Select | ✅ Full | Server + hooks | Custom trigger + listbox with hidden input and keyboard support |
-| Separator | ✅ Full | Server-rendered | - |
-| Sheet | ✅ Full | Server-rendered | Drawer alias semantics |
-| Sidebar | 🧱 Scaffold | Static shell | Complex interactions require host-side logic |
-| Skeleton | ✅ Full | Server-rendered | - |
-| Slider | ✅ Full | Server-rendered | Native range input style |
-| Sonner | 🚧 Not Yet | N/A | Not implemented; toast support planned for future release |
-| Toast | 🚧 Not Yet | N/A | Not implemented; toast API is intentionally deferred |
-| Spinner | ✅ Full | Server-rendered | - |
-| Switch | ✅ Full | Server-rendered | - |
-| Table | ✅ Full | Server-rendered | - |
-| Tabs | ✅ Full | Server-rendered | - |
-| Textarea | ✅ Full | Server-rendered | - |
-| Toggle / Toggle Group | ✅ Full | Server-rendered | - |
-| Tooltip | ✅ Full | Server-rendered | - |
-
 ## API Docs
 
-Every component module includes in-source docs and usage examples. Generate docs with:
+The docs site is the source of truth for component coverage, examples, and current behavior. Every component module also includes in-source docs and usage examples. Generate docs with:
 
 ```bash
 mix docs
