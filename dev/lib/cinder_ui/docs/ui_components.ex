@@ -517,15 +517,13 @@ defmodule CinderUI.Docs.UIComponents do
       <Layout.panel class="h-full divide-y">
         <div class="p-4">
           <div class="flex flex-wrap items-start justify-between gap-2">
-            <div class="space-y-2">
-              <h4 class="font-medium">
-                <a href={@entry_href} class="hover:underline underline-offset-4">
-                  <code>{@entry.module_name}.{@entry.title}</code>
-                </a>
-              </h4>
+            <h4 class="font-medium">
+              <a href={@entry_href} class="hover:underline underline-offset-4">
+                <code>{@entry.module_name}.{@entry.title}</code>
+              </a>
+            </h4>
+            <div class="flex items-center gap-2">
               <.docs_runtime_badge runtime={@entry.runtime} />
-            </div>
-            <div class="flex items-center gap-1">
               <Actions.button
                 as="a"
                 href={@entry_href}
