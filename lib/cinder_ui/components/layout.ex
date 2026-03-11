@@ -5,6 +5,7 @@ defmodule CinderUI.Components.Layout do
   Included:
 
   - Card family (`card/1`, `card_header/1`, `card_title/1`, `card_description/1`, `card_action/1`, `card_content/1`, `card_footer/1`)
+  - `panel/1`
   - `separator/1`
   - `skeleton/1`
   - `aspect_ratio/1`
@@ -287,6 +288,40 @@ defmodule CinderUI.Components.Layout do
 
     ~H"""
     <div data-slot="card-footer" class={classes(@classes)}>{render_slot(@inner_block)}</div>
+    """
+  end
+
+  doc("""
+  A borderless surface with card-like styling but no inner padding or gap,
+  for flexible layouts where the caller controls spacing.
+
+  ## Example
+
+  ```heex title="Panel with custom content"
+  <.panel class="max-w-md">
+    <div class="p-4 border-b">
+      <h3 class="text-sm font-medium">Notifications</h3>
+    </div>
+    <ul class="divide-y">
+      <li class="px-4 py-3 text-sm">New deployment completed</li>
+      <li class="px-4 py-3 text-sm">Invite accepted by teammate</li>
+    </ul>
+  </.panel>
+  ```
+  """)
+
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def panel(assigns) do
+    assigns =
+      assign(assigns, :classes, [
+        "bg-card text-card-foreground flex flex-col rounded-xl border shadow-sm",
+        assigns.class
+      ])
+
+    ~H"""
+    <div data-slot="panel" class={classes(@classes)}>{render_slot(@inner_block)}</div>
     """
   end
 
