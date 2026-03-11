@@ -40,8 +40,8 @@ for each pattern. These are template-only changes (no JS).
 
 - [x] 3.1 **Investigate alert grid alignment** — The alert grid layout (`has-[>svg]:grid-cols-[...]`) doesn't align icon+title correctly when used inside flash. Debug this in the browser and fix the root cause in `feedback.ex` alert component
 - [x] 3.2 **Rework flash to use alert/1** — Once 3.1 is resolved, replace the flash flex layout with `<.alert>` internally (remove the TODO comment in `feedback.ex`)
-- [ ] 3.3 **Add flash kinds: :success and :warning** — Extend `feedback.ex` flash to support `:success` and `:warning` with appropriate colors and icons
-- [ ] 3.4 **Add alert variants: :success and :warning** — Extend `@alert_variants` map with matching styles
+- [x] 3.3 **Add flash kinds: :success and :warning** — Extend `feedback.ex` flash to support `:success` and `:warning` with appropriate colors and icons
+- [x] 3.4 **Add alert variants: :success and :warning** — Extend `@alert_variants` map with matching styles
 
 ## Phase 4: Forms completeness
 

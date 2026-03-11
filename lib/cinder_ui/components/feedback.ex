@@ -87,7 +87,9 @@ defmodule CinderUI.Components.Feedback do
   @alert_variants %{
     default: "bg-card text-card-foreground",
     destructive:
-      "text-destructive bg-card [&>svg]:text-current *:data-[slot=alert-description]:text-destructive/90"
+      "text-destructive bg-card [&>svg]:text-current *:data-[slot=alert-description]:text-destructive/90",
+    success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 [&>svg]:text-current",
+    warning: "border-amber-500/30 bg-amber-500/10 text-amber-700 [&>svg]:text-current"
   }
 
   doc("""
@@ -119,7 +121,7 @@ defmodule CinderUI.Components.Feedback do
   """)
 
   attr :id, :string, default: nil
-  attr :variant, :atom, default: :default, values: [:default, :destructive]
+  attr :variant, :atom, default: :default, values: [:default, :destructive, :success, :warning]
   attr :class, :string, default: nil
   attr :rest, :global
   slot :inner_block, required: true
@@ -230,12 +232,24 @@ defmodule CinderUI.Components.Feedback do
   ```heex title="Error flash"
   <.flash kind={:error}>Unable to save changes.</.flash>
   ```
+
+  ```heex title="Success flash"
+  <.flash kind={:success}>Workspace created.</.flash>
+  ```
+
+  ```heex title="Warning flash"
+  <.flash kind={:warning}>Trial ends in 3 days.</.flash>
+  ```
   """)
 
   attr :id, :string, doc: "the optional id of flash container"
   attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
   attr :title, :string, default: nil
-  attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
+
+  attr :kind, :atom,
+    values: [:info, :error, :success, :warning],
+    doc: "used for styling and flash lookup"
+
   attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
@@ -244,15 +258,33 @@ defmodule CinderUI.Components.Feedback do
     assigns =
       assigns
       |> assign_new(:id, fn -> "flash-#{assigns.kind}" end)
-      |> assign(:variant, if(assigns.kind == :error, do: :destructive, else: :default))
+      |> assign(
+        :variant,
+        case assigns.kind do
+          :error -> :destructive
+          :success -> :success
+          :warning -> :warning
+          _ -> :default
+        end
+      )
       |> assign(
         :style_classes,
-        if(assigns.kind == :error,
-          do: "border-destructive/40 bg-destructive/10 text-destructive",
-          else: "border-primary/20 bg-primary/10 text-primary"
-        )
+        case assigns.kind do
+          :error -> "border-destructive/40 bg-destructive/10 text-destructive"
+          :success -> "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
+          :warning -> "border-amber-500/30 bg-amber-500/10 text-amber-700"
+          _ -> "border-primary/20 bg-primary/10 text-primary"
+        end
       )
-      |> assign(:icon_name, if(assigns.kind == :error, do: "circle-alert", else: "info"))
+      |> assign(
+        :icon_name,
+        case assigns.kind do
+          :error -> "circle-alert"
+          :success -> "circle-check-big"
+          :warning -> "triangle-alert"
+          _ -> "info"
+        end
+      )
 
     ~H"""
     <.alert
