@@ -10,7 +10,7 @@ runs:
   using: composite
   steps:
     - name: Cache root Mix dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           deps

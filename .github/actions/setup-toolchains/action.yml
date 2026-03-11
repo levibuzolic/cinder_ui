@@ -34,13 +34,13 @@ runs:
 
     - name: Setup Node
       if: ${{ inputs.node-cache == '' }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
 
     - name: Setup Node with cache
       if: ${{ inputs.node-cache != '' }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
         cache: ${{ inputs.node-cache }}
