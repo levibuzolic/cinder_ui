@@ -611,69 +611,75 @@ defmodule CinderUI.Components.Layout do
       class={classes(@classes)}
       phx-hook="CuiResizable"
     >
-      <%= for {panel, index} <- Enum.with_index(@panel) do %>
-        <div
-          data-slot="resizable-panel"
-          data-size={panel[:size]}
-          data-min-size={panel[:min_size]}
-          style={if(panel[:size], do: "flex: 0 0 #{panel[:size]}%;", else: nil)}
-          class={classes(["relative min-h-0 min-w-0 shrink-0", panel[:class]])}
-        >
-          {render_slot(panel)}
-        </div>
-        <div
-          :if={index < @panel_count - 1}
-          data-slot="resizable-handle"
-          data-with-handle={@with_handle}
-          role="separator"
-          tabindex="0"
-          aria-orientation={@direction}
-          class={
-            classes([
-              "bg-border relative shrink-0 touch-none outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-              if(@direction == :horizontal,
-                do: "w-px cursor-col-resize",
-                else: "h-px cursor-row-resize"
-              )
-            ])
-          }
-        >
-          <span
-            aria-hidden="true"
-            class={
-              classes([
-                "absolute bg-transparent",
-                if(@direction == :horizontal,
-                  do: "inset-y-0 -left-2 w-5",
-                  else: "inset-x-0 -top-2 h-5"
-                )
-              ])
-            }
-          />
-          <span
-            :if={@with_handle}
-            aria-hidden="true"
-            class={
-              classes([
-                "bg-border rounded-sm border border-border/60 p-1 shadow-xs",
-                if(@direction == :horizontal,
-                  do:
-                    "bg-background absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center justify-center",
-                  else:
-                    "bg-background absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
-                )
-              ])
-            }
-          >
-            <span class={
-              classes([
-                "bg-muted-foreground/80 block rounded-full",
-                if(@direction == :horizontal, do: "h-6 w-px", else: "h-px w-6")
-              ])
-            } />
-          </span>
-        </div>
-      <% end %>
+      <.resizable_panel_pair
+        :for={{panel, index} <- Enum.with_index(@panel)}
+        panel={panel}
+        index={index}
+        panel_count={@panel_count}
+        direction={@direction}
+        with_handle={@with_handle}
+      />
+    </div>
+    """
+  end
+
+  attr :panel, :map, required: true
+  attr :index, :integer, required: true
+  attr :panel_count, :integer, required: true
+  attr :direction, :atom, required: true
+  attr :with_handle, :boolean, required: true
+
+  defp resizable_panel_pair(assigns) do
+    ~H"""
+    <div
+      data-slot="resizable-panel"
+      data-size={@panel[:size]}
+      data-min-size={@panel[:min_size]}
+      style={if(@panel[:size], do: "flex: 0 0 #{@panel[:size]}%;", else: nil)}
+      class={classes(["relative min-h-0 min-w-0 shrink-0", @panel[:class]])}
+    >
+      {render_slot(@panel)}
+    </div>
+    <div
+      :if={@index < @panel_count - 1}
+      data-slot="resizable-handle"
+      data-with-handle={@with_handle}
+      role="separator"
+      tabindex="0"
+      aria-orientation={@direction}
+      class={
+        classes([
+          "bg-border relative shrink-0 touch-none outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+          if(@direction == :horizontal, do: "w-px cursor-col-resize", else: "h-px cursor-row-resize")
+        ])
+      }
+    >
+      <span
+        aria-hidden="true"
+        class={
+          classes([
+            "absolute bg-transparent",
+            if(@direction == :horizontal, do: "inset-y-0 -left-2 w-5", else: "inset-x-0 -top-2 h-5")
+          ])
+        }
+      />
+      <span
+        :if={@with_handle}
+        aria-hidden="true"
+        class={
+          classes([
+            "bg-border rounded-sm border border-border/60 p-1 shadow-xs",
+            "bg-background absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+          ])
+        }
+      >
+        <span class={
+          classes([
+            "bg-muted-foreground/80 block rounded-full",
+            if(@direction == :horizontal, do: "h-6 w-px", else: "h-px w-6")
+          ])
+        } />
+      </span>
     </div>
     """
   end

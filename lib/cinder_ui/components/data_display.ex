@@ -69,6 +69,7 @@ defmodule CinderUI.Components.DataDisplay do
   attr :fallback, :string, default: nil
   attr :size, :atom, default: :default, values: [:sm, :default, :lg]
   attr :class, :string, default: nil
+
   slot :badge do
     attr :class, :string
   end
@@ -644,7 +645,7 @@ defmodule CinderUI.Components.DataDisplay do
       ])
 
     ~H"""
-    <pre data-slot="code-block" class={classes(@classes)}><code><%= render_slot(@inner_block) %></code></pre>
+    <pre data-slot="code-block" class={classes(@classes)}><code>{render_slot(@inner_block)}</code></pre>
     """
   end
 end

@@ -583,38 +583,44 @@ defmodule CinderUI.Components.Overlay do
     <div id={@id} data-slot="dropdown-menu" class={classes(@classes)} phx-hook="CuiDropdownMenu">
       <div data-slot="dropdown-menu-trigger" data-dropdown-trigger>{render_slot(@trigger)}</div>
       <div data-slot="dropdown-menu-content" data-dropdown-content class={classes(@content_classes)}>
-        <%= for item <- @item do %>
-          <a
-            :if={item[:href]}
-            data-slot="dropdown-menu-item"
-            href={item[:href]}
-            class={
-              classes([
-                "relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground",
-                item[:disabled] && "pointer-events-none opacity-50"
-              ])
-            }
-          >
-            {render_slot(item)}
-          </a>
-
-          <button
-            :if={!item[:href]}
-            type="button"
-            data-slot="dropdown-menu-item"
-            disabled={item[:disabled]}
-            class={
-              classes([
-                "relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
-                item[:disabled] && "pointer-events-none opacity-50"
-              ])
-            }
-          >
-            {render_slot(item)}
-          </button>
-        <% end %>
+        <.dropdown_menu_item :for={item <- @item} item={item} />
       </div>
     </div>
+    """
+  end
+
+  attr :item, :map, required: true
+
+  defp dropdown_menu_item(assigns) do
+    ~H"""
+    <a
+      :if={@item[:href]}
+      data-slot="dropdown-menu-item"
+      href={@item[:href]}
+      class={
+        classes([
+          "relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground",
+          @item[:disabled] && "pointer-events-none opacity-50"
+        ])
+      }
+    >
+      {render_slot(@item)}
+    </a>
+
+    <button
+      :if={!@item[:href]}
+      type="button"
+      data-slot="dropdown-menu-item"
+      disabled={@item[:disabled]}
+      class={
+        classes([
+          "relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+          @item[:disabled] && "pointer-events-none opacity-50"
+        ])
+      }
+    >
+      {render_slot(@item)}
+    </button>
     """
   end
 

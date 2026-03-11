@@ -15,7 +15,7 @@ a descriptive message referencing the phase.
 
 Small fixes that reduce tech debt. Each is independent — can be done in parallel.
 
-- [ ] 1.1 **Unify HEEx syntax** — Convert remaining `<%= %>` to `{}` syntax in `overlay.ex` (lines 586-614), `layout.ex` (lines 614-676), `navigation.ex` (lines 544-553), `data_display.ex` (line 647)
+- [x] 1.1 **Unify HEEx syntax** — Convert remaining `<%= %>` to `{}` syntax in `overlay.ex` (lines 586-614), `layout.ex` (lines 614-676), `navigation.ex` (lines 544-553), `data_display.ex` (line 647)
 - [ ] 1.2 **Remove redundant disabled class in dropdown_menu** — `overlay.ex` items apply both `disabled` HTML attr and manual `pointer-events-none opacity-50` class. The HTML attr already triggers Tailwind `disabled:` utilities. Remove the manual class
 - [ ] 1.3 **Remove dead switch thumb_position case** — `forms.ex` lines 459-463: both `:sm` and `:default` return the same value. Collapse to a single constant
 - [ ] 1.4 **Consistent aria-label casing** — Standardize to `aria-label="Close"` (capitalized) on flash close button (`feedback.ex`) to match dialog (`overlay.ex`)

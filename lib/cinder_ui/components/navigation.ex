@@ -541,16 +541,14 @@ defmodule CinderUI.Components.Navigation do
         </button>
       </div>
 
-      <%= if @content != [] do %>
-        <div
-          :for={content <- @content}
-          data-slot="tabs-content"
-          data-state={if(content.value == @value, do: "active", else: "inactive")}
-          class={classes(["flex-1 outline-none", content.value != @value && "hidden"])}
-        >
-          {render_slot(content)}
-        </div>
-      <% end %>
+      <div
+        :for={content <- @content}
+        data-slot="tabs-content"
+        data-state={if(content.value == @value, do: "active", else: "inactive")}
+        class={classes(["flex-1 outline-none", content.value != @value && "hidden"])}
+      >
+        {render_slot(content)}
+      </div>
     </div>
     """
   end
