@@ -14,8 +14,6 @@ test.describe("interactive previews", () => {
     const root = page.locator("[data-slot='dialog']").first()
     const trigger = root.locator("[data-dialog-trigger]")
     const content = root.locator("[data-dialog-content]")
-    const close = root.locator("[data-dialog-close]")
-
     await root.scrollIntoViewIfNeeded()
     expect(await hasClass(content, "hidden")).toBe(true)
 

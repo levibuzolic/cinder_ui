@@ -32,8 +32,6 @@ const gotoWithStableStyles = async (page: Page, path: string) => {
 }
 
 test.describe("promoted example visual regression", () => {
-  test.setTimeout(300_000)
-
   test.use({
     viewport: { width: 1600, height: 1200 },
     deviceScaleFactor: 2,
@@ -61,9 +59,22 @@ test.describe("promoted example visual regression", () => {
         ),
     )
 
-    const promotedExamples: Array<{ componentId: string; exampleId: string; exampleTitle: string; path: string }> = []
+    // Pre-filter: only navigate to pages that contain promoted visual examples.
+    // Use parallel fetch() to check HTML content without full browser navigation.
+    const pagesWithPromoted = await page.evaluate(async (paths) => {
+      const results = await Promise.all(
+        paths.map(async (path) => {
+          const response = await fetch(path)
+          const html = await response.text()
+          return html.includes("data-promoted-visual") ? path : null
+        }),
+      )
+      return results.filter((path): path is string => path !== null)
+    }, componentPaths)
 
-    for (const path of componentPaths) {
+    let promotedCount = 0
+
+    for (const path of pagesWithPromoted) {
       await gotoWithStableStyles(page, path)
 
       const examples = await page.locator("[data-component-example][data-promoted-visual]").evaluateAll((nodes) =>
@@ -74,24 +85,21 @@ test.describe("promoted example visual regression", () => {
         })),
       )
 
-      promotedExamples.push(...examples.map((example) => ({ ...example, path })))
+      for (const { componentId, exampleId, exampleTitle } of examples) {
+        const example = page.locator(
+          `[data-component-example][data-component-id="${componentId}"][data-example-id="${exampleId}"][data-promoted-visual]`,
+        )
+        const preview = example.locator('[data-slot="preview"]')
+
+        await preview.scrollIntoViewIfNeeded()
+        await expect(preview).toBeVisible()
+        await expect(preview).toHaveScreenshot(`examples/${componentId}-${slugify(exampleTitle)}.png`, {
+          scale: "device",
+        })
+        promotedCount += 1
+      }
     }
 
-    expect(promotedExamples.length).toBeGreaterThan(0)
-
-    for (const { componentId, exampleId, exampleTitle, path } of promotedExamples) {
-      await gotoWithStableStyles(page, path)
-
-      const example = page.locator(
-        `[data-component-example][data-component-id="${componentId}"][data-example-id="${exampleId}"][data-promoted-visual]`,
-      )
-      const preview = example.locator('[data-slot="preview"]')
-
-      await preview.scrollIntoViewIfNeeded()
-      await expect(preview).toBeVisible()
-      await expect(preview).toHaveScreenshot(`examples/${componentId}-${slugify(exampleTitle)}.png`, {
-        scale: "device",
-      })
-    }
+    expect(promotedCount).toBeGreaterThan(0)
   })
 })

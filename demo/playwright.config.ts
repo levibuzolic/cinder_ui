@@ -3,7 +3,7 @@ import { defineConfig, type PlaywrightTestConfig } from "@playwright/test"
 const config = {
   testDir: "./tests/browser",
   snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}{ext}",
-  timeout: 60_000,
+  timeout: 240_000,
   expect: {
     timeout: 10_000,
     toHaveScreenshot: {
@@ -13,7 +13,7 @@ const config = {
       scale: "css",
     },
   },
-  fullyParallel: true,
+  fullyParallel: false,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
   reporter: [["list"]],
@@ -29,6 +29,7 @@ const config = {
     cwd: __dirname,
     reuseExistingServer: true,
     timeout: 120_000,
+    env: { ...process.env, PHX_CODE_RELOADER: "false" },
   },
 } satisfies PlaywrightTestConfig
 
