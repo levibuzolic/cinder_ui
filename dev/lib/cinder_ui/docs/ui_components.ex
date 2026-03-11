@@ -540,14 +540,6 @@ defmodule CinderUI.Docs.UIComponents do
       |> assign(:examples_count, length(assigns.entry.examples))
       |> assign(:preview_align, assigns.entry.preview_align || :center)
       |> assign(
-        :preview_classes,
-        if(assigns.entry.preview_align == :center,
-          do:
-            "bg-background border-border/70 flex min-h-[7rem] flex-1 px-4 py-4 items-center justify-center",
-          else: "bg-background border-border/70 flex min-h-[7rem] flex-1 px-4 py-4"
-        )
-      )
-      |> assign(
         :entry_href,
         overview_entry_href(assigns.mode, assigns.root_prefix, assigns.entry)
       )
@@ -558,8 +550,8 @@ defmodule CinderUI.Docs.UIComponents do
       data-component-card
       data-component-name={@entry.title}
     >
-      <Layout.card class="h-full gap-0 py-0">
-        <Layout.card_header class="border-border/70 border-b px-4 py-3">
+      <Layout.panel class="h-full divide-y">
+        <div class="p-4">
           <div class="flex flex-wrap items-start justify-between gap-2">
             <h4 class="font-medium">
               <a href={@entry_href} class="hover:underline underline-offset-4">
@@ -577,18 +569,21 @@ defmodule CinderUI.Docs.UIComponents do
               </Actions.button>
             </div>
           </div>
-          <div class="docs-markdown mt-2 text-sm">{rendered(@docs_html)}</div>
-        </Layout.card_header>
+          <div class="docs-markdown text-sm">{rendered(@docs_html)}</div>
+        </div>
 
-        <Layout.card_content class={@preview_classes}>
+        <div class={[
+          "bg-background flex min-h-[7rem] flex-1 p-4",
+          @preview_align == :center && "items-center justify-center"
+        ]}>
           <div
             data-preview-align={@preview_align}
             class={["w-full", @preview_align == :center && "flex justify-center"]}
           >
             {rendered(@entry.preview_html)}
           </div>
-        </Layout.card_content>
-        <div class="relative min-w-0 border-t border-b border-border/70">
+        </div>
+        <div class="relative min-w-0 border-t">
           <Actions.button
             as="button"
             variant={:outline}
@@ -607,14 +602,7 @@ defmodule CinderUI.Docs.UIComponents do
             pre_class="min-w-0 max-w-full max-h-56 overflow-x-auto overflow-y-auto p-4 pr-12 text-xs"
           />
         </div>
-        <div class="flex flex-wrap items-center justify-between gap-2 p-4 text-xs">
-          <span class="text-muted-foreground">
-            examples: <span class="font-medium text-foreground">{@examples_count}</span>
-            · attrs: <span class="font-medium text-foreground">{@attrs_count}</span>
-            · slots: <span class="font-medium text-foreground">{@slots_count}</span>
-          </span>
-        </div>
-      </Layout.card>
+      </Layout.panel>
     </article>
     """
   end
