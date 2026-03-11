@@ -650,18 +650,33 @@ defmodule CinderUI.Components.DataDisplay do
   ```
   """)
 
+  attr :id, :string, default: nil
   attr :class, :string, default: nil
   slot :inner_block, required: true
 
   def code_block(assigns) do
     assigns =
-      assign(assigns, :classes, [
+      assigns
+      |> assign_new(:id, fn -> "cinder-ui-code-block-#{System.unique_integer([:positive])}" end)
+      |> assign(:classes, [
         "relative rounded-lg border bg-muted/30 px-4 py-3 font-mono text-sm text-foreground",
         assigns.class
       ])
 
     ~H"""
-    <pre data-slot="code-block" class={classes(@classes)}><code>{render_slot(@inner_block)}</code></pre>
+    <div id={@id} data-slot="code-block" class={classes(@classes)} phx-hook="CuiCodeBlock">
+      <button
+        type="button"
+        data-slot="code-block-copy"
+        data-code-block-copy
+        aria-label="Copy code"
+        class="text-muted-foreground hover:text-foreground absolute top-3 right-3 inline-flex items-center gap-1 rounded-md border bg-background/80 px-2 py-1 text-xs font-sans"
+      >
+        <Icons.icon name="copy" class="size-3.5" />
+        <span data-code-block-copy-label>Copy</span>
+      </button>
+      <pre class="overflow-x-auto pr-14"><code data-code-block-content>{render_slot(@inner_block)}</code></pre>
+    </div>
     """
   end
 end

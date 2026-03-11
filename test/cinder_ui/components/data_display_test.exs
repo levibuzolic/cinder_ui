@@ -39,6 +39,19 @@ defmodule CinderUI.Components.DataDisplayTest do
     assert html =~ "+3"
   end
 
+  test "code_block renders copy button and hook" do
+    html =
+      render_component(&DataDisplay.code_block/1, %{
+        inner_block: TestHelpers.slot("mix test")
+      })
+
+    assert html =~ "data-slot=\"code-block\""
+    assert html =~ "phx-hook=\"CuiCodeBlock\""
+    assert html =~ "data-slot=\"code-block-copy\""
+    assert html =~ "data-code-block-content"
+    assert html =~ "Copy"
+  end
+
   test "table renders slots" do
     html =
       render_component(&DataDisplay.table/1, %{
