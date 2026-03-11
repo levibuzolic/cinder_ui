@@ -116,6 +116,45 @@ const createItemHighlighter = (getItems, onAfterHighlight) => {
   return { highlight, onFocus, onMouseEnter, onMouseLeave, bind, unbind }
 }
 
+/**
+ * Create a simple typeahead matcher for menu/listbox items.
+ *
+ * Repeated printable keys within a short window extend the current query.
+ *
+ * @param {() => HTMLElement[]} getItems
+ * @param {(item: HTMLElement) => string} getLabel
+ * @param {(item: HTMLElement) => void} onMatch
+ */
+const createTypeaheadMatcher = (getItems, getLabel, onMatch) => {
+  let buffer = ""
+  let resetTimer = null
+
+  const reset = () => {
+    buffer = ""
+    if (resetTimer) window.clearTimeout(resetTimer)
+    resetTimer = null
+  }
+
+  const search = (key) => {
+    if (key.length !== 1) return false
+
+    buffer = `${buffer}${key.toLowerCase()}`
+    if (resetTimer) window.clearTimeout(resetTimer)
+    resetTimer = window.setTimeout(reset, 500)
+
+    const items = getItems()
+    const match =
+      items.find((item) => getLabel(item).toLowerCase().startsWith(buffer)) ||
+      items.find((item) => getLabel(item).toLowerCase().startsWith(key.toLowerCase()))
+
+    if (!match) return false
+    onMatch(match)
+    return true
+  }
+
+  return { search, reset }
+}
+
 // -----------------------------------------------------------------------------
 // MARK: Command System
 // -----------------------------------------------------------------------------
@@ -613,7 +652,16 @@ const CuiDropdownMenu = {
     this.refreshElements = () => {
       this.trigger = this.el.querySelector("[data-dropdown-trigger]")
       this.content = this.el.querySelector("[data-dropdown-content]")
+      this.items = Array.from(this.el.querySelectorAll("[data-slot='dropdown-menu-item']")).filter(
+        (item) => !item.disabled,
+      )
     }
+
+    this.typeahead = createTypeaheadMatcher(
+      () => this.items || [],
+      (item) => item.textContent || "",
+      (item) => item.focus(),
+    )
 
     this.toggle = () => {
       if (!this.open) this.lastActiveElement = getFocusTarget(this.trigger)
@@ -630,6 +678,10 @@ const CuiDropdownMenu = {
       if (event.key === "Escape" && this.open) {
         event.preventDefault()
         this.sync(false)
+      }
+
+      if (this.open && this.typeahead.search(event.key)) {
+        event.preventDefault()
       }
     }
 
@@ -686,6 +738,7 @@ const CuiDropdownMenu = {
   },
 
   destroyed() {
+    this.typeahead.reset()
     this.unbindEvents()
     this.removeCommandListener && this.removeCommandListener()
   },
@@ -857,6 +910,14 @@ const CuiSelect = {
 
     this._hl = createItemHighlighter(() => this.items, () => this.sync())
     this.highlightItem = this._hl.highlight
+    this.typeahead = createTypeaheadMatcher(
+      () => this.enabledItems(),
+      (item) => item.dataset.label || item.textContent || "",
+      (item) => {
+        this.highlightItem(item)
+        item.focus()
+      },
+    )
 
     /** Synchronize DOM state (visibility, ARIA attributes) with `this.open`. */
     this.sync = () => {
@@ -1004,6 +1065,12 @@ const CuiSelect = {
         event.preventDefault()
         this.closeMenu()
       }
+
+      if (this.typeahead.search(event.key)) {
+        event.preventDefault()
+        this.open = true
+        this.sync()
+      }
     }
 
     /** @param {KeyboardEvent} event */
@@ -1040,6 +1107,10 @@ const CuiSelect = {
         event.preventDefault()
         this.closeMenu()
         if (this.trigger) this.trigger.focus()
+      }
+
+      if (this.typeahead.search(event.key)) {
+        event.preventDefault()
       }
     }
 
@@ -1101,6 +1172,7 @@ const CuiSelect = {
   },
 
   destroyed() {
+    this.typeahead.reset()
     this.unbindEvents()
     this.removeCommandListener && this.removeCommandListener()
   },

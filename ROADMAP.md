@@ -56,7 +56,7 @@ After editing, run `mix assets.build` from `demo/` to regenerate copies.
 
 - [x] 5.1 **Menubar: implement CuiMenubar hook** — Click-to-open menus, arrow-left/right between menus, arrow-down into items, Escape to close. Update `overlay.ex` to add `phx-hook="CuiMenubar"`
 - [x] 5.2 **Autocomplete: add Home/End key support** — `CuiAutocomplete` only handles ArrowDown/Up/Enter/Escape. Add Home and End to match `CuiSelect`
-- [ ] 5.3 **Select/Dropdown: add typeahead** — Pressing a letter key should jump to the first matching item. Implement in `createItemHighlighter` or per-hook
+- [x] 5.3 **Select/Dropdown: add typeahead** — Pressing a letter key should jump to the first matching item. Implement in `createItemHighlighter` or per-hook
 
 ## Phase 6: Component improvements
 
