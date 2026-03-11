@@ -204,9 +204,13 @@ defmodule CinderUI.Components.Feedback do
   doc("""
   Renders a flash notice.
 
-  Uses `alert/1` under the hood.
+  Drop-in replacement for the Phoenix generated `flash/1` core component.
+  Accepts the same attributes and slots, so you can swap it in without
+  changing any call sites.
 
-  API-compatible with the Phoenix generated core component.
+  To replace the default Phoenix flash, remove the `flash/1` function from
+  your `core_components.ex` and add `import CinderUI.Components.Feedback`
+  (or `use CinderUI.Components` which imports all modules).
 
   ## Examples
 
@@ -269,7 +273,10 @@ defmodule CinderUI.Components.Feedback do
   doc("""
   Shows the flash group with standard titles and content.
 
-  API-compatible with Phoenix generated `flash_group/1`.
+  Drop-in replacement for the Phoenix generated `flash_group/1` core component.
+  Includes the same client-error and server-error reconnection notices.
+
+  To replace the default, remove `flash_group/1` from your `core_components.ex`.
 
   ## Example
 

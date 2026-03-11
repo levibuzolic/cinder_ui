@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DEMO_DIR="${ROOT_DIR}/demo"
+
+if ! command -v mise >/dev/null 2>&1; then
+  echo "error: required command 'mise' is not installed or not on PATH" >&2
+  exit 1
+fi
+
+cd "$DEMO_DIR"
+exec mise exec -- npx playwright test tests/browser/visual.spec.ts tests/browser/example_visual.spec.ts --update-snapshots "$@"
