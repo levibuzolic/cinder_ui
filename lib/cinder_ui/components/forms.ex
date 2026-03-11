@@ -877,6 +877,7 @@ defmodule CinderUI.Components.Forms do
         value={@selected_label}
         placeholder={@placeholder}
         autocomplete="off"
+        role="combobox"
         aria-autocomplete="list"
         aria-controls={"#{@id}-content"}
         aria-expanded="false"

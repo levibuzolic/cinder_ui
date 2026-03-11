@@ -107,6 +107,7 @@ defmodule CinderUI.Components.FormsTest do
     assert html =~ "data-slot=\"autocomplete-value\""
     assert html =~ "data-slot=\"autocomplete-item\""
     assert html =~ "data-slot=\"autocomplete-empty\""
+    assert html =~ ~s(role="combobox")
     assert html =~ "phx-hook=\"CuiAutocomplete\""
   end
 
