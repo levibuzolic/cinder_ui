@@ -108,8 +108,8 @@ defmodule CinderUI.Docs.CodeHighlighter do
     {tag_name, cursor} = take_while(tag, cursor, &tag_name_char?/1)
 
     out = [
-      ~s(<span class="tok-punct">#{open_punct}</span>),
-      ~s(<span class="tok-tag">#{escape_html(tag_name)}</span>)
+      ~s(<span class="tok-tag">#{escape_html(tag_name)}</span>),
+      ~s(<span class="tok-punct">#{open_punct}</span>)
     ]
 
     out =
@@ -121,7 +121,7 @@ defmodule CinderUI.Docs.CodeHighlighter do
       )
 
     [
-      out,
+      Enum.reverse(out),
       ~s(<span class="tok-punct">#{if(close_token == "/>", do: "/&gt;", else: "&gt;")}</span>)
     ]
     |> IO.iodata_to_binary()
@@ -351,6 +351,48 @@ defmodule CinderUI.Docs.CodeHighlighter do
           [~s(<span class="tok-comment">), escape_html(comment), "</span>"] | out
         ])
 
+      starts_with?(source, idx, "~H\"\"\"") ->
+        {body, next_idx, closed?} = take_delimited(source, idx + 5, "\"\"\"")
+
+        highlight_elixir(source, next_idx, [
+          highlight_heex_sigil("~H", "\"\"\"", body, closed?) | out
+        ])
+
+      starts_with?(source, idx, "~H'''") ->
+        {body, next_idx, closed?} = take_delimited(source, idx + 5, "'''")
+
+        highlight_elixir(source, next_idx, [
+          highlight_heex_sigil("~H", "'''", body, closed?) | out
+        ])
+
+      starts_with?(source, idx, "~H\"") ->
+        {body, next_idx, closed?} = take_elixir_quoted(source, idx + 2, ?")
+
+        highlight_elixir(source, next_idx, [
+          highlight_heex_sigil("~H", "\"", body, closed?) | out
+        ])
+
+      starts_with?(source, idx, "~H'") ->
+        {body, next_idx, closed?} = take_elixir_quoted(source, idx + 2, ?')
+
+        highlight_elixir(source, next_idx, [
+          highlight_heex_sigil("~H", "'", body, closed?) | out
+        ])
+
+      starts_with?(source, idx, "\"\"\"") ->
+        {chunk, next_idx} = take_heredoc(source, idx, "\"\"\"")
+
+        highlight_elixir(source, next_idx, [
+          [~s(<span class="tok-string">), escape_html(chunk), "</span>"] | out
+        ])
+
+      starts_with?(source, idx, "'''") ->
+        {chunk, next_idx} = take_heredoc(source, idx, "'''")
+
+        highlight_elixir(source, next_idx, [
+          [~s(<span class="tok-string">), escape_html(chunk), "</span>"] | out
+        ])
+
       at(source, idx) in [?", ?'] ->
         {chunk, next_idx} = take_string(source, idx, at(source, idx))
 
@@ -398,6 +440,16 @@ defmodule CinderUI.Docs.CodeHighlighter do
       true ->
         highlight_elixir(source, idx + 1, [escape_html(<<at(source, idx)>>) | out])
     end
+  end
+
+  defp highlight_heex_sigil(sigil, delimiter, body, closed?) do
+    [
+      ~s(<span class="tok-keyword">#{escape_html(sigil)}</span>),
+      ~s(<span class="tok-string">#{escape_html(delimiter)}</span>),
+      highlight_heex(body),
+      if(closed?, do: ~s(<span class="tok-string">#{escape_html(delimiter)}</span>), else: "")
+    ]
+    |> IO.iodata_to_binary()
   end
 
   defp highlight_bash(source), do: highlight_bash(source, 0, [])
@@ -559,6 +611,32 @@ defmodule CinderUI.Docs.CodeHighlighter do
     end
   end
 
+  defp take_delimited(source, idx, delimiter) do
+    delimiter_size = byte_size(delimiter)
+
+    case :binary.match(binary_part(source, idx, byte_size(source) - idx), delimiter) do
+      {offset, _len} ->
+        {binary_part(source, idx, offset), idx + offset + delimiter_size, true}
+
+      :nomatch ->
+        {binary_part(source, idx, byte_size(source) - idx), byte_size(source), false}
+    end
+  end
+
+  defp take_heredoc(source, idx, delimiter) do
+    delimiter_size = byte_size(delimiter)
+    {body, next_idx, closed?} = take_delimited(source, idx + delimiter_size, delimiter)
+
+    chunk =
+      if closed? do
+        delimiter <> body <> delimiter
+      else
+        delimiter <> body
+      end
+
+    {chunk, next_idx}
+  end
+
   defp take_string(source, idx, quote_char) do
     take_string(source, idx + 1, quote_char, idx)
   end
@@ -581,6 +659,21 @@ defmodule CinderUI.Docs.CodeHighlighter do
       true ->
         take_string(source, idx + 1, quote_char, start)
     end
+  end
+
+  defp take_elixir_quoted(source, idx, quote_char) do
+    {chunk, next_idx} = take_string(source, idx, quote_char)
+    chunk_size = byte_size(chunk)
+    closed? = chunk_size >= 2 and :binary.last(chunk) == quote_char
+
+    body =
+      cond do
+        chunk_size <= 1 -> ""
+        closed? -> binary_part(chunk, 1, chunk_size - 2)
+        true -> binary_part(chunk, 1, chunk_size - 1)
+      end
+
+    {body, next_idx, closed?}
   end
 
   defp take_while(source, idx, _fun) when idx >= byte_size(source), do: {"", idx}
