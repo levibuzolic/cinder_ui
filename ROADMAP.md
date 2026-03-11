@@ -47,7 +47,7 @@ for each pattern. These are template-only changes (no JS).
 
 - [x] 4.1 **field_control: cover all controls** — `forms.ex` `field_control/1` cascades invalid styling but misses `native-select`, `combobox-input`, `switch`, `checkbox`, `radio-group-item`. Add data-slot selectors for each
 - [x] 4.2 **Input OTP: implement JS hook** — Create `CuiInputOtp` hook in `priv/templates/cinder_ui.js` with auto-advance on input, backspace-to-previous, paste handling
-- [ ] 4.3 **Input OTP: add separator support** — Add a `separator` slot or `groups` attr to `forms.ex` input_otp for visual separators between digit groups
+- [x] 4.3 **Input OTP: add separator support** — Add a `separator` slot or `groups` attr to `forms.ex` input_otp for visual separators between digit groups
 
 ## Phase 5: JS Hook improvements
 

@@ -236,6 +236,18 @@ defmodule CinderUI.Components.FormsTest do
     assert html =~ "value=\"3\""
   end
 
+  test "input_otp supports grouped separators" do
+    html =
+      render_component(&Forms.input_otp/1, %{
+        name: "backup_code[]",
+        length: 6,
+        groups: [3, 3]
+      })
+
+    assert html =~ "data-slot=\"input-otp-separator\""
+    assert html =~ "data-input-otp-separator-after=\"2\""
+  end
+
   test "input_group renders a unified control shell" do
     html =
       render_component(&Forms.input_group/1, %{

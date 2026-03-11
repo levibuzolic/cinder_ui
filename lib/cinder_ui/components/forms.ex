@@ -1132,12 +1132,20 @@ defmodule CinderUI.Components.Forms do
         length={8}
         values={["1", "2", "3", "", "", "", "", ""]}
       />
+
+      <.input_otp
+        name="backup_code[]"
+        length={6}
+        groups={[3, 3]}
+        values={["1", "2", "3", "4", "5", "6"]}
+      />
   """)
 
   attr :id, :string, default: nil
   attr :name, :string, default: "code[]"
   attr :length, :integer, default: 6
   attr :values, :list, default: []
+  attr :groups, :list, default: []
   attr :class, :string, default: nil
   attr :input_class, :string, default: nil
   attr :rest, :global
@@ -1146,6 +1154,7 @@ defmodule CinderUI.Components.Forms do
     assigns =
       assigns
       |> assign_new(:id, fn -> "cinder-ui-input-otp-#{System.unique_integer([:positive])}" end)
+      |> assign(:separator_indexes, input_otp_separator_indexes(assigns.groups, assigns.length))
       |> assign(:classes, [
         "flex items-center gap-2",
         assigns.class
@@ -1153,25 +1162,53 @@ defmodule CinderUI.Components.Forms do
 
     ~H"""
     <div id={@id} data-slot="input-otp" class={classes(@classes)} phx-hook="CuiInputOtp">
-      <input
+      <.input_otp_cell
         :for={index <- Enum.to_list(0..(@length - 1))}
-        data-input-otp-input
-        data-input-otp-index={index}
-        type="text"
-        inputmode="numeric"
-        pattern="[0-9]*"
-        maxlength="1"
+        index={index}
         name={@name}
         value={Enum.at(@values, index, "")}
-        class={
-          classes([
-            "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-10 rounded-md border bg-transparent text-center text-sm shadow-xs outline-none focus-visible:ring-[3px]",
-            @input_class
-          ])
-        }
-        {@rest}
+        input_class={@input_class}
+        extra_attrs={@rest}
+        show_separator={index in @separator_indexes}
       />
     </div>
+    """
+  end
+
+  attr :index, :integer, required: true
+  attr :name, :string, required: true
+  attr :value, :string, default: ""
+  attr :input_class, :string, default: nil
+  attr :show_separator, :boolean, required: true
+  attr :extra_attrs, :any, default: %{}
+
+  defp input_otp_cell(assigns) do
+    ~H"""
+    <input
+      data-input-otp-input
+      data-input-otp-index={@index}
+      type="text"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      maxlength="1"
+      name={@name}
+      value={@value}
+      class={
+        classes([
+          "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-10 rounded-md border bg-transparent text-center text-sm shadow-xs outline-none focus-visible:ring-[3px]",
+          @input_class
+        ])
+      }
+      {@extra_attrs}
+    />
+    <span
+      :if={@show_separator}
+      data-slot="input-otp-separator"
+      data-input-otp-separator-after={@index}
+      class="text-muted-foreground text-sm"
+    >
+      -
+    </span>
     """
   end
 
@@ -1180,4 +1217,14 @@ defmodule CinderUI.Components.Forms do
   end
 
   defp selected_option(_options, _value), do: nil
+
+  defp input_otp_separator_indexes(groups, length) do
+    groups
+    |> Enum.map_reduce(0, fn group_size, offset ->
+      next_offset = offset + group_size
+      {next_offset - 1, next_offset}
+    end)
+    |> elem(0)
+    |> Enum.filter(&(&1 >= 0 and &1 < length - 1))
+  end
 end
