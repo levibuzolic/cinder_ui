@@ -54,6 +54,7 @@ defmodule CinderUI.MixProject do
     [
       {:phoenix, "~> 1.7 or ~> 1.8"},
       {:phoenix_live_view, "~> 1.0"},
+      {:tailwind_merge, "~> 0.1.0"},
       {:earmark, "~> 1.4", runtime: false},
       {:lucide_icons, "~> 2.0", optional: true},
       {:jason, "~> 1.4", optional: true},
