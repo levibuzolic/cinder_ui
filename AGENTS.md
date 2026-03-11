@@ -1,57 +1,38 @@
-# AGENTS Guide
+# Repository Guide
 
-Contributor guide for `cinder_ui`.
+`cinder_ui` is a Phoenix + LiveView component library with a demo app and static docs export.
 
-## Scope
+## Key Paths
 
-- Phoenix + LiveView component library ported from shadcn/ui patterns.
-- Primary outputs:
-  - Hex package: `cinder_ui`
-  - Static site export: `dist/site`
-  - Demo app for integration and browser tests: `demo`
+- `lib/cinder_ui/`: library components, icons, hooks, classes
+- `priv/templates/`: source of truth for `cinder_ui.js` and `cinder_ui.css`
+- `dev/`: static docs/site code
+- `demo/`: local integration app and browser tests
 
-## Code Map
+## Working Rules
 
-- Library components: `lib/cinder_ui/**`
-- Public installer task: `lib/mix/tasks/cinder_ui.install.ex`
-- Static docs/site build task: `dev/lib/mix/tasks/cinder_ui.docs.build.ex`
-- Marketing/static site composition: `dev/lib/cinder_ui/site/marketing.ex`
-- Static docs catalog: `dev/lib/cinder_ui/docs/catalog.ex`
-- Demo host app: `demo`
-
-## Required Commands
-
-Run from repository root unless noted.
-
-- Root quality:
-  - `mix quality`
-  - `MIX_ENV=test mix coveralls.cobertura --raise` (writes `cover/cobertura.xml`)
-- Static docs/site build:
-  - `mix cinder_ui.docs.build`
-- Demo unit checks:
-  - `cd demo && mix format --check-formatted && mix test`
-- Demo browser checks:
-  - `cd demo && npm ci && mix assets.build && npx playwright test`
-
-## Standards
-
-- Keep APIs Phoenix-first: HEEx function components, predictable assigns, typed `attr`/`slot`.
-- Prefer composing with existing components in docs/examples; use raw HTML only when necessary.
-- Keep static docs and demo behavior aligned (theme controls, snippets, interactions).
+- Edit `priv/templates/cinder_ui.js` and `priv/templates/cinder_ui.css`; do not edit `demo/assets/js/cinder_ui.js` or `demo/assets/css/cinder_ui.css` because they are generated copies.
+- Keep APIs Phoenix-first: HEEx function components, predictable assigns, typed `attr` and `slot`.
+- Prefer composing with existing components in docs and examples; use raw HTML only when necessary.
+- Keep demo and static docs behavior aligned, including snippets, theme controls, and interactions.
+- Update tests when component behavior, docs generation, or JS hooks change.
+- Update `README.md`, `CONTRIBUTING.md`, and in-module docs/examples when public behavior changes.
 - Use repository-relative paths in docs.
-- Update tests whenever component behavior, docs generation, or JS hooks change.
-- RTL support is intentionally out of scope for `cinder_ui`. Do not implement RTL-specific behavior, logical-side rewrites, or parity work driven only by upstream RTL changes unless a maintainer explicitly asks for it.
+- RTL support is out of scope unless a maintainer explicitly asks for it.
 
-## Documentation Rules
+## Commands
 
-- `README.md`: user-facing install and usage guidance.
-- `CONTRIBUTING.md`: contributor workflow and maintenance guidance.
-- Update `README.md` and `CONTRIBUTING.md` when changes impact their audiences.
-- Public component changes should include in-module docs and examples.
+Run from the repository root unless noted.
 
-## Release Checklist
+- `mix quality`
+- `MIX_ENV=test mix coveralls.cobertura --raise`
+- `mix cinder_ui.docs.build`
+- `cd demo && mix format --check-formatted && mix test`
+- `cd demo && npm ci && mix assets.build && npx playwright test`
 
-1. Bump version in `mix.exs` and update `CHANGELOG.md`.
-2. Run all required quality, coverage, docs, and demo checks.
-3. Publish package/docs to Hex (manual).
-4. Publish GitHub release (triggers Pages deploy via `.github/workflows/publish-site.yml`).
+## Release
+
+1. Bump the version in `mix.exs` and update `CHANGELOG.md`.
+2. Run the required quality, coverage, docs, and demo checks.
+3. Publish to Hex manually.
+4. Publish the GitHub release to trigger Pages deploy.
