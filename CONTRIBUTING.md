@@ -103,6 +103,7 @@ Note: docs CSS is compiled with Tailwind CLI from `dev/assets/docs/package.json`
 cd demo
 mix format --check-formatted
 mix test
+npm run test:hooks
 ```
 
 ### Browser tests (Playwright)
