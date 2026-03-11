@@ -18,12 +18,12 @@ defmodule CinderUI.Docs.BuildTaskTest do
     assert File.exists?(Path.join(@output, "docs/actions-button/index.html"))
     assert File.exists?(Path.join(@output, "docs/layout-card/index.html"))
     assert File.exists?(Path.join(@output, "docs/assets/site.css"))
-    assert File.exists?(Path.join(@output, "docs/assets/site.js"))
+    assert File.exists?(Path.join(@output, "docs/assets/static_docs.js"))
 
     marketing_index = File.read!(Path.join(@output, "index.html"))
     docs_index = File.read!(Path.join(@output, "docs/index.html"))
     component_page = File.read!(Path.join(@output, "docs/actions-button/index.html"))
-    site_js = File.read!(Path.join(@output, "docs/assets/site.js"))
+    site_js = File.read!(Path.join(@output, "docs/assets/static_docs.js"))
     site_css = File.read!(Path.join(@output, "docs/assets/site.css"))
 
     assert marketing_index =~ "Cinder UI"

@@ -62,7 +62,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
       )
     end)
 
-    File.write!(Path.join(assets_dir, "site.js"), site_js())
+    File.write!(Path.join(assets_dir, "static_docs.js"), site_js())
     File.write!(Path.join(assets_dir, "site.css"), site_css())
 
     Marketing.write_marketing_index!(output_dir, %{
@@ -153,7 +153,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
           {rendered(@body_content)}
         </UIComponents.docs_layout>
 
-        <script src={"#{@asset_prefix}/assets/site.js"}>
+        <script type="module" src={"#{@asset_prefix}/assets/static_docs.js"}>
         </script>
         {rendered(docs_speculation_rules_html())}
       </body>
@@ -196,7 +196,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
   defp rendered(html) when is_binary(html), do: Phoenix.HTML.raw(html)
 
   defp site_js do
-    docs_asset!("site.js") <> ";\n"
+    docs_asset!("static_docs.js") <> ";\n"
   end
 
   defp site_css do

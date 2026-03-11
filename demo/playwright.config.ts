@@ -3,9 +3,9 @@ import { defineConfig, type PlaywrightTestConfig } from "@playwright/test"
 const config = {
   testDir: "./tests/browser",
   snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}{ext}",
-  timeout: 240_000,
+  timeout: 60_000,
   expect: {
-    timeout: 10_000,
+    timeout: 2_000,
     toHaveScreenshot: {
       animations: "disabled",
       caret: "hide",
@@ -28,7 +28,7 @@ const config = {
     url: "http://127.0.0.1:4000",
     cwd: __dirname,
     reuseExistingServer: true,
-    timeout: 120_000,
+    timeout: 20_000,
     env: { ...process.env, PHX_CODE_RELOADER: "false" },
   },
 } satisfies PlaywrightTestConfig

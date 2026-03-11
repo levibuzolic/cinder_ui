@@ -15,7 +15,7 @@ defmodule Demo.SiteRuntime do
 
   def asset_path(path) when is_binary(path) do
     case path do
-      "site.js" -> Path.join(@docs_assets_dir, "site.js")
+      "static_docs.js" -> Path.join(@docs_assets_dir, "static_docs.js")
       "site.css" -> Path.join(@site_assets_dir, "site.css")
       "theme.css" -> theme_css_path()
       _ -> nil
@@ -23,7 +23,7 @@ defmodule Demo.SiteRuntime do
   end
 
   def docs_site_js do
-    asset!("site.js") <> ";\n"
+    asset!("static_docs.js") <> ";\n"
   end
 
   def catalog_sections do

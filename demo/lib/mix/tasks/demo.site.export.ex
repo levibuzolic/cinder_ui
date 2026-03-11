@@ -71,7 +71,7 @@ defmodule Mix.Tasks.Demo.Site.Export do
     )
 
     File.write!(Path.join(assets_dir, "site.css"), File.read!(SiteRuntime.asset_path("site.css")))
-    File.write!(Path.join(assets_dir, "site.js"), SiteRuntime.docs_site_js())
+    File.write!(Path.join(assets_dir, "static_docs.js"), SiteRuntime.docs_site_js())
   end
 
   defp fetch_html!(url) do

@@ -117,7 +117,7 @@ defmodule Demo.SiteRenderer do
           {rendered(@body_content)}
         </UIComponents.docs_layout>
 
-        <script src={"#{@asset_prefix}/assets/site.js"}>
+        <script type="module" src={"#{@asset_prefix}/assets/static_docs.js"}>
         </script>
       </body>
     </html>
