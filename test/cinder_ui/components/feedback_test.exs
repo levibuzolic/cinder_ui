@@ -31,8 +31,9 @@ defmodule CinderUI.Components.FeedbackTest do
         title: "Saved"
       })
 
-    assert html =~ "data-slot=\"alert\""
-    assert html =~ "data-slot=\"alert-title\""
+    assert html =~ ~s(role="alert")
+    assert html =~ ~s(id="flash-info")
+    assert html =~ "border-primary/20"
     assert html =~ "Saved"
     assert html =~ "Saved successfully"
     assert html =~ "lv:clear-flash"
