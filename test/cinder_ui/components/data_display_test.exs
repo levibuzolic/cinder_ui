@@ -12,6 +12,20 @@ defmodule CinderUI.Components.DataDisplayTest do
     assert html =~ "PJ"
   end
 
+  test "avatar image hides on error and reveals fallback" do
+    html =
+      render_component(&DataDisplay.avatar/1, %{
+        src: "/missing.png",
+        alt: "Philip J. Fry"
+      })
+
+    assert html =~ "data-slot=\"avatar-image\""
+    assert html =~ "onerror="
+    assert html =~ "data-slot=\"avatar-fallback\""
+    assert html =~ "hidden"
+    assert html =~ "PJ"
+  end
+
   test "table renders slots" do
     html =
       render_component(&DataDisplay.table/1, %{

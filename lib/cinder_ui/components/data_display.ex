@@ -116,11 +116,16 @@ defmodule CinderUI.Components.DataDisplay do
         alt={@alt}
         class="aspect-square size-full rounded-full"
         loading="lazy"
+        onerror="this.classList.add('hidden'); this.nextElementSibling?.classList.remove('hidden')"
       />
       <div
-        :if={!@src}
         data-slot="avatar-fallback"
-        class="bg-muted text-muted-foreground flex size-full items-center justify-center rounded-full text-sm"
+        class={
+          classes([
+            "bg-muted text-muted-foreground flex size-full items-center justify-center rounded-full text-sm",
+            @src && "hidden"
+          ])
+        }
       >
         {@fallback_text}
       </div>

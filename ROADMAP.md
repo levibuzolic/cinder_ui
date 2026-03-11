@@ -60,7 +60,7 @@ After editing, run `mix assets.build` from `demo/` to regenerate copies.
 
 ## Phase 6: Component improvements
 
-- [ ] 6.1 **Avatar: image error fallback** — Add `onerror` to the `<img>` in `data_display.ex` that hides the image and shows the fallback initials
+- [x] 6.1 **Avatar: image error fallback** — Add `onerror` to the `<img>` in `data_display.ex` that hides the image and shows the fallback initials
 - [ ] 6.2 **Avatar group count: size prop** — `data_display.ex` `avatar_group_count/1` is hardcoded `size-8`. Add a `size` attr or use `group-has-data-[size=*]` responsive classes like shadcn
 - [ ] 6.3 **Code block: copy button** — Add a copy-to-clipboard button to `data_display.ex` code_block. May need a small JS hook
 - [ ] 6.4 **Button group: merge borders** — Implement negative margin + z-index pattern in `actions.ex` button_group to merge adjacent button borders like shadcn
