@@ -195,6 +195,24 @@ defmodule CinderUI.Components.FormsTest do
     assert html =~ "step=\"0.1\""
   end
 
+  test "radio_group supports disabled options" do
+    html =
+      render_component(&Forms.radio_group/1, %{
+        name: "region",
+        value: "us",
+        option: [
+          %{value: "us", label: "United States", inner_block: fn -> "" end},
+          %{value: "eu", label: "Europe", disabled: true, inner_block: fn -> "" end}
+        ]
+      })
+
+    assert html =~ "data-slot=\"radio-group\""
+    assert html =~ "data-slot=\"radio-group-item\""
+    assert html =~ "value=\"eu\""
+    assert html =~ "disabled"
+    assert html =~ "opacity-50"
+  end
+
   test "input_group renders a unified control shell" do
     html =
       render_component(&Forms.input_group/1, %{

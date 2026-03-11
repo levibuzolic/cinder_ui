@@ -977,6 +977,11 @@ defmodule CinderUI.Components.Forms do
         <:option value="monthly" label="Monthly billing" />
         <:option value="yearly" label="Yearly billing (save 20%)" />
       </.radio_group>
+
+      <.radio_group name="region" value="us">
+        <:option value="us" label="United States" />
+        <:option value="eu" label="Europe" disabled={true} />
+      </.radio_group>
   """)
 
   attr :name, :string, default: nil
@@ -987,6 +992,7 @@ defmodule CinderUI.Components.Forms do
   slot :option, required: true do
     attr :value, :string, required: true
     attr :label, :string, required: true
+    attr :disabled, :boolean
   end
 
   def radio_group(assigns) do
@@ -994,13 +1000,17 @@ defmodule CinderUI.Components.Forms do
 
     ~H"""
     <div data-slot="radio-group" role="radiogroup" class={classes(@classes)}>
-      <label :for={option <- @option} class="inline-flex items-center gap-2 text-sm">
+      <label
+        :for={option <- @option}
+        class={classes(["inline-flex items-center gap-2 text-sm", option[:disabled] && "opacity-50"])}
+      >
         <input
           data-slot="radio-group-item"
           type="radio"
           name={@name}
           value={option.value}
           checked={@value == option.value}
+          disabled={option[:disabled] || false}
           class="border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
           {@rest}
         />

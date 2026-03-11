@@ -21,7 +21,7 @@ Small fixes that reduce tech debt. Each is independent — can be done in parall
 - [x] 1.4 **Consistent aria-label casing** — Standardize to `aria-label="Close"` (capitalized) on flash close button (`feedback.ex`) to match dialog (`overlay.ex`)
 - [x] 1.5 **Input: add min/max to rest includes** — `forms.ex` input `@rest` include list omits `min` and `max`, needed for number/date inputs
 - [x] 1.6 **Slider: accept float values** — `forms.ex` slider uses `attr :value, :integer`, change to `:any` or `:float`
-- [ ] 1.7 **Radio group: add per-option disabled** — Add `disabled` attribute to `forms.ex` radio_group option slot
+- [x] 1.7 **Radio group: add per-option disabled** — Add `disabled` attribute to `forms.ex` radio_group option slot
 
 ## Phase 2: Accessibility — ARIA attributes
 
