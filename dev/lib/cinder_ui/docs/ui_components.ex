@@ -699,7 +699,10 @@ defmodule CinderUI.Docs.UIComponents do
       data-runtime-kind={@runtime.kind}
       class="flex flex-wrap items-center gap-2"
     >
-      <Overlay.tooltip text={@runtime.summary}>
+      <Overlay.tooltip
+        text={@runtime.summary}
+        content_class="w-max max-w-56 whitespace-normal text-left text-pretty"
+      >
         <span class="inline-flex" tabindex="0">
           <Feedback.badge variant={:outline} class={@badge_class}>
             <span aria-hidden="true" class={@dot_class} />
