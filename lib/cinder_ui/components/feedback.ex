@@ -211,7 +211,7 @@ defmodule CinderUI.Components.Feedback do
   ## Examples
 
   ```heex title="From flash map"
-  <.flash kind={:info} flash={@flash} />
+  <.flash kind={:info} flash={%{"info" => "Settings saved."}} />
   ```
 
   ```heex title="From slot"
@@ -273,7 +273,7 @@ defmodule CinderUI.Components.Feedback do
 
   ## Example
 
-      <.flash_group flash={@flash} />
+      <.flash_group flash={%{"info" => "Saved", "error" => "Unable to complete request"}} />
   """)
 
   attr :flash, :map, required: true, doc: "the map of flash messages"
@@ -328,6 +328,18 @@ defmodule CinderUI.Components.Feedback do
   Progress bar.
 
   `value` is clamped between `0` and `max`.
+
+  ## Example
+
+  ```heex title="Progress indicator" align="full"
+  <div class="space-y-2">
+    <div class="flex items-center justify-between text-sm">
+      <span>Deploy progress</span>
+      <span>72%</span>
+    </div>
+    <.progress value={72} />
+  </div>
+  ```
   """)
 
   attr :value, :integer, default: 0
@@ -368,6 +380,15 @@ defmodule CinderUI.Components.Feedback do
 
   doc("""
   Generic loading spinner.
+
+  ## Example
+
+  ```heex title="Inline spinner"
+  <div class="inline-flex items-center gap-2 text-sm text-muted-foreground">
+    <.spinner />
+    Syncing changes
+  </div>
+  ```
   """)
 
   attr :class, :string, default: nil

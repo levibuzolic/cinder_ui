@@ -18,6 +18,18 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Breadcrumb nav wrapper.
+
+  ## Example
+
+  ```heex title="Breadcrumb" align="full"
+  <.breadcrumb>
+    <.breadcrumb_list>
+      <.breadcrumb_item><.breadcrumb_link href="/">Home</.breadcrumb_link></.breadcrumb_item>
+      <.breadcrumb_separator />
+      <.breadcrumb_item><.breadcrumb_page>Settings</.breadcrumb_page></.breadcrumb_item>
+    </.breadcrumb_list>
+  </.breadcrumb>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -35,6 +47,16 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Breadcrumb list (`ol`).
+
+  ## Example
+
+  ```heex title="Breadcrumb list" align="full"
+  <.breadcrumb_list>
+    <.breadcrumb_item><.breadcrumb_link href="/">Home</.breadcrumb_link></.breadcrumb_item>
+    <.breadcrumb_separator />
+    <.breadcrumb_item><.breadcrumb_page>Billing</.breadcrumb_page></.breadcrumb_item>
+  </.breadcrumb_list>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -54,6 +76,18 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Breadcrumb item (`li`).
+
+  ## Example
+
+  ```heex title="Breadcrumb item" align="full"
+  <.breadcrumb>
+    <.breadcrumb_list>
+      <.breadcrumb_item>
+        <.breadcrumb_link href="/settings">Settings</.breadcrumb_link>
+      </.breadcrumb_item>
+    </.breadcrumb_list>
+  </.breadcrumb>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -69,6 +103,12 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Breadcrumb link.
+
+  ## Example
+
+  ```heex title="Breadcrumb link" align="full"
+  <.breadcrumb_link href="/projects">Projects</.breadcrumb_link>
+  ```
   """)
 
   attr :href, :string, required: true
@@ -89,6 +129,12 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Breadcrumb current page item.
+
+  ## Example
+
+  ```heex title="Current page" align="full"
+  <.breadcrumb_page>Deployment settings</.breadcrumb_page>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -112,6 +158,12 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Breadcrumb separator item.
+
+  ## Example
+
+  ```heex title="Breadcrumb separator" align="full"
+  <.breadcrumb_separator />
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -138,6 +190,12 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Breadcrumb ellipsis element.
+
+  ## Example
+
+  ```heex title="Collapsed breadcrumb segment"
+  <.breadcrumb_ellipsis />
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -160,6 +218,18 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Pagination nav wrapper.
+
+  ## Example
+
+  ```heex title="Pagination" align="full"
+  <.pagination>
+    <.pagination_content>
+      <.pagination_item><.pagination_previous href="#" /></.pagination_item>
+      <.pagination_item><.pagination_link href="#" active>1</.pagination_link></.pagination_item>
+      <.pagination_item><.pagination_next href="#" /></.pagination_item>
+    </.pagination_content>
+  </.pagination>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -177,6 +247,15 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Pagination list wrapper (`ul`).
+
+  ## Example
+
+  ```heex title="Pagination content" align="full"
+  <.pagination_content>
+    <.pagination_item><.pagination_link href="#" active>1</.pagination_link></.pagination_item>
+    <.pagination_item><.pagination_link href="#">2</.pagination_link></.pagination_item>
+  </.pagination_content>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -192,6 +271,14 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Pagination item (`li`).
+
+  ## Example
+
+  ```heex title="Pagination item" align="full"
+  <.pagination_item>
+    <.pagination_link href="#" active>1</.pagination_link>
+  </.pagination_item>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -207,6 +294,12 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Pagination link with active state.
+
+  ## Example
+
+  ```heex title="Pagination link"
+  <.pagination_link href="#" active>1</.pagination_link>
+  ```
   """)
 
   attr :href, :string, default: nil
@@ -257,6 +350,12 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Previous-page shortcut link.
+
+  ## Example
+
+  ```heex title="Previous page link"
+  <.pagination_previous href="#" />
+  ```
   """)
 
   attr :href, :string, default: nil
@@ -280,6 +379,12 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Next-page shortcut link.
+
+  ## Example
+
+  ```heex title="Next page link"
+  <.pagination_next href="#" />
+  ```
   """)
 
   attr :href, :string, default: nil
@@ -303,6 +408,12 @@ defmodule CinderUI.Components.Navigation do
 
   doc("""
   Pagination ellipsis marker.
+
+  ## Example
+
+  ```heex title="Pagination ellipsis"
+  <.pagination_ellipsis />
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -446,6 +557,16 @@ defmodule CinderUI.Components.Navigation do
   Generic application menu list inspired by daisyUI's menu primitive.
 
   Supports vertical and horizontal layouts with active/disabled item states.
+
+  ## Example
+
+  ```heex title="App menu" align="full"
+  <.menu>
+    <:item href="/overview" active={true}>Overview</:item>
+    <:item href="/settings">Settings</:item>
+    <:item href="/billing" disabled={true}>Billing</:item>
+  </.menu>
+  ```
   """)
 
   attr :orientation, :atom, default: :vertical, values: [:vertical, :horizontal]
@@ -502,6 +623,16 @@ defmodule CinderUI.Components.Navigation do
   Navigation menu scaffold.
 
   This is a semantic wrapper for custom menu items.
+
+  ## Example
+
+  ```heex title="Navigation menu" align="full"
+  <.navigation_menu>
+    <:item href="/docs" active={true}>Docs</:item>
+    <:item href="/components">Components</:item>
+    <:item href="/themes">Themes</:item>
+  </.navigation_menu>
+  ```
   """)
 
   attr :class, :string, default: nil

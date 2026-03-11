@@ -292,6 +292,16 @@ defmodule CinderUI.Components.Layout do
 
   doc("""
   Horizontal or vertical separator.
+
+  ## Example
+
+  ```heex title="Horizontal separator" align="full"
+  <div class="space-y-3">
+    <p class="text-sm">Overview</p>
+    <.separator />
+    <p class="text-sm">Details</p>
+  </div>
+  ```
   """)
 
   attr :orientation, :atom, default: :horizontal, values: [:horizontal, :vertical]
@@ -393,6 +403,19 @@ defmodule CinderUI.Components.Layout do
 
   doc("""
   Keyboard key badge.
+
+  ## Examples
+
+  ```heex title="Single shortcut key"
+  <.kbd>⌘K</.kbd>
+  ```
+
+  ```heex title="Shortcut combination"
+  <.kbd_group>
+    <.kbd>⌘</.kbd>
+    <.kbd>K</.kbd>
+  </.kbd_group>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -412,6 +435,16 @@ defmodule CinderUI.Components.Layout do
 
   doc("""
   Groups multiple `kbd/1` entries.
+
+  ## Example
+
+  ```heex title="Key group"
+  <.kbd_group>
+    <.kbd>⌘</.kbd>
+    <.kbd>⇧</.kbd>
+    <.kbd>P</.kbd>
+  </.kbd_group>
+  ```
   """)
 
   attr :class, :string, default: nil

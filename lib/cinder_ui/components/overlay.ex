@@ -74,7 +74,7 @@ defmodule CinderUI.Components.Overlay do
   ```
 
   ```heex title="Server-controlled open state" vrt
-  <.dialog id="billing-dialog" open={@show_billing}>
+  <.dialog id="billing-dialog" open={true}>
     <:trigger><.button>Open billing</.button></:trigger>
     <:title>Billing details</:title>
     <:description>Review your subscription and payment method.</:description>
@@ -87,7 +87,7 @@ defmodule CinderUI.Components.Overlay do
     Open account dialog
   </.button>
 
-  <.dialog id="account-dialog" open={@show_account_dialog}>
+  <.dialog id="account-dialog" open={true}>
     <:trigger><span class="hidden" /></:trigger>
     <:title>Account</:title>
     <:description>Managed from LiveView state.</:description>
@@ -181,6 +181,21 @@ defmodule CinderUI.Components.Overlay do
   Destructive-style dialog variant used for irreversible confirmation actions.
 
   It delegates to `dialog/1` and applies destructive emphasis classes.
+
+  ## Example
+
+  ```heex title="Alert dialog"
+  <.alert_dialog id="delete-dialog">
+    <:trigger><.button variant={:destructive}>Delete project</.button></:trigger>
+    <:title>Delete project?</:title>
+    <:description>This action is irreversible.</:description>
+    All deployments and analytics will be removed.
+    <:footer>
+      <.button variant={:outline} type="button">Cancel</.button>
+      <.button variant={:destructive} type="button">Delete</.button>
+    </:footer>
+  </.alert_dialog>
+  ```
   """)
 
   attr :id, :string, required: true
@@ -219,6 +234,20 @@ defmodule CinderUI.Components.Overlay do
   flows. Use `sheet/1` for side panels.
 
   `side` controls placement: `:top` or `:bottom`.
+
+  ## Example
+
+  ```heex title="Bottom drawer" vrt
+  <.drawer id="mobile-filters" open={true}>
+    <:trigger><.button variant={:outline}>Filters</.button></:trigger>
+    <:title>Filter results</:title>
+    <:description>Refine issues by status and owner.</:description>
+    <div class="space-y-2 text-sm">
+      <p>Status: Open</p>
+      <p>Owner: Platform</p>
+    </div>
+  </.drawer>
+  ```
   """)
 
   attr :id, :string, required: true
@@ -301,6 +330,20 @@ defmodule CinderUI.Components.Overlay do
   Sheet panel component for side or edge-mounted overlays.
 
   Use `sheet/1` for desktop-style settings panels and side drawers.
+
+  ## Example
+
+  ```heex title="Right sheet" vrt
+  <.sheet id="settings-sheet" open={true}>
+    <:trigger><.button variant={:outline}>Open settings</.button></:trigger>
+    <:title>Workspace settings</:title>
+    <:description>Manage defaults for the current workspace.</:description>
+    <div class="space-y-2 text-sm">
+      <p>Theme: System</p>
+      <p>Notifications: Enabled</p>
+    </div>
+  </.sheet>
+  ```
   """)
 
   attr :id, :string, required: true
@@ -383,6 +426,20 @@ defmodule CinderUI.Components.Overlay do
   Popover with trigger and content slots.
 
   Uses optional `CuiPopover` hook for click toggling.
+
+  ## Example
+
+  ```heex title="Popover" align="full"
+  <.popover id="share-popover">
+    <:trigger><.button variant={:outline}>Share</.button></:trigger>
+    <:content>
+      <div class="space-y-2 text-sm">
+        <p>Invite collaborators to this workspace.</p>
+        <.button size={:sm}>Copy link</.button>
+      </div>
+    </:content>
+  </.popover>
+  ```
   """)
 
   attr :id, :string, required: true
@@ -413,6 +470,14 @@ defmodule CinderUI.Components.Overlay do
 
   doc("""
   Tooltip helper with hover/focus behavior.
+
+  ## Example
+
+  ```heex title="Tooltip"
+  <.tooltip text="Copy API key">
+    <.button size={:icon} variant={:outline} aria-label="Copy">C</.button>
+  </.tooltip>
+  ```
   """)
 
   attr :text, :string, required: true
@@ -439,6 +504,20 @@ defmodule CinderUI.Components.Overlay do
 
   doc("""
   Hover card with trigger and content slots.
+
+  ## Example
+
+  ```heex title="Hover card" align="full"
+  <.hover_card>
+    <:trigger><span class="text-sm underline">Levi Buzolic</span></:trigger>
+    <:content>
+      <div class="space-y-1 text-sm">
+        <p class="font-medium">Levi Buzolic</p>
+        <p class="text-muted-foreground">Maintains docs and releases.</p>
+      </div>
+    </:content>
+  </.hover_card>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -465,6 +544,17 @@ defmodule CinderUI.Components.Overlay do
   Dropdown menu structure.
 
   Menu open/close behavior is provided by the optional `CuiDropdownMenu` hook.
+
+  ## Example
+
+  ```heex title="Dropdown menu" align="full"
+  <.dropdown_menu id="project-actions">
+    <:trigger><.button variant={:outline}>Actions</.button></:trigger>
+    <:item href="/projects/1">Open project</:item>
+    <:item>Rename</:item>
+    <:item disabled={true}>Archive</:item>
+  </.dropdown_menu>
+  ```
   """)
 
   attr :id, :string, required: true
@@ -529,6 +619,23 @@ defmodule CinderUI.Components.Overlay do
   Menubar scaffold with dropdown-like triggers.
 
   This is a simplified semantic wrapper for desktop command menus.
+
+  ## Example
+
+  ```heex title="Menubar" align="full"
+  <.menubar>
+    <:menu label="File">
+      <button type="button" class="flex w-full rounded-sm px-2 py-1.5 text-sm hover:bg-accent">
+        New project
+      </button>
+    </:menu>
+    <:menu label="View">
+      <button type="button" class="flex w-full rounded-sm px-2 py-1.5 text-sm hover:bg-accent">
+        Toggle sidebar
+      </button>
+    </:menu>
+  </.menubar>
+  ```
   """)
 
   attr :class, :string, default: nil

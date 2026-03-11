@@ -25,6 +25,34 @@ defmodule CinderUI.Components.Advanced do
   Command palette layout.
 
   This renders the shell of a command palette (`input + list + items`).
+
+  ## Examples
+
+  ```heex title="Command palette" align="full"
+  <.command placeholder="Search commands...">
+    <:group heading="General">
+      <.item value="profile">Profile</.item>
+      <.item value="billing">Billing</.item>
+    </:group>
+
+    <:group heading="Workspace">
+      <.item value="settings">Settings</.item>
+    </:group>
+  </.command>
+  ```
+
+  ```heex title="Project switcher" align="full"
+  <.command placeholder="Jump to project...">
+    <:group heading="Projects">
+      <.item value="docs">Docs site</.item>
+      <.item value="demo">Demo app</.item>
+    </:group>
+
+    <:group heading="Teams">
+      <.item value="platform">Platform team</.item>
+    </:group>
+  </.command>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -74,6 +102,16 @@ defmodule CinderUI.Components.Advanced do
 
   doc("""
   Command/list item.
+
+  ## Example
+
+  ```heex title="Command item" align="full"
+  <.command>
+    <:group heading="General">
+      <.item value="profile">Profile</.item>
+    </:group>
+  </.command>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -107,6 +145,15 @@ defmodule CinderUI.Components.Advanced do
   Combobox scaffold using an input and option list.
 
   It is intentionally unopinionated on state and filtering logic.
+
+  ## Example
+
+  ```heex title="Combobox" align="full"
+  <.combobox id="plan" value="Pro">
+    <:option value="Free" label="Free" />
+    <:option value="Pro" label="Pro" />
+  </.combobox>
+  ```
   """)
 
   attr :id, :string, required: true
@@ -159,6 +206,22 @@ defmodule CinderUI.Components.Advanced do
   Calendar wrapper.
 
   This is a style container for integration with your date picker of choice.
+
+  ## Example
+
+  ```heex title="Calendar shell" align="full"
+  <.calendar>
+    <div class="grid grid-cols-7 gap-2 text-center text-sm">
+      <span>1</span>
+      <span>2</span>
+      <span>3</span>
+      <span>4</span>
+      <span>5</span>
+      <span>6</span>
+      <span>7</span>
+    </div>
+  </.calendar>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -177,6 +240,15 @@ defmodule CinderUI.Components.Advanced do
 
   Render slides in `:item` slots and wire interactions with a LiveView hook or
   external script.
+
+  ## Example
+
+  ```heex title="Carousel" align="full"
+  <.carousel id="feature-carousel">
+    <:item><div class="rounded-md bg-muted p-8 text-sm">Slide one</div></:item>
+    <:item><div class="rounded-md bg-muted/60 p-8 text-sm">Slide two</div></:item>
+  </.carousel>
+  ```
   """)
 
   attr :id, :string, required: true

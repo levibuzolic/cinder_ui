@@ -262,9 +262,9 @@ defmodule CinderUI.Components.Actions do
 
   ```heex title="Single-select alignment controls"
   <.toggle_group type={:single}>
-    <.toggle pressed={@value == "left"}>Left</.toggle>
-    <.toggle pressed={@value == "center"}>Center</.toggle>
-    <.toggle pressed={@value == "right"}>Right</.toggle>
+    <.toggle>Left</.toggle>
+    <.toggle pressed={true}>Center</.toggle>
+    <.toggle>Right</.toggle>
   </.toggle_group>
   ```
 

@@ -103,17 +103,17 @@ defmodule CinderUI.Components.Forms do
   ```
 
   ```heex title="Phoenix validation flow" align="full" vrt
-  <.form for={@form} phx-change="validate" phx-submit="save" class="space-y-6">
-    <.field invalid={@form[:owner].errors != []}>
+  <.form for={%{}} phx-change="validate" phx-submit="save" class="space-y-6">
+    <.field invalid={true}>
       <:label>
-        <.label for={@form[:owner].id}>Owner</.label>
+        <.label for="owner">Owner</.label>
       </:label>
 
       <.field_control>
         <.autocomplete
-          id={@form[:owner].id}
-          name={@form[:owner].name}
-          value={@form[:owner].value}
+          id="owner"
+          name="owner"
+          value="levi"
           aria-label="Owner"
         >
           <:option value="levi" label="Levi Buzolic" description="Engineering" />
@@ -123,7 +123,7 @@ defmodule CinderUI.Components.Forms do
       </.field_control>
 
       <.field_description>Choose the teammate responsible for this workspace.</.field_description>
-      <.field_error :for={{msg, _opts} <- @form[:owner].errors}>{msg}</.field_error>
+      <.field_error>Please choose a teammate.</.field_error>
     </.field>
   </.form>
   ```
@@ -159,6 +159,15 @@ defmodule CinderUI.Components.Forms do
   doc("""
   Wraps field labels so shared spacing and invalid-state styling remain
   consistent across controls.
+
+  ## Example
+
+  ```heex title="Grouped field label" align="full"
+  <.field_label>
+    <.label for="workspace_name">Workspace name</.label>
+    <span class="text-muted-foreground text-xs">Used across the dashboard.</span>
+  </.field_label>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -174,6 +183,16 @@ defmodule CinderUI.Components.Forms do
 
   doc("""
   Wraps the main interactive control inside a field.
+
+  ## Example
+
+  ```heex title="Field control wrapper" align="full"
+  <.field invalid={true}>
+    <.field_control>
+      <.input id="workspace_slug" value="cinder-ui" />
+    </.field_control>
+  </.field>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -193,6 +212,12 @@ defmodule CinderUI.Components.Forms do
 
   doc("""
   Helper text shown beneath a field control.
+
+  ## Example
+
+  ```heex title="Field description" align="full"
+  <.field_description>Used in your public workspace URL.</.field_description>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -209,6 +234,12 @@ defmodule CinderUI.Components.Forms do
 
   doc("""
   Neutral status or informational message shown beneath a field control.
+
+  ## Example
+
+  ```heex title="Field message" align="full"
+  <.field_message>Visible immediately after save.</.field_message>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -225,6 +256,12 @@ defmodule CinderUI.Components.Forms do
 
   doc("""
   Error or validation message shown beneath a field control.
+
+  ## Example
+
+  ```heex title="Field error" align="full"
+  <.field_error>Please use your company domain.</.field_error>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -382,7 +419,7 @@ defmodule CinderUI.Components.Forms do
 
   ## Examples
 
-      <.switch id="marketing" checked={@enabled}>Email updates</.switch>
+      <.switch id="marketing" checked={true}>Email updates</.switch>
 
       <.switch id="2fa" name="two_factor" checked={true} size={:sm}>
         Require two-factor authentication
@@ -754,17 +791,18 @@ defmodule CinderUI.Components.Forms do
   ```
 
   ```heex title="LiveView server search" align="full" vrt
-  <.form for={@form} phx-change="search-owners">
+  <.form for={%{}} phx-change="search-owners">
     <.autocomplete
       id="owner-search"
       name="owner"
-      value={@selected_owner}
+      value="mira"
       placeholder="Search teammates..."
-      loading={@loading_owners}
+      loading={false}
       phx-debounce="300"
       aria-label="Search owners"
     >
-      <:option :for={owner <- @owner_options} value={owner.id} label={owner.name} />
+      <:option value="levi" label="Levi Buzolic" />
+      <:option value="mira" label="Mira Chen" />
       <:empty>No teammates match the current query.</:empty>
     </.autocomplete>
   </.form>

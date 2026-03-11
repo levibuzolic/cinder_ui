@@ -39,7 +39,7 @@ defmodule CinderUI.Components.DataDisplay do
 
   ```heex title="Presence badge"
   <.avatar src="example.png" alt="Online User">
-    <:badge />
+    <:badge><span class="sr-only">Online</span></:badge>
   </.avatar>
   ```
   """)
@@ -153,6 +153,16 @@ defmodule CinderUI.Components.DataDisplay do
 
   doc("""
   Counter item for avatar groups (e.g. `+3`).
+
+  ## Example
+
+  ```heex title="Avatar overflow count"
+  <.avatar_group>
+    <.avatar alt="Levi Buzolic" />
+    <.avatar alt="Mira Jones" />
+    <.avatar_group_count>+3</.avatar_group_count>
+  </.avatar_group>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -260,6 +270,19 @@ defmodule CinderUI.Components.DataDisplay do
 
   doc("""
   Table header (`thead`).
+
+  ## Example
+
+  ```heex title="Table header" align="full"
+  <.table>
+    <.table_header>
+      <.table_row>
+        <.table_head>Name</.table_head>
+        <.table_head>Status</.table_head>
+      </.table_row>
+    </.table_header>
+  </.table>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -275,6 +298,19 @@ defmodule CinderUI.Components.DataDisplay do
 
   doc("""
   Table body (`tbody`).
+
+  ## Example
+
+  ```heex title="Table body" align="full"
+  <.table>
+    <.table_body>
+      <.table_row>
+        <.table_cell>API</.table_cell>
+        <.table_cell>Healthy</.table_cell>
+      </.table_row>
+    </.table_body>
+  </.table>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -290,6 +326,18 @@ defmodule CinderUI.Components.DataDisplay do
 
   doc("""
   Table footer (`tfoot`).
+
+  ## Example
+
+  ```heex title="Table footer" align="full"
+  <.table>
+    <.table_footer>
+      <.table_row>
+        <.table_cell colspan="2" class="font-medium">Total</.table_cell>
+      </.table_row>
+    </.table_footer>
+  </.table>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -309,6 +357,19 @@ defmodule CinderUI.Components.DataDisplay do
 
   doc("""
   Table row (`tr`).
+
+  ## Example
+
+  ```heex title="Selected row" align="full"
+  <.table>
+    <.table_body>
+      <.table_row state="selected">
+        <.table_cell>INV-002</.table_cell>
+        <.table_cell>Pending</.table_cell>
+      </.table_row>
+    </.table_body>
+  </.table>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -331,6 +392,18 @@ defmodule CinderUI.Components.DataDisplay do
 
   doc("""
   Table heading cell (`th`).
+
+  ## Example
+
+  ```heex title="Header cell" align="full"
+  <.table>
+    <.table_header>
+      <.table_row>
+        <.table_head class="text-right">Amount</.table_head>
+      </.table_row>
+    </.table_header>
+  </.table>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -350,6 +423,18 @@ defmodule CinderUI.Components.DataDisplay do
 
   doc("""
   Table data cell (`td`).
+
+  ## Example
+
+  ```heex title="Data cell" align="full"
+  <.table>
+    <.table_body>
+      <.table_row>
+        <.table_cell>$48.00</.table_cell>
+      </.table_row>
+    </.table_body>
+  </.table>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -370,6 +455,14 @@ defmodule CinderUI.Components.DataDisplay do
 
   doc("""
   Table caption (`caption`).
+
+  ## Example
+
+  ```heex title="Table caption" align="full"
+  <.table>
+    <.table_caption>Recent invoices</.table_caption>
+  </.table>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -387,6 +480,33 @@ defmodule CinderUI.Components.DataDisplay do
   Accordion with multiple items.
 
   Uses `<details>` for no-JS progressive enhancement.
+
+  ## Examples
+
+  ```heex title="FAQ accordion" align="full"
+  <.accordion>
+    <:item title="What is CinderUI?" open={true}>
+      A Phoenix-first component library modeled after shadcn/ui patterns.
+    </:item>
+    <:item title="Does it require JavaScript?">
+      Core interactions use semantic HTML first, with optional hooks for enhancement.
+    </:item>
+  </.accordion>
+  ```
+
+  ```heex title="Release notes" align="full"
+  <.accordion>
+    <:item title="v0.4.0 · New components" open={true}>
+      Added pagination, tabs, and command palette docs pages.
+    </:item>
+    <:item title="v0.3.2 · Docs quality">
+      Added generated attr and slot tables plus HEEx copy snippets.
+    </:item>
+    <:item title="v0.3.0 · Static site">
+      Introduced static docs export and theme controls.
+    </:item>
+  </.accordion>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -428,6 +548,17 @@ defmodule CinderUI.Components.DataDisplay do
   Generic collapsible section with trigger/content slots.
 
   Uses `<details>` for accessibility and no-JS behavior.
+
+  ## Example
+
+  ```heex title="Collapsible details" align="full"
+  <.collapsible open={true}>
+    <:trigger>
+      Release notes
+    </:trigger>
+    Added generated attr tables and improved examples.
+  </.collapsible>
+  ```
   """)
 
   attr :open, :boolean, default: false
@@ -456,6 +587,14 @@ defmodule CinderUI.Components.DataDisplay do
 
   doc("""
   Monospaced code block wrapper.
+
+  ## Example
+
+  ```heex title="Code block" align="full"
+  <.code_block>
+    mix cinder_ui.docs.build
+  </.code_block>
+  ```
   """)
 
   attr :class, :string, default: nil
