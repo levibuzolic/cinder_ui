@@ -89,10 +89,10 @@ MARK: Home Page
 */
 
 :root {
-  --ember-glow: oklch(0.79 0.16 68);
-  --ember-glow-strong: oklch(0.72 0.21 42);
-  --ember-core: oklch(0.88 0.13 82);
-  --ember-deep: oklch(0.61 0.23 28);
+  --ember-glow: oklch(0.82 0.11 340);
+  --ember-glow-strong: oklch(0.78 0.14 305);
+  --ember-core: oklch(0.95 0.05 78);
+  --ember-deep: oklch(0.8 0.09 240);
 }
 
 [data-theme="dark"] {
@@ -125,6 +125,31 @@ body.home-page::before {
   isolation: isolate;
 }
 
+html:not(.dark) .home-page .hero-section::before {
+  content: "";
+  position: absolute;
+  inset: 1.5rem 12% 0;
+  z-index: -1;
+  border-radius: 999px;
+  background:
+    radial-gradient(
+      ellipse at 50% 24%,
+      color-mix(in oklab, var(--ember-core) 14%, white) 0%,
+      color-mix(in oklab, var(--ember-glow) 12%, transparent) 24%,
+      color-mix(in oklab, var(--ember-deep) 6%, transparent) 46%,
+      transparent 74%
+    );
+  filter: blur(18px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+html:not(.dark) body.home-page {
+  background:
+    radial-gradient(circle at 50% 18%, color-mix(in oklab, var(--ember-core) 18%, white) 0%, transparent 28%),
+    linear-gradient(180deg, color-mix(in oklab, var(--ember-deep) 5%, white) 0%, white 22%);
+}
+
 .hero-backdrop {
   position: absolute;
   inset: 0 0 -10rem;
@@ -152,6 +177,22 @@ body.home-page::before {
   opacity: 0.34;
 }
 
+html:not(.dark) .home-page .hero-glow {
+  width: min(64vw, 760px);
+  height: min(42vw, 460px);
+  background:
+    radial-gradient(
+      ellipse at center,
+      color-mix(in oklab, var(--ember-core) 20%, white) 0%,
+      color-mix(in oklab, var(--ember-glow-strong) 15%, transparent) 20%,
+      color-mix(in oklab, var(--ember-glow) 11%, transparent) 38%,
+      color-mix(in oklab, var(--ember-deep) 7%, transparent) 54%,
+      transparent 72%
+    );
+  opacity: 0.24;
+  filter: blur(18px);
+}
+
 .hero-heat {
   position: absolute;
   inset: 4% 22% 0;
@@ -160,6 +201,21 @@ body.home-page::before {
   filter: blur(42px);
   opacity: 0.72;
   animation: hero-heat-shift 9s ease-in-out infinite alternate;
+}
+
+html:not(.dark) .home-page .hero-heat {
+  inset: 10% 28% 10%;
+  background:
+    radial-gradient(
+      circle at 50% 40%,
+      color-mix(in oklab, var(--ember-core) 14%, transparent) 0%,
+      color-mix(in oklab, var(--ember-glow-strong) 11%, transparent) 18%,
+      color-mix(in oklab, var(--ember-glow) 8%, transparent) 30%,
+      color-mix(in oklab, var(--ember-deep) 5%, transparent) 44%,
+      transparent 66%
+    );
+  filter: blur(28px);
+  opacity: 0.42;
 }
 
 .hero-embers {
@@ -241,6 +297,21 @@ body.home-page::before {
   animation: hero-falloff-breathe 14s ease-in-out infinite alternate;
 }
 
+html:not(.dark) .home-page .hero-falloff {
+  width: min(82vw, 980px);
+  height: 16rem;
+  background:
+    radial-gradient(
+      ellipse at center,
+      color-mix(in oklab, var(--ember-glow) 10%, transparent) 0%,
+      color-mix(in oklab, var(--ember-glow-strong) 7%, transparent) 26%,
+      color-mix(in oklab, var(--ember-deep) 4%, transparent) 42%,
+      transparent 70%
+    );
+  opacity: 0.24;
+  filter: blur(32px);
+}
+
 .hero-beam {
   position: absolute;
   top: -22%;
@@ -264,10 +335,19 @@ body.home-page::before {
   animation: hero-beam-sway-right 21s ease-in-out infinite;
 }
 
+html:not(.dark) .home-page .hero-beam {
+  opacity: 0.12;
+  filter: blur(34px);
+}
+
 .hero-content {
   position: relative;
   z-index: 1;
   text-shadow: 0 10px 32px color-mix(in oklab, black 22%, transparent);
+}
+
+html:not(.dark) .home-page .hero-content {
+  text-shadow: none;
 }
 
 .hero-heading {
@@ -275,7 +355,7 @@ body.home-page::before {
   background-size: 140% 140%;
   background-position: 24% 50%;
   filter:
-    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.52))
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))
     drop-shadow(0 10px 34px color-mix(in oklab, black 30%, transparent))
     drop-shadow(0 0 16px color-mix(in oklab, var(--ember-glow-strong) 9%, transparent));
 }
@@ -283,13 +363,28 @@ body.home-page::before {
 .hero-heading::before {
   content: attr(data-text);
   position: absolute;
+  display: block;
   inset: 0;
   color: color-mix(in oklab, white 78%, var(--ember-core));
   -webkit-text-fill-color: color-mix(in oklab, white 78%, var(--ember-core));
   opacity: 0.18;
-  clip-path: inset(0 0 56% 0);
+  white-space: normal;
   text-shadow: 0 -1px 0 rgba(255, 248, 232, 0.2);
   pointer-events: none;
+}
+
+html:not(.dark) .hero-heading {
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.9));
+}
+
+html:not(.dark) .hero-heading::before {
+  display: none;
+}
+
+html:not(.dark) .heading-gradient {
+  background: linear-gradient(118deg, oklch(0.72 0.11 255) 0%, oklch(0.83 0.1 315) 26%, oklch(0.9 0.18 12) 54%, oklch(0.8 0.12 335) 78%, oklch(0.74 0.1 265) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .hero-copy {
@@ -297,6 +392,11 @@ body.home-page::before {
     0 1px 2px rgba(0, 0, 0, 0.5),
     0 2px 20px color-mix(in oklab, black 34%, transparent),
     0 0 18px color-mix(in oklab, var(--ember-deep) 8%, transparent);
+}
+
+html:not(.dark) .hero-copy {
+  color: color-mix(in oklab, var(--foreground) 68%, var(--muted-foreground));
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .hero-pill {
@@ -307,6 +407,14 @@ body.home-page::before {
     inset 0 1px 0 color-mix(in oklab, white 12%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+html:not(.dark) .hero-pill {
+  background: color-mix(in oklab, white 84%, var(--card));
+  border-color: color-mix(in oklab, var(--ember-glow) 20%, var(--border));
+  box-shadow:
+    0 1px 0 color-mix(in oklab, white 70%, transparent),
+    0 6px 14px color-mix(in oklab, black 8%, transparent);
 }
 
 .hero-button {
@@ -342,6 +450,26 @@ body.home-page::before {
   background: color-mix(in oklab, var(--card) 72%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+html:not(.dark) .home-page .hero-button {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+html:not(.dark) .home-page .hero-button-primary {
+  box-shadow:
+    0 10px 22px color-mix(in oklab, black 12%, transparent),
+    0 0 18px color-mix(in oklab, var(--ember-glow-strong) 8%, transparent);
+}
+
+html:not(.dark) .home-page .hero-button-primary::before {
+  opacity: 0.32;
+  filter: blur(10px);
+}
+
+html:not(.dark) .home-page .hero-button-outline {
+  background: color-mix(in oklab, white 88%, var(--card));
+  border-color: color-mix(in oklab, var(--ember-glow) 18%, var(--border));
 }
 
 @keyframes hero-glow-breathe {
