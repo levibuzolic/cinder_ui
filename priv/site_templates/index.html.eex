@@ -44,7 +44,6 @@
 
       <footer class="border-t border-border/40 mt-8">
         <div class="mx-auto max-w-[1100px] px-4 py-12 md:px-6">
-          <div class="ember-separator mb-10"></div>
           <div class="text-center space-y-6">
             <h2 class="text-2xl font-semibold tracking-tight">Ready to ignite your next project?</h2>
             <p class="text-muted-foreground max-w-md mx-auto">
@@ -54,7 +53,6 @@
               <%= footer_cta_html %>
             </div>
           </div>
-          <div class="ember-separator mt-10 mb-8"></div>
           <div class="flex flex-col items-center gap-3 text-sm text-muted-foreground">
             <p class="flex items-center gap-1.5">
               Inspired by
