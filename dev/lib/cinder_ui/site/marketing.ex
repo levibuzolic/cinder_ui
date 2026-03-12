@@ -176,7 +176,10 @@ defmodule CinderUI.Site.Marketing do
       </div>
       <div class="mx-auto max-w-[1100px] px-4 md:px-6">
         <div class="hero-content flex flex-col items-center text-center space-y-6">
-          <h1 class="hero-heading heading-gradient text-5xl font-bold tracking-tight sm:text-6xl max-w-3xl leading-[1.1]">
+          <h1
+            class="hero-heading heading-gradient text-5xl font-bold tracking-tight sm:text-6xl max-w-3xl leading-[1.1]"
+            data-text="Forge beautiful interfaces with Phoenix"
+          >
             Forge beautiful interfaces with Phoenix
           </h1>
           <p class="hero-copy max-w-2xl text-lg text-muted-foreground leading-relaxed">
@@ -230,7 +233,7 @@ defmodule CinderUI.Site.Marketing do
     <section id="examples" class="space-y-6">
       <div class="text-center space-y-2">
         <h2 class="text-3xl font-semibold tracking-tight">Components that shine</h2>
-        <p class="text-muted-foreground max-w-lg mx-auto">
+        <p class="hero-copy text-muted-foreground max-w-lg mx-auto">
           A growing library of production-ready components, each with typed APIs and composable slots.
         </p>
       </div>

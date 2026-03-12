@@ -201,22 +201,22 @@ body.home-page::before {
   position: absolute;
   left: var(--ember-x);
   bottom: var(--ember-y);
-  width: calc(var(--ember-size) * var(--ember-stretch, 3.8));
-  height: max(1px, calc(var(--ember-size) * 0.68));
+  width: calc(var(--ember-size) * 0.72);
+  height: calc(var(--ember-size) * 0.72);
   border-radius: 999px;
-  transform-origin: center center;
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklab, white 18%, transparent) 0%,
-    color-mix(in oklab, var(--ember-core) 94%, transparent) 18%,
-    color-mix(in oklab, var(--ember-glow-strong) 96%, transparent) 48%,
-    color-mix(in oklab, var(--ember-deep) 72%, transparent) 100%
-  );
+  background:
+    radial-gradient(
+      circle at 35% 35%,
+      color-mix(in oklab, white 88%, var(--ember-core)) 0%,
+      var(--ember-core) 24%,
+      var(--ember-glow) 56%,
+      color-mix(in oklab, var(--ember-deep) 92%, transparent) 100%
+    );
   box-shadow:
-    0 0 6px color-mix(in oklab, var(--ember-core) 42%, transparent),
-    0 0 18px color-mix(in oklab, var(--ember-glow-strong) 24%, transparent),
-    0 0 30px color-mix(in oklab, var(--ember-deep) 14%, transparent);
-  filter: blur(var(--ember-blur)) saturate(1.08);
+    0 0 8px color-mix(in oklab, var(--ember-core) 44%, transparent),
+    0 0 18px color-mix(in oklab, var(--ember-glow-strong) 28%, transparent),
+    0 0 30px color-mix(in oklab, var(--ember-deep) 16%, transparent);
+  filter: blur(var(--ember-blur));
   mix-blend-mode: screen;
   opacity: 0;
   will-change: transform, opacity;
@@ -224,64 +224,6 @@ body.home-page::before {
     hero-ember-rise var(--ember-duration) linear infinite,
     hero-ember-flicker calc(var(--ember-duration) * 0.32) ease-in-out infinite alternate;
   animation-delay: var(--ember-delay), var(--ember-delay);
-}
-
-.hero-ember::after {
-  content: "";
-  position: absolute;
-  right: calc(100% - 1px);
-  top: 50%;
-  width: calc(var(--ember-size) * var(--ember-trail, 9));
-  height: max(1px, calc(var(--ember-size) * 0.42));
-  transform: translateY(-50%);
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklab, var(--ember-deep) 0%, transparent) 0%,
-    color-mix(in oklab, var(--ember-deep) 28%, transparent) 18%,
-    color-mix(in oklab, var(--ember-glow-strong) 18%, transparent) 54%,
-    color-mix(in oklab, var(--ember-core) 8%, transparent) 100%
-  );
-  filter: blur(calc(var(--ember-size) * 0.62));
-  opacity: 0.82;
-}
-
-.hero-ember::before {
-  content: "";
-  position: absolute;
-  right: 8%;
-  top: 50%;
-  width: calc(var(--ember-size) * 1.35);
-  height: calc(var(--ember-size) * 0.9);
-  transform: translateY(-50%);
-  border-radius: 999px;
-  background: radial-gradient(
-    circle at 40% 50%,
-    color-mix(in oklab, white 72%, var(--ember-core)) 0%,
-    color-mix(in oklab, var(--ember-core) 96%, transparent) 36%,
-    color-mix(in oklab, var(--ember-glow-strong) 54%, transparent) 72%,
-    transparent 100%
-  );
-  filter: blur(calc(var(--ember-size) * 0.18));
-  opacity: 0.96;
-}
-
-.hero-ember:nth-child(3n) {
-  --ember-tilt: -24deg;
-  --ember-stretch: 4.8;
-  --ember-trail: 10.5;
-}
-
-.hero-ember:nth-child(3n + 1) {
-  --ember-tilt: 18deg;
-  --ember-stretch: 3.4;
-  --ember-trail: 8.2;
-}
-
-.hero-ember:nth-child(3n + 2) {
-  --ember-tilt: -10deg;
-  --ember-stretch: 5.6;
-  --ember-trail: 12.4;
 }
 
 .hero-falloff {
@@ -329,16 +271,30 @@ body.home-page::before {
 }
 
 .hero-heading {
-  background-size: 180% 180%;
-  background-position: 12% 50%;
+  position: relative;
+  background-size: 140% 140%;
+  background-position: 24% 50%;
   filter:
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.52))
     drop-shadow(0 10px 34px color-mix(in oklab, black 30%, transparent))
-    drop-shadow(0 0 22px color-mix(in oklab, var(--ember-glow-strong) 12%, transparent));
-  animation: hero-title-gradient 10s ease-in-out infinite alternate;
+    drop-shadow(0 0 16px color-mix(in oklab, var(--ember-glow-strong) 9%, transparent));
+}
+
+.hero-heading::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: color-mix(in oklab, white 78%, var(--ember-core));
+  -webkit-text-fill-color: color-mix(in oklab, white 78%, var(--ember-core));
+  opacity: 0.18;
+  clip-path: inset(0 0 56% 0);
+  text-shadow: 0 -1px 0 rgba(255, 248, 232, 0.2);
+  pointer-events: none;
 }
 
 .hero-copy {
   text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
     0 2px 20px color-mix(in oklab, black 34%, transparent),
     0 0 18px color-mix(in oklab, var(--ember-deep) 8%, transparent);
 }
@@ -438,7 +394,7 @@ body.home-page::before {
 
 @keyframes hero-ember-rise {
   0% {
-    transform: translate3d(0, 0, 0) scale(0.72) rotate(var(--ember-tilt));
+    transform: translate3d(0, 0, 0) scale(0.7);
     opacity: 0;
   }
 
@@ -448,56 +404,67 @@ body.home-page::before {
 
   32% {
     transform:
-      translate3d(calc(var(--ember-drift) * 0.26), calc(var(--ember-rise) * -0.28), 0)
-      scale(1.02)
-      rotate(calc(var(--ember-tilt) + 8deg));
+      translate3d(
+        calc(var(--ember-drift) * 0.2 + var(--ember-sway) * -0.2),
+        calc(var(--ember-rise) * -0.28),
+        0
+      )
+      scale(1.02);
     opacity: var(--ember-opacity);
   }
 
-  68% {
+  54% {
     transform:
-      translate3d(calc(var(--ember-drift) * 0.66), calc(var(--ember-rise) * -0.7), 0)
-      scale(0.96)
-      rotate(calc(var(--ember-tilt) - 5deg));
+      translate3d(
+        calc(var(--ember-drift) * 0.44 + var(--ember-sway) * 0.12),
+        calc(var(--ember-rise) * -0.54),
+        0
+      )
+      scale(0.99);
+    opacity: var(--ember-opacity);
+  }
+
+  72% {
+    transform:
+      translate3d(
+        calc(var(--ember-drift) * 0.66 + var(--ember-sway) * 0.28),
+        calc(var(--ember-rise) * -0.7),
+        0
+      )
+      scale(0.96);
+    opacity: var(--ember-opacity);
+  }
+
+  84% {
+    transform:
+      translate3d(
+        calc(var(--ember-drift) * 0.84 + var(--ember-sway) * 0.22),
+        calc(var(--ember-rise) * -0.86),
+        0
+      )
+      scale(0.96);
     opacity: var(--ember-opacity);
   }
 
   100% {
     transform:
       translate3d(var(--ember-drift), calc(var(--ember-rise) * -1), 0)
-      scale(0.78)
-      rotate(calc(var(--ember-tilt) + 10deg));
+      scale(0.78);
     opacity: 0;
   }
 }
 
 @keyframes hero-ember-flicker {
   0% {
-    filter: blur(var(--ember-blur)) brightness(0.94) saturate(1.02);
+    filter: blur(var(--ember-blur)) brightness(0.96);
   }
 
   50% {
-    filter: blur(calc(var(--ember-blur) + 0.45px)) brightness(1.26) saturate(1.14);
+    filter: blur(calc(var(--ember-blur) + 0.25px)) brightness(1.22);
   }
 
   100% {
-    filter: blur(calc(var(--ember-blur) + 0.2px)) brightness(0.88) saturate(0.96);
-  }
-}
-
-@keyframes hero-title-gradient {
-  0% {
-    background-position: 12% 50%;
-    filter:
-      drop-shadow(0 10px 34px color-mix(in oklab, black 30%, transparent))
-      drop-shadow(0 0 18px color-mix(in oklab, var(--ember-glow-strong) 10%, transparent));
-  }
-
-  100% {
-    background-position: 88% 50%;
-    filter:
-      drop-shadow(0 10px 34px color-mix(in oklab, black 30%, transparent))
-      drop-shadow(0 0 28px color-mix(in oklab, var(--ember-core) 14%, transparent));
+    filter: blur(var(--ember-blur)) brightness(0.9);
   }
 }
 
@@ -581,6 +548,7 @@ body.home-page::before {
     0 0 10px color-mix(in oklab, var(--ember-glow-strong) 18%, transparent),
     0 2px 18px color-mix(in oklab, var(--ember-deep) 12%, transparent);
   pointer-events: none;
+  opacity: 0.5;
 }
 
 /* Staggered grid for component examples */
@@ -606,7 +574,7 @@ body.home-page::before {
 
 /* Hero heading gradient */
 .heading-gradient {
-  background: linear-gradient(120deg, color-mix(in oklab, white 94%, var(--foreground)) 0%, color-mix(in oklab, var(--ember-core) 54%, white) 34%, var(--ember-glow-strong) 62%, color-mix(in oklab, var(--ember-deep) 72%, var(--ember-glow-strong)) 100%);
+  background: linear-gradient(120deg, color-mix(in oklab, white 96%, var(--foreground)) 0%, color-mix(in oklab, var(--ember-core) 28%, white) 42%, color-mix(in oklab, var(--ember-glow-strong) 78%, color-mix(in oklab, white 90%, var(--foreground))) 70%, color-mix(in oklab, var(--ember-deep) 38%, var(--ember-glow-strong)) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -621,16 +589,13 @@ body.home-page::before {
   .hero-ember,
   .hero-falloff,
   .hero-beam,
-  .hero-heading,
   .hero-button-primary::before {
     animation: none !important;
   }
 
   .hero-ember {
     opacity: calc(var(--ember-opacity) * 0.35);
-    transform:
-      translate3d(0, calc(var(--ember-rise) * -0.08), 0)
-      rotate(var(--ember-tilt));
+    transform: translate3d(0, calc(var(--ember-rise) * -0.08), 0);
   }
 }
 
