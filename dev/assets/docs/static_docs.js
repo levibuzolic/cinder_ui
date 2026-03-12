@@ -264,9 +264,9 @@ const themedTokenKeys = Array.from(
 const media = window.matchMedia("(prefers-color-scheme: dark)")
 const root = document.documentElement
 const sidebar = document.querySelector("[data-docs-sidebar]")
-const modeButtons = qs(document, "[data-theme-mode]")
 const colorSelect = document.querySelector("#theme-color [data-slot='select-input']")
 const radiusSelect = document.querySelector("#theme-radius [data-slot='select-input']")
+const themeModeButtons = () => qs(document, "[data-theme-mode]")
 
 const readSetting = (key, fallback) => localStorage.getItem(key) || fallback
 const writeSetting = (key, value) => localStorage.setItem(key, value)
@@ -286,7 +286,7 @@ const applyPalette = (color, resolvedMode) => {
 
 /** Keep the theme picker controls in sync with the current settings. */
 const syncThemeControls = (mode, color, radius) => {
-  modeButtons.forEach((button) => {
+  themeModeButtons().forEach((button) => {
     const active = button.dataset.themeMode === mode
     button.dataset.active = active ? "true" : "false"
     button.dataset.state = active ? "active" : "inactive"
@@ -311,11 +311,12 @@ const applyTheme = () => {
 }
 
 // Bind theme picker controls.
-modeButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    writeSetting(themeStorage.mode, button.dataset.themeMode || "auto")
-    applyTheme()
-  })
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-theme-mode]")
+  if (!button) return
+
+  writeSetting(themeStorage.mode, button.dataset.themeMode || "auto")
+  applyTheme()
 })
 
 colorSelect?.addEventListener("change", () => {

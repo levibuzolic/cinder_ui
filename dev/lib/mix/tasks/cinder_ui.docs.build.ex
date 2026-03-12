@@ -71,6 +71,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
       hexdocs_url: hexdocs_url,
       component_count: length(entries),
       docs_path: "./docs/",
+      theme_script_src: "./docs/assets/static_docs.js",
       theme_css_path: "./docs/assets/theme.css",
       site_css_path: "./docs/assets/site.css"
     })

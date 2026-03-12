@@ -345,6 +345,22 @@ test.describe("interactive previews", () => {
     expect(radius).toBe("1rem")
   })
 
+  test("homepage and docs share the same theme mode controls", async ({ page }) => {
+    await page.goto("/")
+
+    const homeToggle = page.locator(".site-theme-toggle")
+    await expect(homeToggle.locator(".theme-mode-btn")).toHaveCount(3)
+
+    await homeToggle.locator(".theme-mode-btn[data-theme-mode='dark']").click()
+    await expect(page.locator("html")).toHaveClass(/dark/)
+
+    await page.goto("/docs/")
+    await expect(page.locator(".theme-mode-btn[data-theme-mode='dark']").first()).toHaveAttribute(
+      "data-active",
+      "true",
+    )
+  })
+
   test("command palette opens from sidebar trigger", async ({ page }) => {
     await page.goto("/docs/")
 

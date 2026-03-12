@@ -64,13 +64,6 @@
           }
         });
 
-        window.addEventListener("phx:set-theme", (event) => {
-          const legacyMode = event.target.dataset.phxTheme || "system";
-          const mode = legacyMode === "system" ? "auto" : legacyMode;
-
-          localStorage.setItem(cinderThemeKey, mode);
-          applyStoredMode();
-        });
       })();
     </script>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />

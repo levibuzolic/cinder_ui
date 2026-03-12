@@ -12,6 +12,7 @@ defmodule Demo.SiteRenderer do
     Marketing.render_marketing_html(%{
       component_count: SiteRuntime.catalog_component_count(),
       docs_path: "./docs/",
+      theme_script_src: "./assets/static_docs.js",
       theme_css_path: "./assets/theme.css",
       site_css_path: "./assets/site.css"
     })

@@ -25,6 +25,9 @@ defmodule CinderUI.Site.Marketing do
     theme_css_path = Map.get(opts, :theme_css_path, "./docs/assets/theme.css")
     site_css_path = Map.get(opts, :site_css_path, "./assets/site.css")
 
+    theme_script_src =
+      Map.get(opts, :theme_script_src, Path.join(docs_path, "assets/static_docs.js"))
+
     File.mkdir_p!(output_dir)
 
     File.write!(
@@ -37,7 +40,8 @@ defmodule CinderUI.Site.Marketing do
         hexdocs_url,
         theme_css_path,
         docs_path,
-        site_css_path
+        site_css_path,
+        theme_script_src
       )
     )
 
@@ -55,6 +59,9 @@ defmodule CinderUI.Site.Marketing do
     theme_css_path = Map.get(opts, :theme_css_path, "./docs/assets/theme.css")
     site_css_path = Map.get(opts, :site_css_path, "./assets/site.css")
 
+    theme_script_src =
+      Map.get(opts, :theme_script_src, Path.join(docs_path, "assets/static_docs.js"))
+
     index_html(
       version,
       component_count,
@@ -63,7 +70,8 @@ defmodule CinderUI.Site.Marketing do
       hexdocs_url,
       theme_css_path,
       docs_path,
-      site_css_path
+      site_css_path,
+      theme_script_src
     )
   end
 
@@ -75,7 +83,8 @@ defmodule CinderUI.Site.Marketing do
          hexdocs_url,
          theme_css_path,
          docs_path,
-         site_css_path
+         site_css_path,
+         theme_script_src
        ) do
     shadcn_url = "https://ui.shadcn.com/docs"
 
@@ -90,7 +99,7 @@ defmodule CinderUI.Site.Marketing do
       install_html: install_html(version, docs_path),
       theme_tokens_html: theme_tokens_html(),
       features_html: features_html(shadcn_url),
-      theme_toggle_script: theme_toggle_script()
+      theme_script_src: theme_script_src
     ]
 
     "index.html.eex"
@@ -133,14 +142,7 @@ defmodule CinderUI.Site.Marketing do
         HexDocs
       </Docs.docs_external_link_button>
 
-      <Navigation.tabs
-        value="auto"
-        class="site-theme-toggle w-full max-w-xs gap-0 [&_[data-slot=tabs-list]]:w-full"
-      >
-        <:trigger value="light" data_theme_mode="light" class="theme-mode-btn">Light</:trigger>
-        <:trigger value="dark" data_theme_mode="dark" class="theme-mode-btn">Dark</:trigger>
-        <:trigger value="auto" data_theme_mode="auto" class="theme-mode-btn">Auto</:trigger>
-      </Navigation.tabs>
+      <Docs.theme_mode_toggle class="site-theme-toggle" />
     </div>
     """
     |> to_html()
@@ -577,10 +579,6 @@ defmodule CinderUI.Site.Marketing do
 
   defp theme_bootstrap_script do
     "<script>\n#{template!("theme_bootstrap.js")}\n</script>"
-  end
-
-  defp theme_toggle_script do
-    "<script>\n#{template!("theme_toggle.js")}\n</script>"
   end
 
   defp template!(name), do: File.read!(Path.join(@template_dir, name))

@@ -31,6 +31,60 @@ defmodule CinderUI.Docs.UIComponents do
     """
   end
 
+  attr :class, :string, default: nil
+  attr :button_class, :string, default: nil
+
+  def theme_mode_toggle(assigns) do
+    assigns =
+      assigns
+      |> assign(
+        :root_classes,
+        [
+          "theme-mode-toggle inline-flex items-center rounded-full border border-border/70 bg-card/80 p-1 shadow-sm backdrop-blur-xs",
+          assigns.class
+        ]
+      )
+      |> assign(
+        :item_classes,
+        [
+          "theme-mode-btn inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
+          assigns.button_class
+        ]
+      )
+
+    ~H"""
+    <div class={@root_classes} role="group" aria-label="Theme mode">
+      <button
+        type="button"
+        data-theme-mode="light"
+        aria-label="Use light theme"
+        title="Light theme"
+        class={@item_classes}
+      >
+        <Icons.icon name="sun" class="size-4" />
+      </button>
+      <button
+        type="button"
+        data-theme-mode="dark"
+        aria-label="Use dark theme"
+        title="Dark theme"
+        class={@item_classes}
+      >
+        <Icons.icon name="moon" class="size-4" />
+      </button>
+      <button
+        type="button"
+        data-theme-mode="auto"
+        aria-label="Use system theme"
+        title="System theme"
+        class={@item_classes}
+      >
+        <Icons.icon name="monitor" class="size-4" />
+      </button>
+    </div>
+    """
+  end
+
   attr :sections, :list, default: []
   attr :mode, :atom, default: :static
   attr :root_prefix, :string, default: "."
@@ -187,11 +241,13 @@ defmodule CinderUI.Docs.UIComponents do
 
     ~H"""
     <section class="mb-6 rounded-lg border p-3">
-      <Navigation.tabs value="auto" class="w-full gap-0 [&_[data-slot=tabs-list]]:w-full">
-        <:trigger value="light" data_theme_mode="light" class="theme-mode-btn">Light</:trigger>
-        <:trigger value="dark" data_theme_mode="dark" class="theme-mode-btn">Dark</:trigger>
-        <:trigger value="auto" data_theme_mode="auto" class="theme-mode-btn">Auto</:trigger>
-      </Navigation.tabs>
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <p class="text-xs font-medium text-muted-foreground">Theme mode</p>
+          <p class="mt-1 text-[11px] text-muted-foreground">Light, dark, or follow the system.</p>
+        </div>
+        <.theme_mode_toggle />
+      </div>
 
       <div class="mt-3">
         <Forms.label for="theme-color" class="mb-1 block text-xs font-medium text-muted-foreground">
