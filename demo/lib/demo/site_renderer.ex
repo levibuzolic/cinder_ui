@@ -173,7 +173,7 @@ defmodule Demo.SiteRenderer do
       <h2 id="prerequisites">Prerequisites</h2>
       <p>You need an existing Phoenix 1.7+ project. If you don't have one yet:</p>
       <UIComponents.docs_code_block
-        source="mix phx.new my_app\ncd my_app"
+        source={"mix phx.new my_app\ncd my_app"}
         language={:bash}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />
@@ -211,7 +211,7 @@ defmodule Demo.SiteRenderer do
       />
       <p>Install Tailwind and fetch dependencies:</p>
       <UIComponents.docs_code_block
-        source="mix deps.get\nmix tailwind.install"
+        source={"mix deps.get\nmix tailwind.install"}
         language={:bash}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />
@@ -303,13 +303,13 @@ defmodule Demo.SiteRenderer do
         in <code>lib/my_app_web.ex</code>:
       </p>
       <UIComponents.docs_code_block
-        source="defp html_helpers do\n  quote do\n    use Phoenix.Component\n    use CinderUI\n    # ...\n  end\nend"
+        source={"defp html_helpers do\n  quote do\n    use Phoenix.Component\n    use CinderUI\n    # ...\n  end\nend"}
         language={:elixir}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />
       <p>Or selectively import only the modules you need:</p>
       <UIComponents.docs_code_block
-        source="import CinderUI.Components.Actions\nimport CinderUI.Components.Forms"
+        source={"import CinderUI.Components.Actions\nimport CinderUI.Components.Forms"}
         language={:elixir}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />
