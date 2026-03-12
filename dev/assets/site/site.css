@@ -162,6 +162,128 @@ body.home-page::before {
   animation: hero-heat-shift 9s ease-in-out infinite alternate;
 }
 
+.hero-embers {
+  position: absolute;
+  inset: -6% 8% -10%;
+  overflow: hidden;
+  opacity: 0.96;
+  mask-image: radial-gradient(ellipse at 50% 42%, black 0%, black 56%, transparent 88%);
+}
+
+.hero-embers::before,
+.hero-embers::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-embers::before {
+  background:
+    radial-gradient(circle at 28% 78%, color-mix(in oklab, var(--ember-glow) 10%, transparent) 0%, transparent 20%),
+    radial-gradient(circle at 52% 70%, color-mix(in oklab, var(--ember-core) 12%, transparent) 0%, transparent 24%),
+    radial-gradient(circle at 74% 76%, color-mix(in oklab, var(--ember-deep) 12%, transparent) 0%, transparent 18%);
+  filter: blur(20px);
+  opacity: 0.5;
+  animation: hero-embers-haze 12s ease-in-out infinite alternate;
+}
+
+.hero-embers::after {
+  background:
+    linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--ember-glow) 4%, transparent) 50%, transparent 100%),
+    radial-gradient(circle at 50% 86%, color-mix(in oklab, var(--ember-glow-strong) 7%, transparent) 0%, transparent 32%);
+  filter: blur(30px);
+  opacity: 0.36;
+  animation: hero-embers-current 16s linear infinite;
+}
+
+.hero-ember {
+  position: absolute;
+  left: var(--ember-x);
+  bottom: var(--ember-y);
+  width: calc(var(--ember-size) * var(--ember-stretch, 3.8));
+  height: max(1px, calc(var(--ember-size) * 0.68));
+  border-radius: 999px;
+  transform-origin: center center;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, white 18%, transparent) 0%,
+    color-mix(in oklab, var(--ember-core) 94%, transparent) 18%,
+    color-mix(in oklab, var(--ember-glow-strong) 96%, transparent) 48%,
+    color-mix(in oklab, var(--ember-deep) 72%, transparent) 100%
+  );
+  box-shadow:
+    0 0 6px color-mix(in oklab, var(--ember-core) 42%, transparent),
+    0 0 18px color-mix(in oklab, var(--ember-glow-strong) 24%, transparent),
+    0 0 30px color-mix(in oklab, var(--ember-deep) 14%, transparent);
+  filter: blur(var(--ember-blur)) saturate(1.08);
+  mix-blend-mode: screen;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation:
+    hero-ember-rise var(--ember-duration) linear infinite,
+    hero-ember-flicker calc(var(--ember-duration) * 0.32) ease-in-out infinite alternate;
+  animation-delay: var(--ember-delay), var(--ember-delay);
+}
+
+.hero-ember::after {
+  content: "";
+  position: absolute;
+  right: calc(100% - 1px);
+  top: 50%;
+  width: calc(var(--ember-size) * var(--ember-trail, 9));
+  height: max(1px, calc(var(--ember-size) * 0.42));
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--ember-deep) 0%, transparent) 0%,
+    color-mix(in oklab, var(--ember-deep) 28%, transparent) 18%,
+    color-mix(in oklab, var(--ember-glow-strong) 18%, transparent) 54%,
+    color-mix(in oklab, var(--ember-core) 8%, transparent) 100%
+  );
+  filter: blur(calc(var(--ember-size) * 0.62));
+  opacity: 0.82;
+}
+
+.hero-ember::before {
+  content: "";
+  position: absolute;
+  right: 8%;
+  top: 50%;
+  width: calc(var(--ember-size) * 1.35);
+  height: calc(var(--ember-size) * 0.9);
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at 40% 50%,
+    color-mix(in oklab, white 72%, var(--ember-core)) 0%,
+    color-mix(in oklab, var(--ember-core) 96%, transparent) 36%,
+    color-mix(in oklab, var(--ember-glow-strong) 54%, transparent) 72%,
+    transparent 100%
+  );
+  filter: blur(calc(var(--ember-size) * 0.18));
+  opacity: 0.96;
+}
+
+.hero-ember:nth-child(3n) {
+  --ember-tilt: -24deg;
+  --ember-stretch: 4.8;
+  --ember-trail: 10.5;
+}
+
+.hero-ember:nth-child(3n + 1) {
+  --ember-tilt: 18deg;
+  --ember-stretch: 3.4;
+  --ember-trail: 8.2;
+}
+
+.hero-ember:nth-child(3n + 2) {
+  --ember-tilt: -10deg;
+  --ember-stretch: 5.6;
+  --ember-trail: 12.4;
+}
+
 .hero-falloff {
   position: absolute;
   left: 50%;
@@ -285,6 +407,81 @@ body.home-page::before {
 
   100% {
     transform: translateY(-0.85rem) scale(1.05);
+  }
+}
+
+@keyframes hero-embers-haze {
+  0% {
+    transform: translate3d(-0.6rem, 0.8rem, 0) scale(0.98);
+    opacity: 0.38;
+  }
+
+  100% {
+    transform: translate3d(0.9rem, -0.7rem, 0) scale(1.04);
+    opacity: 0.6;
+  }
+}
+
+@keyframes hero-embers-current {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(-1.2rem, -0.8rem, 0);
+  }
+
+  100% {
+    transform: translate3d(1rem, -1.6rem, 0);
+  }
+}
+
+@keyframes hero-ember-rise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.72) rotate(var(--ember-tilt));
+    opacity: 0;
+  }
+
+  10% {
+    opacity: calc(var(--ember-opacity) * 0.96);
+  }
+
+  32% {
+    transform:
+      translate3d(calc(var(--ember-drift) * 0.26), calc(var(--ember-rise) * -0.28), 0)
+      scale(1.02)
+      rotate(calc(var(--ember-tilt) + 8deg));
+    opacity: var(--ember-opacity);
+  }
+
+  68% {
+    transform:
+      translate3d(calc(var(--ember-drift) * 0.66), calc(var(--ember-rise) * -0.7), 0)
+      scale(0.96)
+      rotate(calc(var(--ember-tilt) - 5deg));
+    opacity: var(--ember-opacity);
+  }
+
+  100% {
+    transform:
+      translate3d(var(--ember-drift), calc(var(--ember-rise) * -1), 0)
+      scale(0.78)
+      rotate(calc(var(--ember-tilt) + 10deg));
+    opacity: 0;
+  }
+}
+
+@keyframes hero-ember-flicker {
+  0% {
+    filter: blur(var(--ember-blur)) brightness(0.94) saturate(1.02);
+  }
+
+  50% {
+    filter: blur(calc(var(--ember-blur) + 0.45px)) brightness(1.26) saturate(1.14);
+  }
+
+  100% {
+    filter: blur(calc(var(--ember-blur) + 0.2px)) brightness(0.88) saturate(0.96);
   }
 }
 
@@ -418,11 +615,22 @@ body.home-page::before {
 @media (prefers-reduced-motion: reduce) {
   .hero-glow,
   .hero-heat,
+  .hero-embers,
+  .hero-embers::before,
+  .hero-embers::after,
+  .hero-ember,
   .hero-falloff,
   .hero-beam,
   .hero-heading,
   .hero-button-primary::before {
     animation: none !important;
+  }
+
+  .hero-ember {
+    opacity: calc(var(--ember-opacity) * 0.35);
+    transform:
+      translate3d(0, calc(var(--ember-rise) * -0.08), 0)
+      rotate(var(--ember-tilt));
   }
 }
 
