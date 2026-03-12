@@ -173,9 +173,11 @@ defmodule CinderUI.Site.Marketing do
               "--ember-left: #{ember.left}; " <>
                 "--ember-bottom: #{ember.bottom}; " <>
                 "--ember-size: #{ember.size}; " <>
-                "--ember-duration: #{ember.duration}; " <>
+              "--ember-duration: #{ember.duration}; " <>
                 "--ember-delay: #{ember.delay}; " <>
-                "--ember-drift: #{ember.drift}; " <>
+                "--ember-drift-a: #{ember.drift_a}; " <>
+                "--ember-drift-b: #{ember.drift_b}; " <>
+                "--ember-rise: #{ember.rise}; " <>
                 "--ember-blur: #{ember.blur}; " <>
                 "--ember-opacity: #{ember.opacity}; " <>
                 "--ember-scale: #{ember.scale};"
@@ -223,20 +225,24 @@ defmodule CinderUI.Site.Marketing do
 
   defp hero_embers do
     [
-      %{left: "11%", bottom: "6%", size: "0.4rem", duration: "8.8s", delay: "-2.1s", drift: "2.3rem", blur: "0px", opacity: "0.9", scale: "1"},
-      %{left: "16%", bottom: "10%", size: "0.3rem", duration: "10.2s", delay: "-4.8s", drift: "1.8rem", blur: "0px", opacity: "0.75", scale: "0.95"},
-      %{left: "22%", bottom: "4%", size: "0.55rem", duration: "9.7s", delay: "-3.2s", drift: "3.1rem", blur: "1px", opacity: "0.8", scale: "1.15"},
-      %{left: "29%", bottom: "14%", size: "0.24rem", duration: "7.6s", delay: "-1.4s", drift: "1.6rem", blur: "0px", opacity: "0.65", scale: "0.85"},
-      %{left: "34%", bottom: "8%", size: "0.48rem", duration: "11.5s", delay: "-5.7s", drift: "2.8rem", blur: "1px", opacity: "0.82", scale: "1.05"},
-      %{left: "39%", bottom: "5%", size: "0.34rem", duration: "8.1s", delay: "-2.8s", drift: "2.2rem", blur: "0px", opacity: "0.7", scale: "0.92"},
-      %{left: "45%", bottom: "12%", size: "0.62rem", duration: "12.4s", delay: "-6.3s", drift: "3.6rem", blur: "1px", opacity: "0.84", scale: "1.18"},
-      %{left: "51%", bottom: "3%", size: "0.22rem", duration: "6.9s", delay: "-2.4s", drift: "1.4rem", blur: "0px", opacity: "0.62", scale: "0.8"},
-      %{left: "57%", bottom: "9%", size: "0.4rem", duration: "9.1s", delay: "-4.1s", drift: "2.1rem", blur: "0px", opacity: "0.74", scale: "1"},
-      %{left: "63%", bottom: "5%", size: "0.54rem", duration: "10.8s", delay: "-7.2s", drift: "3rem", blur: "1px", opacity: "0.82", scale: "1.1"},
-      %{left: "69%", bottom: "13%", size: "0.28rem", duration: "7.9s", delay: "-2.7s", drift: "1.7rem", blur: "0px", opacity: "0.64", scale: "0.88"},
-      %{left: "74%", bottom: "7%", size: "0.46rem", duration: "9.9s", delay: "-5.5s", drift: "2.6rem", blur: "0px", opacity: "0.78", scale: "1.03"},
-      %{left: "81%", bottom: "4%", size: "0.58rem", duration: "11.9s", delay: "-6.8s", drift: "3.2rem", blur: "1px", opacity: "0.86", scale: "1.12"},
-      %{left: "87%", bottom: "11%", size: "0.26rem", duration: "8.4s", delay: "-3.5s", drift: "1.9rem", blur: "0px", opacity: "0.68", scale: "0.9"}
+      %{left: "8%", bottom: "4%", size: "0.38rem", duration: "9.6s", delay: "-2.1s", drift_a: "0.9rem", drift_b: "2.8rem", rise: "18rem", blur: "0px", opacity: "0.9", scale: "1"},
+      %{left: "13%", bottom: "9%", size: "0.28rem", duration: "11.4s", delay: "-6.2s", drift_a: "-0.8rem", drift_b: "1.4rem", rise: "20rem", blur: "0px", opacity: "0.7", scale: "0.92"},
+      %{left: "19%", bottom: "3%", size: "0.52rem", duration: "8.9s", delay: "-3.4s", drift_a: "1.7rem", drift_b: "3.6rem", rise: "17rem", blur: "1px", opacity: "0.84", scale: "1.16"},
+      %{left: "23%", bottom: "12%", size: "0.2rem", duration: "7.3s", delay: "-1.2s", drift_a: "-0.6rem", drift_b: "0.8rem", rise: "15rem", blur: "0px", opacity: "0.6", scale: "0.78"},
+      %{left: "27.5%", bottom: "6%", size: "0.44rem", duration: "10.7s", delay: "-5.1s", drift_a: "0.4rem", drift_b: "-1.9rem", rise: "21rem", blur: "1px", opacity: "0.8", scale: "1.04"},
+      %{left: "31%", bottom: "14%", size: "0.24rem", duration: "8.2s", delay: "-2.6s", drift_a: "1.1rem", drift_b: "2rem", rise: "16rem", blur: "0px", opacity: "0.64", scale: "0.86"},
+      %{left: "37%", bottom: "5%", size: "0.5rem", duration: "12.1s", delay: "-7.4s", drift_a: "-1.4rem", drift_b: "0.9rem", rise: "23rem", blur: "1px", opacity: "0.85", scale: "1.12"},
+      %{left: "41.5%", bottom: "10%", size: "0.3rem", duration: "9.4s", delay: "-4.2s", drift_a: "0.7rem", drift_b: "-1.5rem", rise: "18rem", blur: "0px", opacity: "0.72", scale: "0.94"},
+      %{left: "46%", bottom: "2%", size: "0.6rem", duration: "11.2s", delay: "-6.6s", drift_a: "1.9rem", drift_b: "4rem", rise: "22rem", blur: "1px", opacity: "0.88", scale: "1.2"},
+      %{left: "50%", bottom: "8%", size: "0.22rem", duration: "6.8s", delay: "-1.7s", drift_a: "-0.7rem", drift_b: "1.1rem", rise: "14rem", blur: "0px", opacity: "0.58", scale: "0.82"},
+      %{left: "54%", bottom: "4%", size: "0.36rem", duration: "8.7s", delay: "-3.8s", drift_a: "1.3rem", drift_b: "-0.8rem", rise: "17rem", blur: "0px", opacity: "0.74", scale: "0.96"},
+      %{left: "58.5%", bottom: "11%", size: "0.48rem", duration: "10.4s", delay: "-5.9s", drift_a: "-1.2rem", drift_b: "-2.6rem", rise: "19rem", blur: "1px", opacity: "0.82", scale: "1.08"},
+      %{left: "63%", bottom: "6%", size: "0.26rem", duration: "7.7s", delay: "-2.3s", drift_a: "0.8rem", drift_b: "1.6rem", rise: "16rem", blur: "0px", opacity: "0.65", scale: "0.88"},
+      %{left: "68%", bottom: "13%", size: "0.56rem", duration: "11.7s", delay: "-6.7s", drift_a: "-0.9rem", drift_b: "2.2rem", rise: "21rem", blur: "1px", opacity: "0.86", scale: "1.14"},
+      %{left: "72.5%", bottom: "5%", size: "0.34rem", duration: "9.3s", delay: "-4.6s", drift_a: "1.5rem", drift_b: "-1.2rem", rise: "18rem", blur: "0px", opacity: "0.73", scale: "0.98"},
+      %{left: "77%", bottom: "9%", size: "0.42rem", duration: "10.1s", delay: "-5.3s", drift_a: "-1.6rem", drift_b: "-2.9rem", rise: "20rem", blur: "0px", opacity: "0.79", scale: "1.02"},
+      %{left: "83%", bottom: "3%", size: "0.54rem", duration: "12.5s", delay: "-7.8s", drift_a: "0.6rem", drift_b: "3.3rem", rise: "23rem", blur: "1px", opacity: "0.87", scale: "1.15"},
+      %{left: "89%", bottom: "10%", size: "0.24rem", duration: "8.5s", delay: "-3.1s", drift_a: "-0.5rem", drift_b: "1.3rem", rise: "15rem", blur: "0px", opacity: "0.62", scale: "0.84"}
     ]
   end
 

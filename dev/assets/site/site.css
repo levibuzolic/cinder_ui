@@ -222,7 +222,7 @@ body.home-page::before {
   filter: blur(var(--ember-blur));
   transform: translate3d(0, 0, 0) scale(var(--ember-scale));
   animation:
-    hero-ember-rise var(--ember-duration) linear infinite,
+    hero-ember-rise var(--ember-duration) cubic-bezier(0.24, 0.1, 0.18, 1) infinite,
     hero-ember-flicker calc(var(--ember-duration) * 0.42) ease-in-out infinite;
   animation-delay: var(--ember-delay), var(--ember-delay);
 }
@@ -389,13 +389,21 @@ body.home-page::before {
     opacity: var(--ember-opacity);
   }
 
+  32% {
+    transform: translate3d(var(--ember-drift-a), calc(var(--ember-rise) * -0.32), 0) scale(var(--ember-scale));
+  }
+
+  58% {
+    transform: translate3d(calc(var(--ember-drift-a) * -0.35), calc(var(--ember-rise) * -0.58), 0) scale(calc(var(--ember-scale) * 0.84));
+  }
+
   75% {
     opacity: calc(var(--ember-opacity) * 0.88);
   }
 
   100% {
     opacity: 0;
-    transform: translate3d(var(--ember-drift), -17rem, 0) scale(calc(var(--ember-scale) * 0.52));
+    transform: translate3d(var(--ember-drift-b), calc(var(--ember-rise) * -1), 0) scale(calc(var(--ember-scale) * 0.48));
   }
 }
 
