@@ -26,7 +26,7 @@
     </script>
   </head>
   <body class="home-page bg-background text-foreground">
-    <header class="border-b glass-card">
+    <header class="site-topbar border-b glass-card">
       <div class="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-6">
         <a href="./" class="text-2xl font-semibold tracking-tight">Cinder UI</a>
         <%= header_controls_html %>

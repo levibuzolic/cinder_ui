@@ -423,16 +423,36 @@ body.home-page::before {
 
 /* Glass-morphism cards */
 .glass-card {
+  position: relative;
   background: color-mix(in oklab, var(--card) 80%, transparent);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-color: color-mix(in oklab, var(--border) 50%, transparent);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.3s ease;
 }
 
-.glass-card:hover {
-  border-color: color-mix(in oklab, var(--ember-glow-strong) 40%, var(--border));
-  box-shadow: 0 0 20px color-mix(in oklab, var(--ember-glow) 15%, transparent);
+.site-topbar::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -1px;
+  height: 1px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in oklab, var(--ember-deep) 18%, transparent) 18%,
+      color-mix(in oklab, var(--ember-glow) 48%, transparent) 40%,
+      color-mix(in oklab, var(--ember-core) 62%, transparent) 50%,
+      color-mix(in oklab, var(--ember-glow) 48%, transparent) 60%,
+      color-mix(in oklab, var(--ember-deep) 18%, transparent) 82%,
+      transparent 100%
+    );
+  box-shadow:
+    0 0 10px color-mix(in oklab, var(--ember-glow-strong) 18%, transparent),
+    0 2px 18px color-mix(in oklab, var(--ember-deep) 12%, transparent);
+  pointer-events: none;
 }
 
 /* Staggered grid for component examples */
