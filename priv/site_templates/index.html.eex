@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cinder UI</title>
+    <title>Cinder UI - Phoenix Component Library</title>
     <meta
       name="description"
-      content="Phoenix + LiveView component library with shadcn-inspired patterns, typed HEEx APIs, and installer tooling for existing apps."
+      content="Production-ready Phoenix + LiveView components inspired by shadcn/ui. Typed HEEx APIs, seamless LiveView integration, and one-command installation."
     />
     <%= theme_bootstrap_script %>
     <link rel="stylesheet" href="<%= theme_css_path %>" />
@@ -25,31 +25,46 @@
       }
     </script>
   </head>
-  <body class="bg-background text-foreground">
-    <header class="border-b bg-card/80">
-      <div class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-6">
-        <a href="./" class="text-4xl font-semibold tracking-tight">Cinder UI</a>
+  <body class="home-page bg-background text-foreground">
+    <header class="border-b glass-card">
+      <div class="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-6">
+        <a href="./" class="text-2xl font-semibold tracking-tight">Cinder UI</a>
         <%= header_controls_html %>
       </div>
     </header>
 
-    <div class="site-shell mx-auto max-w-[1200px] px-4 py-6 md:px-6">
-      <main class="space-y-10">
-        <%= hero_html %>
+    <main>
+      <%= hero_html %>
+
+      <div class="mx-auto max-w-[1100px] space-y-24 px-4 py-16 md:px-6">
         <%= component_examples_html %>
         <%= install_html %>
-        <%= theme_tokens_html %>
         <%= features_html %>
-      </main>
+      </div>
 
-      <footer class="my-10 text-sm text-muted-foreground">
-        <p>
-          Cinder UI is an independent project based on the design and API patterns of
-          <a href="<%= shadcn_url %>" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">shadcn/ui</a>, built for Elixir, Phoenix, and LiveView by
-          <a href="https://levibuzolic.com" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">Levi Buzolic</a>.
-        </p>
+      <footer class="border-t border-border/40 mt-8">
+        <div class="mx-auto max-w-[1100px] px-4 py-12 md:px-6">
+          <div class="ember-separator mb-10"></div>
+          <div class="text-center space-y-6">
+            <h2 class="text-2xl font-semibold tracking-tight">Ready to ignite your next project?</h2>
+            <p class="text-muted-foreground max-w-md mx-auto">
+              Start building beautiful Phoenix interfaces with production-ready components.
+            </p>
+            <div class="flex justify-center">
+              <%= footer_cta_html %>
+            </div>
+          </div>
+          <div class="ember-separator mt-10 mb-8"></div>
+          <div class="flex flex-col items-center gap-3 text-sm text-muted-foreground">
+            <p class="flex items-center gap-1.5">
+              Inspired by
+              <a href="<%= shadcn_url %>" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">shadcn/ui</a>, crafted for Phoenix by
+              <a href="https://levibuzolic.com" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">Levi Buzolic</a>.
+            </p>
+          </div>
+        </div>
       </footer>
-    </div>
+    </main>
     <script type="module" src="<%= theme_script_src %>"></script>
   </body>
 </html>
