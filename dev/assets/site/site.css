@@ -88,6 +88,167 @@ MARK: Home Page
 --------------------------------------------------------------------------------
 */
 
+:root {
+  --ember-glow: oklch(0.85 0.08 65);
+  --ember-glow-strong: oklch(0.80 0.12 55);
+}
+
+[data-theme="dark"] {
+  --ember-glow: oklch(0.35 0.12 30);
+  --ember-glow-strong: oklch(0.30 0.15 25);
+}
+
+/* Subtle noise texture overlay */
+body.home-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+[data-theme="dark"] body.home-page::before {
+  opacity: 0.04;
+}
+
+/* Hero radial glow */
+.hero-section {
+  position: relative;
+}
+
+.hero-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, var(--ember-glow) 0%, transparent 70%);
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: -1;
+}
+
+[data-theme="dark"] .hero-glow {
+  opacity: 0.15;
+}
+
+/* Ember floating dots */
+@keyframes ember-pulse {
+  0%, 100% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.ember-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--ember-glow-strong);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.ember-dot:nth-child(1) {
+  width: 6px;
+  height: 6px;
+  top: 15%;
+  left: 12%;
+  animation: ember-pulse 4s ease-in-out infinite;
+}
+
+.ember-dot:nth-child(2) {
+  width: 4px;
+  height: 4px;
+  top: 25%;
+  right: 18%;
+  animation: ember-pulse 5s ease-in-out 1s infinite;
+}
+
+.ember-dot:nth-child(3) {
+  width: 5px;
+  height: 5px;
+  bottom: 20%;
+  left: 22%;
+  animation: ember-pulse 6s ease-in-out 2s infinite;
+}
+
+.ember-dot:nth-child(4) {
+  width: 3px;
+  height: 3px;
+  top: 40%;
+  right: 8%;
+  animation: ember-pulse 4.5s ease-in-out 0.5s infinite;
+}
+
+.ember-dot:nth-child(5) {
+  width: 5px;
+  height: 5px;
+  bottom: 30%;
+  right: 28%;
+  animation: ember-pulse 5.5s ease-in-out 1.5s infinite;
+}
+
+/* Glass-morphism cards */
+.glass-card {
+  background: color-mix(in oklab, var(--card) 80%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-color: color-mix(in oklab, var(--border) 50%, transparent);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: color-mix(in oklab, var(--ember-glow-strong) 40%, var(--border));
+  box-shadow: 0 0 20px color-mix(in oklab, var(--ember-glow) 15%, transparent);
+}
+
+/* Staggered grid for component examples */
+@media (min-width: 768px) {
+  .staggered-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .staggered-grid > :nth-child(even) {
+    transform: translateY(2rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .staggered-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+/* Hero heading gradient */
+.heading-gradient {
+  background: linear-gradient(135deg, var(--foreground) 40%, var(--ember-glow-strong) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Footer separator glow */
+.ember-separator {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ember-glow-strong), transparent);
+  opacity: 0.4;
+  border: none;
+}
+
+/* Install code blocks warm tint in dark mode */
+[data-theme="dark"] .install-code-block {
+  background: color-mix(in oklab, var(--ember-glow) 8%, var(--muted));
+  border-color: color-mix(in oklab, var(--ember-glow) 15%, var(--border));
+}
+
 .site-theme-toggle [data-site-theme][data-active="true"] {
   background: var(--accent);
   color: var(--accent-foreground);
