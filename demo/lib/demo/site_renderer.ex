@@ -199,7 +199,7 @@ defmodule Demo.SiteRenderer do
       />
       <p>Add the Tailwind watcher in <code>config/dev.exs</code>:</p>
       <UIComponents.docs_code_block
-        source="config :my_app, MyAppWeb.Endpoint,\n  watchers: [\n    tailwind: {Tailwind, :install_and_run, [:my_app, ~w(--watch)]}\n  ]"
+        source={"config :my_app, MyAppWeb.Endpoint,\n  watchers: [\n    tailwind: {Tailwind, :install_and_run, [:my_app, ~w(--watch)]}\n  ]"}
         language={:elixir}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />
