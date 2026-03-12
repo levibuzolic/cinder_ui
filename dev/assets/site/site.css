@@ -526,6 +526,22 @@ body.home-page::before {
   transition: border-color 0.3s ease;
 }
 
+html:not(.dark) .home-page .marketing-surface {
+  background: color-mix(in oklab, white 94%, var(--card));
+  border-color: color-mix(in oklab, var(--border) 68%, white);
+  box-shadow: none;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html:not(.dark) .home-page .marketing-surface [data-slot="preview"] {
+  background: color-mix(in oklab, white 82%, var(--muted));
+}
+
+html:not(.dark) .home-page .marketing-surface [data-slot="code"] {
+  background: color-mix(in oklab, white 88%, var(--card));
+}
+
 .site-topbar::after {
   content: "";
   position: absolute;

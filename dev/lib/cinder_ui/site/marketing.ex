@@ -383,7 +383,7 @@ defmodule CinderUI.Site.Marketing do
 
   defp marketing_example_card(assigns) do
     ~H"""
-    <Layout.panel class="glass-card h-full divide-y rounded-xl">
+    <Layout.panel class="marketing-surface glass-card h-full divide-y rounded-xl">
       <div class="p-4">
         <h4 class="font-medium">{@title}</h4>
         <p class="text-muted-foreground mt-1 text-sm">{@description}</p>
@@ -396,7 +396,7 @@ defmodule CinderUI.Site.Marketing do
         {rendered(@preview_html)}
       </div>
 
-      <div data-slot="code" class="relative min-w-0 border-t">
+      <div data-slot="code" class="relative min-w-0">
         <Docs.docs_code_block
           source={@snippet}
           language={:heex}
@@ -529,7 +529,7 @@ defmodule CinderUI.Site.Marketing do
 
   defp marketing_feature_card(assigns) do
     ~H"""
-    <Layout.card class="glass-card rounded-xl">
+    <Layout.card class="marketing-surface glass-card rounded-xl">
       <Layout.card_header>
         <div class="flex items-center gap-3">
           <div class="flex size-9 items-center justify-center rounded-lg bg-muted">
