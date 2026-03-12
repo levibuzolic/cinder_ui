@@ -153,7 +153,8 @@ defmodule CinderUI.Site.Marketing do
       version: version,
       component_count: component_count,
       docs_path: docs_path,
-      install_docs_path: Path.join(docs_path, "install/")
+      install_docs_path: Path.join(docs_path, "install/"),
+      embers: hero_embers()
     }
 
     ~H"""
@@ -161,6 +162,14 @@ defmodule CinderUI.Site.Marketing do
       <div class="hero-backdrop" aria-hidden="true">
         <div class="hero-glow"></div>
         <div class="hero-heat"></div>
+        <div class="hero-embers">
+          <span
+            :for={ember <- @embers}
+            class="hero-ember"
+            style={hero_ember_style(ember)}
+          >
+          </span>
+        </div>
         <div class="hero-falloff"></div>
         <div class="hero-beam hero-beam-left"></div>
         <div class="hero-beam hero-beam-right"></div>
@@ -182,7 +191,12 @@ defmodule CinderUI.Site.Marketing do
             </Feedback.badge>
           </div>
           <div class="hero-actions flex flex-wrap justify-center gap-3 pt-2">
-            <Actions.button as="a" href={@docs_path} size={:lg} class="hero-button hero-button-primary">
+            <Actions.button
+              as="a"
+              href={@docs_path}
+              size={:lg}
+              class="hero-button hero-button-primary"
+            >
               Explore Components
             </Actions.button>
             <Actions.button
@@ -416,13 +430,17 @@ defmodule CinderUI.Site.Marketing do
       <div class="text-center space-y-2">
         <h2 class="text-3xl font-semibold tracking-tight">Start building</h2>
         <p class="text-muted-foreground max-w-lg mx-auto">
-          Two steps to production-ready components.
-          <a href={@install_docs_path} class="underline underline-offset-4">Full installation guide</a>.
+          Two steps to production-ready components. <a
+            href={@install_docs_path}
+            class="underline underline-offset-4"
+          >Full installation guide</a>.
         </p>
       </div>
       <div class="mx-auto max-w-2xl space-y-4">
         <div class="space-y-2">
-          <p class="text-sm font-medium text-foreground">1. Add dependencies to <code class="text-sm">mix.exs</code></p>
+          <p class="text-sm font-medium text-foreground">
+            1. Add dependencies to <code class="text-sm">mix.exs</code>
+          </p>
           <Docs.docs_code_block
             source={@deps_code}
             language={:elixir}
@@ -528,6 +546,286 @@ defmodule CinderUI.Site.Marketing do
 
   defp theme_bootstrap_script do
     "<script>\n#{template!("theme_bootstrap.js")}\n</script>"
+  end
+
+  defp hero_embers do
+    [
+      %{
+        x: "8%",
+        y: "-3%",
+        size: "0.34rem",
+        rise: "20rem",
+        drift: "1.6rem",
+        sway: "2.2rem",
+        duration: "12.8s",
+        delay: "-8.2s",
+        blur: "0.4px",
+        opacity: "0.52"
+      },
+      %{
+        x: "14%",
+        y: "6%",
+        size: "0.48rem",
+        rise: "22rem",
+        drift: "-1.8rem",
+        sway: "2.8rem",
+        duration: "10.4s",
+        delay: "-5.6s",
+        blur: "0.2px",
+        opacity: "0.76"
+      },
+      %{
+        x: "18%",
+        y: "0%",
+        size: "0.26rem",
+        rise: "18rem",
+        drift: "1.2rem",
+        sway: "1.8rem",
+        duration: "13.6s",
+        delay: "-9.8s",
+        blur: "0.7px",
+        opacity: "0.44"
+      },
+      %{
+        x: "23%",
+        y: "12%",
+        size: "0.56rem",
+        rise: "24rem",
+        drift: "2.4rem",
+        sway: "3.2rem",
+        duration: "11.2s",
+        delay: "-1.8s",
+        blur: "0.3px",
+        opacity: "0.8"
+      },
+      %{
+        x: "28%",
+        y: "-4%",
+        size: "0.42rem",
+        rise: "19rem",
+        drift: "-1.2rem",
+        sway: "1.6rem",
+        duration: "9.8s",
+        delay: "-6.3s",
+        blur: "0.4px",
+        opacity: "0.66"
+      },
+      %{
+        x: "32%",
+        y: "10%",
+        size: "0.3rem",
+        rise: "17rem",
+        drift: "0.8rem",
+        sway: "1.4rem",
+        duration: "14.3s",
+        delay: "-11.4s",
+        blur: "0.8px",
+        opacity: "0.42"
+      },
+      %{
+        x: "37%",
+        y: "4%",
+        size: "0.62rem",
+        rise: "25rem",
+        drift: "-2.7rem",
+        sway: "3.4rem",
+        duration: "12.1s",
+        delay: "-3.7s",
+        blur: "0.2px",
+        opacity: "0.84"
+      },
+      %{
+        x: "41%",
+        y: "-2%",
+        size: "0.24rem",
+        rise: "16rem",
+        drift: "1rem",
+        sway: "1.5rem",
+        duration: "8.9s",
+        delay: "-4.1s",
+        blur: "0.9px",
+        opacity: "0.46"
+      },
+      %{
+        x: "45%",
+        y: "14%",
+        size: "0.52rem",
+        rise: "23rem",
+        drift: "1.9rem",
+        sway: "2.5rem",
+        duration: "10.9s",
+        delay: "-7.5s",
+        blur: "0.3px",
+        opacity: "0.74"
+      },
+      %{
+        x: "50%",
+        y: "2%",
+        size: "0.68rem",
+        rise: "27rem",
+        drift: "-2.2rem",
+        sway: "3.8rem",
+        duration: "13.1s",
+        delay: "-10.2s",
+        blur: "0.2px",
+        opacity: "0.9"
+      },
+      %{
+        x: "54%",
+        y: "-5%",
+        size: "0.32rem",
+        rise: "18rem",
+        drift: "1.4rem",
+        sway: "2rem",
+        duration: "9.6s",
+        delay: "-2.8s",
+        blur: "0.6px",
+        opacity: "0.54"
+      },
+      %{
+        x: "58%",
+        y: "10%",
+        size: "0.44rem",
+        rise: "21rem",
+        drift: "-1.6rem",
+        sway: "2.3rem",
+        duration: "12.4s",
+        delay: "-8.8s",
+        blur: "0.3px",
+        opacity: "0.68"
+      },
+      %{
+        x: "61%",
+        y: "5%",
+        size: "0.26rem",
+        rise: "15rem",
+        drift: "0.9rem",
+        sway: "1.2rem",
+        duration: "8.2s",
+        delay: "-6.9s",
+        blur: "0.8px",
+        opacity: "0.4"
+      },
+      %{
+        x: "66%",
+        y: "13%",
+        size: "0.58rem",
+        rise: "24rem",
+        drift: "2.1rem",
+        sway: "3rem",
+        duration: "11.7s",
+        delay: "-1.2s",
+        blur: "0.2px",
+        opacity: "0.82"
+      },
+      %{
+        x: "70%",
+        y: "-1%",
+        size: "0.36rem",
+        rise: "19rem",
+        drift: "-1.1rem",
+        sway: "1.7rem",
+        duration: "10.1s",
+        delay: "-9.1s",
+        blur: "0.5px",
+        opacity: "0.58"
+      },
+      %{
+        x: "73%",
+        y: "7%",
+        size: "0.28rem",
+        rise: "17rem",
+        drift: "1.3rem",
+        sway: "1.6rem",
+        duration: "14.8s",
+        delay: "-12.7s",
+        blur: "0.7px",
+        opacity: "0.38"
+      },
+      %{
+        x: "78%",
+        y: "2%",
+        size: "0.64rem",
+        rise: "26rem",
+        drift: "-2.5rem",
+        sway: "3.6rem",
+        duration: "12.9s",
+        delay: "-5.1s",
+        blur: "0.2px",
+        opacity: "0.88"
+      },
+      %{
+        x: "82%",
+        y: "11%",
+        size: "0.46rem",
+        rise: "22rem",
+        drift: "1.8rem",
+        sway: "2.4rem",
+        duration: "9.7s",
+        delay: "-7.8s",
+        blur: "0.3px",
+        opacity: "0.72"
+      },
+      %{
+        x: "86%",
+        y: "-4%",
+        size: "0.22rem",
+        rise: "14rem",
+        drift: "-0.9rem",
+        sway: "1.2rem",
+        duration: "8.7s",
+        delay: "-3.6s",
+        blur: "0.9px",
+        opacity: "0.34"
+      },
+      %{
+        x: "90%",
+        y: "4%",
+        size: "0.4rem",
+        rise: "18rem",
+        drift: "1.5rem",
+        sway: "2rem",
+        duration: "11.5s",
+        delay: "-10.8s",
+        blur: "0.4px",
+        opacity: "0.62"
+      }
+    ]
+  end
+
+  defp hero_ember_style(ember) do
+    [
+      "--ember-x: ",
+      ember.x,
+      "; ",
+      "--ember-y: ",
+      ember.y,
+      "; ",
+      "--ember-size: ",
+      ember.size,
+      "; ",
+      "--ember-rise: ",
+      ember.rise,
+      "; ",
+      "--ember-drift: ",
+      ember.drift,
+      "; ",
+      "--ember-sway: ",
+      ember.sway,
+      "; ",
+      "--ember-duration: ",
+      ember.duration,
+      "; ",
+      "--ember-delay: ",
+      ember.delay,
+      "; ",
+      "--ember-blur: ",
+      ember.blur,
+      "; ",
+      "--ember-opacity: ",
+      ember.opacity,
+      ";"
+    ]
   end
 
   defp template!(name), do: File.read!(Path.join(@template_dir, name))
