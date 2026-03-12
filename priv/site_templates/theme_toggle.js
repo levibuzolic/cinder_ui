@@ -16,8 +16,10 @@
     buttons.forEach((button) => {
       const active = button.dataset.themeMode === mode;
       button.dataset.active = active ? "true" : "false";
+      button.dataset.state = active ? "active" : "inactive";
       button.setAttribute("aria-pressed", active ? "true" : "false");
       button.setAttribute("aria-selected", active ? "true" : "false");
+      button.setAttribute("tabindex", active ? "0" : "-1");
     });
   };
 
