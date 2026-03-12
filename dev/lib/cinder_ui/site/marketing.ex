@@ -153,38 +153,64 @@ defmodule CinderUI.Site.Marketing do
       version: version,
       component_count: component_count,
       docs_path: docs_path,
-      install_docs_path: Path.join(docs_path, "install/")
+      install_docs_path: Path.join(docs_path, "install/"),
+      embers: hero_embers()
     }
 
     ~H"""
     <section class="hero-section overflow-hidden py-20 md:py-28">
-      <div class="hero-glow"></div>
-      <div class="ember-dot"></div>
-      <div class="ember-dot"></div>
-      <div class="ember-dot"></div>
-      <div class="ember-dot"></div>
-      <div class="ember-dot"></div>
+      <div class="hero-backdrop" aria-hidden="true">
+        <div class="hero-glow"></div>
+        <div class="hero-heat"></div>
+        <div class="hero-rings"></div>
+        <div class="hero-beam hero-beam-left"></div>
+        <div class="hero-beam hero-beam-right"></div>
+        <div class="hero-ember-field">
+          <div
+            :for={ember <- @embers}
+            class="hero-ember"
+            style={
+              "--ember-left: #{ember.left}; " <>
+                "--ember-bottom: #{ember.bottom}; " <>
+                "--ember-size: #{ember.size}; " <>
+                "--ember-duration: #{ember.duration}; " <>
+                "--ember-delay: #{ember.delay}; " <>
+                "--ember-drift: #{ember.drift}; " <>
+                "--ember-blur: #{ember.blur}; " <>
+                "--ember-opacity: #{ember.opacity}; " <>
+                "--ember-scale: #{ember.scale};"
+            }
+          >
+          </div>
+        </div>
+      </div>
       <div class="mx-auto max-w-[1100px] px-4 md:px-6">
-        <div class="flex flex-col items-center text-center space-y-6">
-          <h1 class="heading-gradient text-5xl font-bold tracking-tight sm:text-6xl max-w-3xl leading-[1.1]">
+        <div class="hero-content flex flex-col items-center text-center space-y-6">
+          <h1 class="hero-heading heading-gradient text-5xl font-bold tracking-tight sm:text-6xl max-w-3xl leading-[1.1]">
             Forge beautiful interfaces with Phoenix
           </h1>
-          <p class="max-w-2xl text-lg text-muted-foreground leading-relaxed">
+          <p class="hero-copy max-w-2xl text-lg text-muted-foreground leading-relaxed">
             Production-ready components inspired by shadcn/ui. Typed HEEx APIs, seamless LiveView integration, and one-command installation.
           </p>
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            <Feedback.badge variant={:outline}>
+          <div class="hero-badges flex flex-wrap items-center justify-center gap-2">
+            <Feedback.badge variant={:outline} class="hero-pill">
               v{@version}
             </Feedback.badge>
-            <Feedback.badge variant={:outline}>
+            <Feedback.badge variant={:outline} class="hero-pill">
               {@component_count} components
             </Feedback.badge>
           </div>
-          <div class="flex flex-wrap justify-center gap-3 pt-2">
-            <Actions.button as="a" href={@docs_path} size={:lg}>
+          <div class="hero-actions flex flex-wrap justify-center gap-3 pt-2">
+            <Actions.button as="a" href={@docs_path} size={:lg} class="hero-button">
               Explore Components
             </Actions.button>
-            <Actions.button as="a" variant={:outline} href="#install" size={:lg}>
+            <Actions.button
+              as="a"
+              variant={:outline}
+              href="#install"
+              size={:lg}
+              class="hero-button hero-button-outline"
+            >
               Get Started
             </Actions.button>
           </div>
@@ -193,6 +219,25 @@ defmodule CinderUI.Site.Marketing do
     </section>
     """
     |> to_html()
+  end
+
+  defp hero_embers do
+    [
+      %{left: "11%", bottom: "6%", size: "0.4rem", duration: "8.8s", delay: "-2.1s", drift: "2.3rem", blur: "0px", opacity: "0.9", scale: "1"},
+      %{left: "16%", bottom: "10%", size: "0.3rem", duration: "10.2s", delay: "-4.8s", drift: "1.8rem", blur: "0px", opacity: "0.75", scale: "0.95"},
+      %{left: "22%", bottom: "4%", size: "0.55rem", duration: "9.7s", delay: "-3.2s", drift: "3.1rem", blur: "1px", opacity: "0.8", scale: "1.15"},
+      %{left: "29%", bottom: "14%", size: "0.24rem", duration: "7.6s", delay: "-1.4s", drift: "1.6rem", blur: "0px", opacity: "0.65", scale: "0.85"},
+      %{left: "34%", bottom: "8%", size: "0.48rem", duration: "11.5s", delay: "-5.7s", drift: "2.8rem", blur: "1px", opacity: "0.82", scale: "1.05"},
+      %{left: "39%", bottom: "5%", size: "0.34rem", duration: "8.1s", delay: "-2.8s", drift: "2.2rem", blur: "0px", opacity: "0.7", scale: "0.92"},
+      %{left: "45%", bottom: "12%", size: "0.62rem", duration: "12.4s", delay: "-6.3s", drift: "3.6rem", blur: "1px", opacity: "0.84", scale: "1.18"},
+      %{left: "51%", bottom: "3%", size: "0.22rem", duration: "6.9s", delay: "-2.4s", drift: "1.4rem", blur: "0px", opacity: "0.62", scale: "0.8"},
+      %{left: "57%", bottom: "9%", size: "0.4rem", duration: "9.1s", delay: "-4.1s", drift: "2.1rem", blur: "0px", opacity: "0.74", scale: "1"},
+      %{left: "63%", bottom: "5%", size: "0.54rem", duration: "10.8s", delay: "-7.2s", drift: "3rem", blur: "1px", opacity: "0.82", scale: "1.1"},
+      %{left: "69%", bottom: "13%", size: "0.28rem", duration: "7.9s", delay: "-2.7s", drift: "1.7rem", blur: "0px", opacity: "0.64", scale: "0.88"},
+      %{left: "74%", bottom: "7%", size: "0.46rem", duration: "9.9s", delay: "-5.5s", drift: "2.6rem", blur: "0px", opacity: "0.78", scale: "1.03"},
+      %{left: "81%", bottom: "4%", size: "0.58rem", duration: "11.9s", delay: "-6.8s", drift: "3.2rem", blur: "1px", opacity: "0.86", scale: "1.12"},
+      %{left: "87%", bottom: "11%", size: "0.26rem", duration: "8.4s", delay: "-3.5s", drift: "1.9rem", blur: "0px", opacity: "0.68", scale: "0.9"}
+    ]
   end
 
   defp component_examples_html(shadcn_url) do

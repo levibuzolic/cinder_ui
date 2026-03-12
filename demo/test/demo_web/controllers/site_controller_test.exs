@@ -8,7 +8,8 @@ defmodule DemoWeb.SiteControllerTest do
     body = html_response(conn, 200)
 
     assert body =~ "Cinder UI"
-    assert body =~ "Browse Component Library"
+    assert body =~ "Explore Components"
+    assert body =~ "Forge beautiful interfaces with Phoenix"
   end
 
   test "GET /docs renders component index", %{conn: conn} do

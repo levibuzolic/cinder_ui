@@ -27,11 +27,11 @@ defmodule CinderUI.Docs.BuildTaskTest do
     site_css = File.read!(Path.join(@output, "docs/assets/site.css"))
 
     assert marketing_index =~ "Cinder UI"
-    assert marketing_index =~ "Browse Component Library"
+    assert marketing_index =~ "Explore Components"
     assert marketing_index =~ "./docs/"
     assert marketing_index =~ "https://hexdocs.pm/cinder_ui"
     assert marketing_index =~ "GitHub"
-    assert marketing_index =~ "Component examples"
+    assert marketing_index =~ "Components that shine"
     assert marketing_index =~ ~s(class="code-highlight block min-w-max whitespace-pre")
     assert marketing_index =~ ~s(<span class="tok-keyword">mix</span>)
 

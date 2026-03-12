@@ -118,6 +118,15 @@ body.home-page::before {
 /* Hero radial glow */
 .hero-section {
   position: relative;
+  isolation: isolate;
+}
+
+.hero-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -2;
 }
 
 .hero-glow {
@@ -125,71 +134,218 @@ body.home-page::before {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 800px;
-  height: 500px;
+  width: min(82vw, 980px);
+  height: min(58vw, 640px);
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, var(--ember-glow) 0%, transparent 70%);
-  opacity: 0.25;
-  pointer-events: none;
-  z-index: -1;
+  background:
+    radial-gradient(ellipse at center, color-mix(in oklab, var(--ember-glow-strong) 26%, transparent) 0%, color-mix(in oklab, var(--ember-glow) 18%, transparent) 24%, color-mix(in oklab, var(--ember-glow) 10%, transparent) 46%, transparent 74%);
+  opacity: 0.36;
+  filter: blur(22px);
+  animation: hero-glow-breathe 11s ease-in-out infinite alternate;
 }
 
 [data-theme="dark"] .hero-glow {
-  opacity: 0.15;
+  opacity: 0.26;
 }
 
-/* Ember floating dots */
-@keyframes ember-pulse {
-  0%, 100% { opacity: 0; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1); }
-}
-
-.ember-dot {
+.hero-heat {
   position: absolute;
+  inset: 18% 28% 8%;
+  background:
+    radial-gradient(circle at 50% 68%, color-mix(in oklab, var(--ember-glow-strong) 20%, transparent) 0%, color-mix(in oklab, var(--ember-glow) 12%, transparent) 24%, transparent 58%);
+  filter: blur(36px);
+  opacity: 0.55;
+  animation: hero-heat-shift 9s ease-in-out infinite alternate;
+}
+
+.hero-rings {
+  position: absolute;
+  inset: 8% 22%;
   border-radius: 50%;
-  background: var(--ember-glow-strong);
-  pointer-events: none;
-  z-index: -1;
+  background:
+    radial-gradient(circle at center, transparent 0 34%, color-mix(in oklab, var(--ember-glow-strong) 16%, transparent) 35%, transparent 36% 50%, color-mix(in oklab, var(--ember-glow) 12%, transparent) 51%, transparent 52% 66%, color-mix(in oklab, var(--foreground) 5%, transparent) 67%, transparent 68%);
+  opacity: 0.34;
+  filter: blur(1px);
+  animation: hero-rings-rotate 30s linear infinite;
 }
 
-.ember-dot:nth-child(1) {
-  width: 6px;
-  height: 6px;
-  top: 15%;
-  left: 12%;
-  animation: ember-pulse 4s ease-in-out infinite;
+.hero-beam {
+  position: absolute;
+  top: -22%;
+  width: 26rem;
+  height: 145%;
+  filter: blur(42px);
+  opacity: 0.32;
+  background: linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--ember-glow-strong) 10%, transparent) 26%, color-mix(in oklab, var(--foreground) 3%, transparent) 52%, transparent 100%);
+  mix-blend-mode: screen;
 }
 
-.ember-dot:nth-child(2) {
-  width: 4px;
-  height: 4px;
-  top: 25%;
-  right: 18%;
-  animation: ember-pulse 5s ease-in-out 1s infinite;
+.hero-beam-left {
+  left: 16%;
+  transform: rotate(12deg);
+  animation: hero-beam-sway-left 18s ease-in-out infinite;
 }
 
-.ember-dot:nth-child(3) {
-  width: 5px;
-  height: 5px;
-  bottom: 20%;
-  left: 22%;
-  animation: ember-pulse 6s ease-in-out 2s infinite;
+.hero-beam-right {
+  right: 14%;
+  transform: rotate(-14deg);
+  animation: hero-beam-sway-right 21s ease-in-out infinite;
 }
 
-.ember-dot:nth-child(4) {
-  width: 3px;
-  height: 3px;
-  top: 40%;
-  right: 8%;
-  animation: ember-pulse 4.5s ease-in-out 0.5s infinite;
+.hero-ember-field {
+  position: absolute;
+  inset: 0;
 }
 
-.ember-dot:nth-child(5) {
-  width: 5px;
-  height: 5px;
-  bottom: 30%;
-  right: 28%;
-  animation: ember-pulse 5.5s ease-in-out 1.5s infinite;
+.hero-ember {
+  position: absolute;
+  left: var(--ember-left);
+  bottom: var(--ember-bottom);
+  width: var(--ember-size);
+  height: var(--ember-size);
+  border-radius: 9999px;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 30% 30%, color-mix(in oklab, white 85%, var(--ember-glow-strong)) 0%, var(--ember-glow-strong) 28%, color-mix(in oklab, var(--ember-glow) 78%, transparent) 62%, transparent 100%);
+  box-shadow:
+    0 0 12px color-mix(in oklab, var(--ember-glow-strong) 55%, transparent),
+    0 0 24px color-mix(in oklab, var(--ember-glow) 38%, transparent);
+  filter: blur(var(--ember-blur));
+  transform: translate3d(0, 0, 0) scale(var(--ember-scale));
+  animation:
+    hero-ember-rise var(--ember-duration) linear infinite,
+    hero-ember-flicker calc(var(--ember-duration) * 0.42) ease-in-out infinite;
+  animation-delay: var(--ember-delay), var(--ember-delay);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-heading {
+  filter:
+    drop-shadow(0 10px 34px color-mix(in oklab, black 30%, transparent))
+    drop-shadow(0 0 22px color-mix(in oklab, var(--ember-glow-strong) 12%, transparent));
+}
+
+.hero-copy {
+  text-shadow: 0 2px 20px color-mix(in oklab, black 34%, transparent);
+}
+
+.hero-pill {
+  background: color-mix(in oklab, var(--card) 74%, transparent);
+  box-shadow:
+    0 10px 28px color-mix(in oklab, black 14%, transparent),
+    inset 0 1px 0 color-mix(in oklab, white 12%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hero-button {
+  box-shadow:
+    0 10px 30px color-mix(in oklab, black 18%, transparent),
+    0 0 0 1px color-mix(in oklab, white 5%, transparent);
+}
+
+.hero-button-outline {
+  background: color-mix(in oklab, var(--card) 72%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@keyframes hero-glow-breathe {
+  0% {
+    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0.24;
+  }
+
+  100% {
+    transform: translate(-49%, -51%) scale(1.05);
+    opacity: 0.4;
+  }
+}
+
+@keyframes hero-heat-shift {
+  0% {
+    transform: translateY(0) scale(0.96);
+  }
+
+  100% {
+    transform: translateY(-1rem) scale(1.04);
+  }
+}
+
+@keyframes hero-rings-rotate {
+  from {
+    transform: rotate(0deg) scale(0.98);
+  }
+
+  50% {
+    transform: rotate(180deg) scale(1.02);
+  }
+
+  to {
+    transform: rotate(360deg) scale(0.98);
+  }
+}
+
+@keyframes hero-beam-sway-left {
+  0%, 100% {
+    transform: translateX(0) rotate(12deg);
+    opacity: 0.22;
+  }
+
+  50% {
+    transform: translateX(1.6rem) rotate(15deg);
+    opacity: 0.36;
+  }
+}
+
+@keyframes hero-beam-sway-right {
+  0%, 100% {
+    transform: translateX(0) rotate(-14deg);
+    opacity: 0.2;
+  }
+
+  50% {
+    transform: translateX(-1.3rem) rotate(-10deg);
+    opacity: 0.34;
+  }
+}
+
+@keyframes hero-ember-rise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(calc(var(--ember-scale) * 0.82));
+  }
+
+  10% {
+    opacity: var(--ember-opacity);
+  }
+
+  75% {
+    opacity: calc(var(--ember-opacity) * 0.88);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--ember-drift), -17rem, 0) scale(calc(var(--ember-scale) * 0.52));
+  }
+}
+
+@keyframes hero-ember-flicker {
+  0%, 100% {
+    filter: blur(var(--ember-blur)) brightness(0.95);
+  }
+
+  35% {
+    filter: blur(var(--ember-blur)) brightness(1.18);
+  }
+
+  60% {
+    filter: blur(var(--ember-blur)) brightness(0.9);
+  }
 }
 
 /* Glass-morphism cards */
@@ -233,6 +389,16 @@ body.home-page::before {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-glow,
+  .hero-heat,
+  .hero-rings,
+  .hero-beam,
+  .hero-ember {
+    animation: none !important;
+  }
 }
 
 /* Footer separator glow */
