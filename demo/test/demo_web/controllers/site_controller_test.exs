@@ -41,8 +41,8 @@ defmodule DemoWeb.SiteControllerTest do
     body = html_response(conn, 200)
 
     assert body =~ "Installation"
-    assert body =~ "mix cinder_ui.install"
-    assert body =~ "use CinderUI"
+    assert body =~ "code-highlight"
+    assert body =~ "tok-keyword"
   end
 
   test "GET /assets/site.css serves docs CSS", %{conn: conn} do

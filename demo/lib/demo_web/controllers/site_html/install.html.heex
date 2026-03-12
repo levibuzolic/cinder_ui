@@ -15,7 +15,11 @@
 
     <h2 id="prerequisites">Prerequisites</h2>
     <p>You need an existing Phoenix 1.7+ project. If you don't have one yet:</p>
-    <pre><code class="language-bash">{"mix phx.new my_app\ncd my_app"}</code></pre>
+    <Docs.docs_code_block
+      source="mix phx.new my_app\ncd my_app"
+      language={:bash}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
 
     <h2 id="tailwind-css">1. Set up Tailwind CSS</h2>
     <p>
@@ -25,17 +29,41 @@
       it, skip to <a href="#add-cinder-ui">step 2</a>.
     </p>
     <p>Add the Tailwind plugin to your dependencies in <code>mix.exs</code>:</p>
-    <pre><code class="language-elixir">{"defp deps do\n  [\n    {:tailwind, \"~> 0.3\", runtime: Mix.env() == :dev},\n    # ...\n  ]\nend"}</code></pre>
+    <Docs.docs_code_block
+      source={"defp deps do\n  [\n    {:tailwind, \"~> 0.3\", runtime: Mix.env() == :dev},\n    # ...\n  ]\nend"}
+      language={:elixir}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>Configure Tailwind in <code>config/config.exs</code>:</p>
-    <pre><code class="language-elixir">{"config :tailwind,\n  version: \"4.1.12\",\n  my_app: [\n    args: ~w(\n      --input=assets/css/app.css\n      --output=priv/static/assets/app.css\n    ),\n    cd: Path.expand(\"..\", __DIR__)\n  ]"}</code></pre>
+    <Docs.docs_code_block
+      source={"config :tailwind,\n  version: \"4.1.12\",\n  my_app: [\n    args: ~w(\n      --input=assets/css/app.css\n      --output=priv/static/assets/app.css\n    ),\n    cd: Path.expand(\"..\", __DIR__)\n  ]"}
+      language={:elixir}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>Add the Tailwind watcher in <code>config/dev.exs</code>:</p>
-    <pre><code class="language-elixir">{"config :my_app, MyAppWeb.Endpoint,\n  watchers: [\n    tailwind: {Tailwind, :install_and_run, [:my_app, ~w(--watch)]}\n  ]"}</code></pre>
+    <Docs.docs_code_block
+      source="config :my_app, MyAppWeb.Endpoint,\n  watchers: [\n    tailwind: {Tailwind, :install_and_run, [:my_app, ~w(--watch)]}\n  ]"
+      language={:elixir}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>Add Tailwind to the deployment alias in <code>mix.exs</code>:</p>
-    <pre><code class="language-elixir">{"defp aliases do\n  [\n    \"assets.deploy\": [\n      \"tailwind my_app --minify\",\n      \"esbuild my_app --minify\",\n      \"phx.digest\"\n    ]\n  ]\nend"}</code></pre>
+    <Docs.docs_code_block
+      source={"defp aliases do\n  [\n    \"assets.deploy\": [\n      \"tailwind my_app --minify\",\n      \"esbuild my_app --minify\",\n      \"phx.digest\"\n    ]\n  ]\nend"}
+      language={:elixir}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>Install Tailwind and fetch dependencies:</p>
-    <pre><code class="language-bash">{"mix deps.get\nmix tailwind.install"}</code></pre>
+    <Docs.docs_code_block
+      source="mix deps.get\nmix tailwind.install"
+      language={:bash}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>Set up <code>assets/css/app.css</code>:</p>
-    <pre><code class="language-css">@import "tailwindcss";</code></pre>
+    <Docs.docs_code_block
+      source={"@import \"tailwindcss\";"}
+      language={:css}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>
       If your <code>assets/js/app.js</code> imports CSS
       (<code>import "../css/app.css"</code>), remove that line — Tailwind
@@ -44,16 +72,28 @@
 
     <h2 id="add-cinder-ui">2. Add Cinder UI</h2>
     <p>Add the dependency to your <code>mix.exs</code>:</p>
-    <pre><code class="language-elixir">{"defp deps do\n  [\n    {:cinder_ui, \"~> 0.1.0\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.0\"},\n    # ...\n  ]\nend"}</code></pre>
+    <Docs.docs_code_block
+      source={"defp deps do\n  [\n    {:cinder_ui, \"~> 0.1.0\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.0\"},\n    # ...\n  ]\nend"}
+      language={:elixir}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>Fetch dependencies:</p>
-    <pre><code class="language-bash">mix deps.get</code></pre>
+    <Docs.docs_code_block
+      source="mix deps.get"
+      language={:bash}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
 
     <h2 id="run-installer">3. Run the installer</h2>
     <p>
       Cinder UI includes a Mix task that sets up CSS, JavaScript hooks,
       and Tailwind plugins automatically:
     </p>
-    <pre><code class="language-bash">mix cinder_ui.install</code></pre>
+    <Docs.docs_code_block
+      source="mix cinder_ui.install"
+      language={:bash}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>This will:</p>
     <ul>
       <li>
@@ -81,11 +121,23 @@
     <p>
       The installer auto-detects your package manager (npm, pnpm, yarn, or bun). To specify one explicitly:
     </p>
-    <pre><code class="language-bash">mix cinder_ui.install --package-manager pnpm</code></pre>
+    <Docs.docs_code_block
+      source="mix cinder_ui.install --package-manager pnpm"
+      language={:bash}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>To re-run without overwriting customized files:</p>
-    <pre><code class="language-bash">mix cinder_ui.install --skip-existing</code></pre>
+    <Docs.docs_code_block
+      source="mix cinder_ui.install --skip-existing"
+      language={:bash}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>To only copy generated Cinder UI assets and skip patching app entry files:</p>
-    <pre><code class="language-bash">mix cinder_ui.install --skip-patching</code></pre>
+    <Docs.docs_code_block
+      source="mix cinder_ui.install --skip-patching"
+      language={:bash}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
 
     <h2 id="configure-app">4. Configure your app</h2>
     <p>
@@ -93,14 +145,30 @@
       to your app's <code>html_helpers</code>
       in <code>lib/my_app_web.ex</code>:
     </p>
-    <pre><code class="language-elixir">{"defp html_helpers do\n  quote do\n    use Phoenix.Component\n    use CinderUI\n    # ...\n  end\nend"}</code></pre>
+    <Docs.docs_code_block
+      source="defp html_helpers do\n  quote do\n    use Phoenix.Component\n    use CinderUI\n    # ...\n  end\nend"
+      language={:elixir}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>Or selectively import only the modules you need:</p>
-    <pre><code class="language-elixir">{"import CinderUI.Components.Actions\nimport CinderUI.Components.Forms"}</code></pre>
+    <Docs.docs_code_block
+      source="import CinderUI.Components.Actions\nimport CinderUI.Components.Forms"
+      language={:elixir}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
 
     <h2 id="verify">5. Start building</h2>
     <p>Start your Phoenix server:</p>
-    <pre><code class="language-bash">mix phx.server</code></pre>
+    <Docs.docs_code_block
+      source="mix phx.server"
+      language={:bash}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
     <p>Try a component in any template:</p>
-    <pre><code class="language-heex">&lt;.button&gt;Click me&lt;/.button&gt;</code></pre>
+    <Docs.docs_code_block
+      source="<.button>Click me</.button>"
+      language={:heex}
+      pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
+    />
   </div>
 </Docs.docs_layout>

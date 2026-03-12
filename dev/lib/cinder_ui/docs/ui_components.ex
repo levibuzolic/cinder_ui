@@ -3,7 +3,7 @@ defmodule CinderUI.Docs.UIComponents do
 
   use Phoenix.Component
 
-  alias CinderUI.Components.{Actions, Feedback, Forms, Layout, Navigation, Overlay}
+  alias CinderUI.Components.{Actions, Feedback, Forms, Layout, Overlay}
   alias CinderUI.Docs.CodeHighlighter
   alias CinderUI.Icons
   alias Phoenix.HTML
