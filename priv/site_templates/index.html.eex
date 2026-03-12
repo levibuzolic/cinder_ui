@@ -8,6 +8,12 @@
       name="description"
       content="Phoenix + LiveView component library with shadcn-inspired patterns, typed HEEx APIs, and installer tooling for existing apps."
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+    />
     <%= theme_bootstrap_script %>
     <link rel="stylesheet" href="<%= theme_css_path %>" />
     <link rel="stylesheet" href="<%= site_css_path %>" />
@@ -25,24 +31,34 @@
       }
     </script>
   </head>
-  <body class="bg-background text-foreground">
-    <header class="border-b bg-card/80">
-      <div class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-6">
-        <a href="./" class="text-4xl font-semibold tracking-tight">Cinder UI</a>
+  <body class="site-page bg-background text-foreground">
+    <div class="site-chrome" aria-hidden="true">
+      <div class="site-orb site-orb-a"></div>
+      <div class="site-orb site-orb-b"></div>
+      <div class="site-grid-glow"></div>
+    </div>
+
+    <header class="site-header">
+      <div class="site-header-inner mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-6">
+        <a href="./" class="site-wordmark">
+          <span class="site-wordmark-mark">C</span>
+          <span class="site-wordmark-text">Cinder UI</span>
+        </a>
         <%= header_controls_html %>
       </div>
     </header>
 
-    <div class="site-shell mx-auto max-w-[1200px] px-4 py-6 md:px-6">
-      <main class="space-y-10">
+    <div class="site-shell mx-auto max-w-[1240px] px-4 py-8 md:px-6 md:py-10">
+      <main class="site-main space-y-12 md:space-y-16">
         <%= hero_html %>
+        <%= signal_strip_html %>
         <%= component_examples_html %>
         <%= install_html %>
         <%= theme_tokens_html %>
         <%= features_html %>
       </main>
 
-      <footer class="my-10 text-sm text-muted-foreground">
+      <footer class="site-footer my-12 text-sm text-muted-foreground">
         <p>
           Cinder UI is an independent project based on the design and API patterns of
           <a href="<%= shadcn_url %>" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">shadcn/ui</a>, built for Elixir, Phoenix, and LiveView by
