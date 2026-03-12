@@ -176,7 +176,8 @@ defmodule Demo.SiteRenderer do
       <h2 id="prerequisites">Prerequisites</h2>
       <p>You need an existing Phoenix 1.7+ project. If you don't have one yet:</p>
       <UIComponents.docs_code_block
-        source="mix phx.new my_app\ncd my_app"
+        source="mix phx.new my_app
+    cd my_app"
         language={:bash}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />
@@ -202,7 +203,10 @@ defmodule Demo.SiteRenderer do
       />
       <p>Add the Tailwind watcher in <code>config/dev.exs</code>:</p>
       <UIComponents.docs_code_block
-        source="config :my_app, MyAppWeb.Endpoint,\n  watchers: [\n    tailwind: {Tailwind, :install_and_run, [:my_app, ~w(--watch)]}\n  ]"
+        source="config :my_app, MyAppWeb.Endpoint,
+    watchers: [
+    tailwind: {Tailwind, :install_and_run, [:my_app, ~w(--watch)]}
+    ]"
         language={:elixir}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />
@@ -214,7 +218,8 @@ defmodule Demo.SiteRenderer do
       />
       <p>Install Tailwind and fetch dependencies:</p>
       <UIComponents.docs_code_block
-        source="mix deps.get\nmix tailwind.install"
+        source="mix deps.get
+    mix tailwind.install"
         language={:bash}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />
@@ -306,13 +311,20 @@ defmodule Demo.SiteRenderer do
         in <code>lib/my_app_web.ex</code>:
       </p>
       <UIComponents.docs_code_block
-        source="defp html_helpers do\n  quote do\n    use Phoenix.Component\n    use CinderUI\n    # ...\n  end\nend"
+        source="defp html_helpers do
+    quote do
+    use Phoenix.Component
+    use CinderUI
+    # ...
+    end
+    end"
         language={:elixir}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />
       <p>Or selectively import only the modules you need:</p>
       <UIComponents.docs_code_block
-        source="import CinderUI.Components.Actions\nimport CinderUI.Components.Forms"
+        source="import CinderUI.Components.Actions
+    import CinderUI.Components.Forms"
         language={:elixir}
         pre_class="my-4 overflow-x-auto rounded-lg border bg-muted/30 p-4 text-sm"
       />

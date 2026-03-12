@@ -9,5 +9,13 @@ if ! command -v mise >/dev/null 2>&1; then
 	exit 1
 fi
 
+echo "---------- Root unit tests"
+MIX_ENV="test" exec mise exec -- mix coveralls.cobertura --raise
+
 cd "$DEMO_DIR"
+echo "---------- Demo unit tests"
+exec mise exec -- mix test
+echo "---------- Demo JS tests"
+exec mise exec -- vitest run
+echo "---------- Demo Playwright tests"
 exec mise exec -- npx playwright test
