@@ -100,6 +100,128 @@ MARK: Home Page
   border-color: var(--border);
 }
 
+/* Hero grid overlay */
+.home-hero-grid {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in oklab, var(--border) 35%, transparent) 0px,
+      color-mix(in oklab, var(--border) 35%, transparent) 1px,
+      transparent 1px,
+      transparent 64px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--border) 35%, transparent) 0px,
+      color-mix(in oklab, var(--border) 35%, transparent) 1px,
+      transparent 1px,
+      transparent 64px
+    );
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Section divider with dot */
+.home-section-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  position: relative;
+}
+
+.home-section-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border);
+}
+
+.home-section-dot {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+/* Oversized section numbers */
+.home-section-number {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+  color: color-mix(in oklab, var(--muted-foreground) 25%, transparent);
+  letter-spacing: -0.04em;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .home-section-number {
+    font-size: 5rem;
+  }
+}
+
+/* Bento grid layout */
+.home-bento-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .home-bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
+  }
+
+  .home-bento-wide {
+    grid-column: span 2;
+  }
+
+  .home-bento-tall {
+    grid-row: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-bento-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .home-bento-wide {
+    grid-column: span 2;
+  }
+}
+
+/* Example card hover effect */
+.home-example-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-example-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 25px color-mix(in oklab, var(--foreground) 6%, transparent),
+    0 2px 8px color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+/* Feature card */
+.home-feature-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 25px color-mix(in oklab, var(--foreground) 6%, transparent),
+    0 2px 8px color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
 .sidebar-section-link {
   color: var(--foreground);
 }

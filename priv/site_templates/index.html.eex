@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cinder UI</title>
+    <title>Cinder UI - Phoenix + LiveView Component Library</title>
     <meta
       name="description"
-      content="Phoenix + LiveView component library with shadcn-inspired patterns, typed HEEx APIs, and installer tooling for existing apps."
+      content="Production-ready Phoenix + LiveView components with shadcn-inspired design, typed HEEx APIs, and one-command installer for existing apps."
     />
     <%= theme_bootstrap_script %>
     <link rel="stylesheet" href="<%= theme_css_path %>" />
@@ -26,30 +26,56 @@
     </script>
   </head>
   <body class="bg-background text-foreground">
-    <header class="border-b bg-card/80">
+    <header class="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
       <div class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-6">
-        <a href="./" class="text-4xl font-semibold tracking-tight">Cinder UI</a>
+        <a href="./" class="text-2xl font-black tracking-tight">Cinder UI</a>
         <%= header_controls_html %>
       </div>
     </header>
 
-    <div class="site-shell mx-auto max-w-[1200px] px-4 py-6 md:px-6">
-      <main class="space-y-10">
-        <%= hero_html %>
-        <%= component_examples_html %>
-        <%= install_html %>
-        <%= theme_tokens_html %>
-        <%= features_html %>
-      </main>
+    <main>
+      <%= hero_html %>
 
-      <footer class="my-10 text-sm text-muted-foreground">
-        <p>
-          Cinder UI is an independent project based on the design and API patterns of
-          <a href="<%= shadcn_url %>" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">shadcn/ui</a>, built for Elixir, Phoenix, and LiveView by
-          <a href="https://levibuzolic.com" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">Levi Buzolic</a>.
-        </p>
-      </footer>
-    </div>
+      <div class="home-section-divider">
+        <div class="home-section-dot"></div>
+      </div>
+
+      <%= component_examples_html %>
+
+      <div class="home-section-divider">
+        <div class="home-section-dot"></div>
+      </div>
+
+      <%= install_html %>
+
+      <div class="home-section-divider">
+        <div class="home-section-dot"></div>
+      </div>
+
+      <%= features_html %>
+    </main>
+
+    <footer class="border-t bg-card/50">
+      <div class="mx-auto max-w-[1200px] px-4 py-16 md:px-6">
+        <div class="space-y-6 text-center">
+          <h2 class="text-3xl font-black tracking-tight sm:text-4xl">Ready to build?</h2>
+          <p class="mx-auto max-w-md text-muted-foreground">
+            Start using production-ready components in your Phoenix app today.
+          </p>
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <%= footer_cta_html %>
+          </div>
+        </div>
+        <div class="mt-16 border-t pt-8 text-center text-sm text-muted-foreground">
+          <p>
+            Cinder UI is an independent project based on the design and API patterns of
+            <a href="<%= shadcn_url %>" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">shadcn/ui</a>, built for Elixir, Phoenix, and LiveView by
+            <a href="https://levibuzolic.com" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">Levi Buzolic</a>.
+          </p>
+        </div>
+      </div>
+    </footer>
+
     <script type="module" src="<%= theme_script_src %>"></script>
   </body>
 </html>

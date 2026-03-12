@@ -97,8 +97,8 @@ defmodule CinderUI.Site.Marketing do
       hero_html: hero_html(version, component_count, shadcn_url, docs_path),
       component_examples_html: component_examples_html(shadcn_url),
       install_html: install_html(version, docs_path),
-      theme_tokens_html: theme_tokens_html(),
-      features_html: features_html(shadcn_url),
+      features_html: features_html(shadcn_url, docs_path),
+      footer_cta_html: footer_cta_html(docs_path),
       theme_script_src: theme_script_src
     ]
 
@@ -117,10 +117,13 @@ defmodule CinderUI.Site.Marketing do
 
     ~H"""
     <div class="flex flex-wrap items-center gap-2 md:justify-end">
+      <Actions.button as="a" href={@docs_path} variant={:ghost} size={:sm}>
+        Components
+      </Actions.button>
       <Docs.docs_external_link_button
         :if={is_binary(@github_url) and @github_url != ""}
         href={@github_url}
-        variant={:outline}
+        variant={:ghost}
         size={:sm}
       >
         GitHub
@@ -128,7 +131,7 @@ defmodule CinderUI.Site.Marketing do
       <Docs.docs_external_link_button
         :if={is_binary(@hex_url) and @hex_url != ""}
         href={@hex_url}
-        variant={:outline}
+        variant={:ghost}
         size={:sm}
       >
         Hex
@@ -136,7 +139,7 @@ defmodule CinderUI.Site.Marketing do
       <Docs.docs_external_link_button
         :if={is_binary(@hexdocs_url) and @hexdocs_url != ""}
         href={@hexdocs_url}
-        variant={:outline}
+        variant={:ghost}
         size={:sm}
       >
         HexDocs
@@ -158,60 +161,45 @@ defmodule CinderUI.Site.Marketing do
     }
 
     ~H"""
-    <section>
-      <div class="grid gap-6 lg:grid-cols-[1.45fr_0.55fr]">
-        <div class="space-y-4">
-          <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl">
-            <a
-              href={@shadcn_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="underline underline-offset-4"
-            >
-              shadcn/ui
-            </a>
-            component patterns, packaged for Phoenix + LiveView.
+    <section class="home-hero relative overflow-hidden border-b">
+      <div class="home-hero-grid absolute inset-0"></div>
+      <div class="relative mx-auto max-w-[1200px] px-4 py-20 md:px-6 md:py-32">
+        <div class="mx-auto max-w-3xl space-y-8">
+          <div class="flex flex-wrap items-center gap-2">
+            <Feedback.badge variant={:outline}>v{@version}</Feedback.badge>
+            <Feedback.badge variant={:secondary}>{@component_count} components</Feedback.badge>
+          </div>
+
+          <h1 class="text-5xl font-thin leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
+            Build <span class="font-black">beautiful</span> Phoenix apps with
+            <span class="font-black">production-ready</span> components
           </h1>
-          <p class="max-w-2xl text-base text-muted-foreground">
-            Cinder UI provides server-rendered components, typed attrs/slots,
-            and installer automation that keep parity with
+
+          <p class="max-w-xl text-lg text-muted-foreground">
+            Server-rendered HEEx components with typed APIs, aligned with
             <a
               href={@shadcn_url}
               target="_blank"
               rel="noopener noreferrer"
-              class="underline underline-offset-4"
+              class="font-medium text-foreground underline underline-offset-4"
             >
               shadcn/ui
             </a>
-            conventions while fitting Phoenix conventions.
+            conventions. One command to install.
           </p>
-          <div class="flex flex-wrap gap-2">
-            <Actions.button as="a" href={@docs_path}>
-              Browse Component Library
+
+          <div class="flex flex-wrap gap-3">
+            <Actions.button as="a" href={@docs_path} size={:lg}>
+              Browse Components
             </Actions.button>
-            <Actions.button as="a" variant={:outline} href={@install_docs_path}>
+            <Actions.button as="a" variant={:outline} href={@install_docs_path} size={:lg}>
               Installation Guide
             </Actions.button>
-            <Actions.button as="a" variant={:outline} href="#install">
+            <Actions.button as="a" variant={:outline} href="#install" size={:lg}>
               Quick Start
             </Actions.button>
           </div>
         </div>
-
-        <Layout.card class="lg:self-start">
-          <Layout.card_content>
-            <dl class="space-y-2 text-sm">
-              <div class="flex items-center justify-between gap-2">
-                <dt class="text-muted-foreground">Latest release</dt>
-                <dd class="font-medium"><code>v{@version}</code></dd>
-              </div>
-              <div class="flex items-center justify-between gap-2">
-                <dt class="text-muted-foreground">Components</dt>
-                <dd class="font-medium"><code>{@component_count}</code></dd>
-              </div>
-            </dl>
-          </Layout.card_content>
-        </Layout.card>
       </div>
     </section>
     """
@@ -220,26 +208,69 @@ defmodule CinderUI.Site.Marketing do
 
   defp component_examples_html(shadcn_url) do
     assigns = %{
-      cards: [
-        button_group_example_card(shadcn_url),
-        form_example_card(shadcn_url),
-        alert_example_card(shadcn_url),
-        tabs_example_card(shadcn_url)
-      ]
+      button_card: button_group_example_card(shadcn_url),
+      form_card: form_example_card(shadcn_url),
+      alert_card: alert_example_card(shadcn_url),
+      tabs_card: tabs_example_card(shadcn_url),
+      badge_card: badge_example_card(shadcn_url)
     }
 
     ~H"""
-    <section id="examples" class="space-y-4">
-      <h2 class="text-2xl font-semibold tracking-tight">Component examples</h2>
-      <div class="grid gap-4 md:grid-cols-2">
-        <.marketing_example_card
-          :for={card <- @cards}
-          title={card.title}
-          description={card.description}
-          preview_html={card.preview_html}
-          snippet={card.snippet}
-          shadcn_component_url={card.shadcn_component_url}
-        />
+    <section id="examples" class="mx-auto max-w-[1200px] px-4 py-16 md:px-6 md:py-24">
+      <div class="mb-10 flex items-end gap-4">
+        <span class="home-section-number">01</span>
+        <div>
+          <h2 class="text-3xl font-black tracking-tight sm:text-4xl">See it in action</h2>
+          <p class="mt-2 text-muted-foreground">Real components, rendered server-side with HEEx.</p>
+        </div>
+      </div>
+
+      <div class="home-bento-grid">
+        <div class="home-bento-wide">
+          <.marketing_example_card
+            title={@button_card.title}
+            description={@button_card.description}
+            preview_html={@button_card.preview_html}
+            snippet={@button_card.snippet}
+            shadcn_component_url={@button_card.shadcn_component_url}
+          />
+        </div>
+        <div class="home-bento-tall">
+          <.marketing_example_card
+            title={@form_card.title}
+            description={@form_card.description}
+            preview_html={@form_card.preview_html}
+            snippet={@form_card.snippet}
+            shadcn_component_url={@form_card.shadcn_component_url}
+          />
+        </div>
+        <div>
+          <.marketing_example_card
+            title={@alert_card.title}
+            description={@alert_card.description}
+            preview_html={@alert_card.preview_html}
+            snippet={@alert_card.snippet}
+            shadcn_component_url={@alert_card.shadcn_component_url}
+          />
+        </div>
+        <div>
+          <.marketing_example_card
+            title={@tabs_card.title}
+            description={@tabs_card.description}
+            preview_html={@tabs_card.preview_html}
+            snippet={@tabs_card.snippet}
+            shadcn_component_url={@tabs_card.shadcn_component_url}
+          />
+        </div>
+        <div>
+          <.marketing_example_card
+            title={@badge_card.title}
+            description={@badge_card.description}
+            preview_html={@badge_card.preview_html}
+            snippet={@badge_card.snippet}
+            shadcn_component_url={@badge_card.shadcn_component_url}
+          />
+        </div>
       </div>
     </section>
     """
@@ -265,7 +296,7 @@ defmodule CinderUI.Site.Marketing do
     """
 
     %{
-      title: "Actions.button_group",
+      title: "Button Group",
       description: "Grouped primary + secondary actions.",
       preview_html: preview,
       snippet: snippet,
@@ -292,15 +323,15 @@ defmodule CinderUI.Site.Marketing do
 
     snippet = """
     <.field>
-      <:label><.label for="site-email">Team email</.label></:label>
-      <.input id="site-email" placeholder="team@example.com" />
-      <:description>Used for release announcements.</:description>
+      <:label><.label for="email">Team email</.label></:label>
+      <.input id="email" placeholder="team@example.com" />
+      <:description>Used for announcements.</:description>
     </.field>
     """
 
     %{
-      title: "Forms.field",
-      description: "Label + input + helper text using the shared token model.",
+      title: "Form Field",
+      description: "Label + input + helper text with the shared token model.",
       preview_html: preview,
       snippet: snippet,
       shadcn_component_url: "#{shadcn_url}/components/form"
@@ -325,13 +356,13 @@ defmodule CinderUI.Site.Marketing do
     <.alert>
       <.icon name="circle-alert" class="size-4" />
       <.alert_title>Release ready</.alert_title>
-      <.alert_description>All quality checks passed.</.alert_description>
+      <.alert_description>All checks passed.</.alert_description>
     </.alert>
     """
 
     %{
-      title: "Feedback.alert",
-      description: "Status messaging aligned with upstream alert patterns.",
+      title: "Alert",
+      description: "Status messaging with upstream alert patterns.",
       preview_html: preview,
       snippet: snippet,
       shadcn_component_url: "#{shadcn_url}/components/alert"
@@ -356,16 +387,45 @@ defmodule CinderUI.Site.Marketing do
       <:trigger value="overview">Overview</:trigger>
       <:trigger value="api">API</:trigger>
       <:content value="overview">Use components in HEEx.</:content>
-      <:content value="api">Typed attrs/slots with compile-time checks.</:content>
+      <:content value="api">Typed attrs/slots.</:content>
     </.tabs>
     """
 
     %{
-      title: "Navigation.tabs",
+      title: "Tabs",
       description: "Tab primitives with server-driven active state.",
       preview_html: preview,
       snippet: snippet,
       shadcn_component_url: "#{shadcn_url}/components/tabs"
+    }
+  end
+
+  defp badge_example_card(shadcn_url) do
+    assigns = %{}
+
+    preview =
+      to_html(~H"""
+      <div class="flex flex-wrap items-center gap-2">
+        <Feedback.badge>Default</Feedback.badge>
+        <Feedback.badge variant={:secondary}>Secondary</Feedback.badge>
+        <Feedback.badge variant={:outline}>Outline</Feedback.badge>
+        <Feedback.badge variant={:destructive}>Destructive</Feedback.badge>
+      </div>
+      """)
+
+    snippet = """
+    <.badge>Default</.badge>
+    <.badge variant={:secondary}>Secondary</.badge>
+    <.badge variant={:outline}>Outline</.badge>
+    <.badge variant={:destructive}>Destructive</.badge>
+    """
+
+    %{
+      title: "Badge",
+      description: "Status labels in multiple variants.",
+      preview_html: preview,
+      snippet: snippet,
+      shadcn_component_url: "#{shadcn_url}/components/badge"
     }
   end
 
@@ -377,7 +437,7 @@ defmodule CinderUI.Site.Marketing do
 
   defp marketing_example_card(assigns) do
     ~H"""
-    <Layout.panel class="h-full divide-y">
+    <Layout.panel class="home-example-card h-full divide-y">
       <div class="p-4">
         <h4 class="font-medium">{@title}</h4>
         <p class="text-muted-foreground mt-1 text-sm">{@description}</p>
@@ -423,135 +483,94 @@ defmodule CinderUI.Site.Marketing do
     }
 
     ~H"""
-    <section id="install" class="space-y-3">
-      <h2 class="text-2xl font-semibold tracking-tight">Install in your Phoenix app</h2>
-      <p class="text-sm text-muted-foreground">
-        Need the full setup flow? <a href={@install_docs_path} class="underline underline-offset-4">Read the installation guide</a>.
-      </p>
-      <div class="space-y-2">
-        <p class="text-sm font-medium text-foreground">1) Add dependencies to <code>mix.exs</code></p>
-        <Docs.docs_code_block
-          source={@deps_code}
-          language={:elixir}
-          pre_class="relative rounded-lg border bg-muted/30 px-4 py-3 text-sm"
-        />
+    <section id="install" class="mx-auto max-w-[1200px] px-4 py-16 md:px-6 md:py-24">
+      <div class="mb-10 flex items-end gap-4">
+        <span class="home-section-number">02</span>
+        <div>
+          <h2 class="text-3xl font-black tracking-tight sm:text-4xl">Get started in 60 seconds</h2>
+          <p class="mt-2 text-muted-foreground">
+            Two steps. No boilerplate.
+            <a href={@install_docs_path} class="font-medium text-foreground underline underline-offset-4">Read the full guide</a>.
+          </p>
+        </div>
       </div>
-      <div class="space-y-2">
-        <p class="text-sm font-medium text-foreground">
-          2) Install and run setup commands in your terminal
-        </p>
-        <Docs.docs_code_block
-          source={@terminal_code}
-          language={:bash}
-          pre_class="relative rounded-lg border bg-muted/30 px-4 py-3 text-sm"
-        />
+
+      <div class="mx-auto grid max-w-3xl gap-8">
+        <div class="space-y-3">
+          <p class="text-sm font-medium text-foreground">
+            <span class="mr-2 inline-flex size-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">1</span>
+            Add dependencies to <code class="inline-code">mix.exs</code>
+          </p>
+          <Docs.docs_code_block
+            source={@deps_code}
+            language={:elixir}
+            pre_class="relative rounded-lg border bg-muted/30 px-4 py-3 text-sm"
+          />
+        </div>
+        <div class="space-y-3">
+          <p class="text-sm font-medium text-foreground">
+            <span class="mr-2 inline-flex size-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">2</span>
+            Fetch and install
+          </p>
+          <Docs.docs_code_block
+            source={@terminal_code}
+            language={:bash}
+            pre_class="relative rounded-lg border bg-muted/30 px-4 py-3 text-sm"
+          />
+        </div>
       </div>
     </section>
     """
     |> to_html()
   end
 
-  defp theme_tokens_html do
-    tokens_code = """
-    :root {
-      --background: oklch(1 0 0);
-      --foreground: oklch(0.145 0 0);
-      --card: oklch(1 0 0);
-      --card-foreground: oklch(0.145 0 0);
-      --popover: oklch(1 0 0);
-      --popover-foreground: oklch(0.145 0 0);
-      --primary: oklch(0.205 0 0);
-      --primary-foreground: oklch(0.985 0 0);
-      --secondary: oklch(0.97 0 0);
-      --secondary-foreground: oklch(0.205 0 0);
-      --muted: oklch(0.97 0 0);
-      --muted-foreground: oklch(0.556 0 0);
-      --accent: oklch(0.97 0 0);
-      --accent-foreground: oklch(0.205 0 0);
-      --destructive: oklch(0.577 0.245 27.325);
-      --destructive-foreground: oklch(0.985 0 0);
-      --border: oklch(0.922 0 0);
-      --input: oklch(0.922 0 0);
-      --ring: oklch(0.708 0 0);
-      --radius: 0.75rem;
-    }
-
-    .dark {
-      --background: oklch(0.145 0 0);
-      --foreground: oklch(0.985 0 0);
-      --card: oklch(0.205 0 0);
-      --card-foreground: oklch(0.985 0 0);
-      --popover: oklch(0.205 0 0);
-      --popover-foreground: oklch(0.985 0 0);
-      --primary: oklch(0.922 0 0);
-      --primary-foreground: oklch(0.205 0 0);
-      --secondary: oklch(0.269 0 0);
-      --secondary-foreground: oklch(0.985 0 0);
-      --muted: oklch(0.269 0 0);
-      --muted-foreground: oklch(0.708 0 0);
-      --accent: oklch(0.269 0 0);
-      --accent-foreground: oklch(0.985 0 0);
-      --destructive: oklch(0.704 0.191 22.216);
-      --destructive-foreground: oklch(0.985 0 0);
-      --border: oklch(1 0 0 / 10%);
-      --input: oklch(1 0 0 / 15%);
-      --ring: oklch(0.556 0 0);
-    }
-    """
-
-    assigns = %{tokens_code: tokens_code}
-
-    ~H"""
-    <section id="tokens" class="space-y-3">
-      <h2 class="text-2xl font-semibold tracking-tight">Configure tokens like shadcn/ui</h2>
-      <p class="text-sm text-muted-foreground">
-        Customize your theme in <code>assets/css/app.css</code> by overriding semantic CSS variables.
-        Radius is controlled via <code>--radius</code>; component radii are derived from it automatically.
-      </p>
-      <Docs.docs_code_block
-        source={@tokens_code}
-        language={:css}
-        pre_class="relative rounded-lg border bg-muted/30 px-4 py-3 text-sm"
-      />
-    </section>
-    """
-    |> to_html()
-  end
-
-  defp features_html(shadcn_url) do
+  defp features_html(shadcn_url, docs_path) do
     assigns = %{
+      docs_path: docs_path,
       features: [
         %{
+          icon: "blocks",
           title: "Phoenix-native API",
-          body_html:
-            "Typed HEEx function components with predictable attrs/slots and composable primitives."
+          description:
+            "Typed HEEx function components with predictable attrs, slots, and composable primitives."
         },
         %{
-          title: "Fast app integration",
-          body_html:
-            "One command setup for Tailwind source wiring, component CSS, and optional LiveView hooks in existing projects."
+          icon: "zap",
+          title: "One-command setup",
+          description:
+            "Single installer wires Tailwind sources, component CSS, and optional LiveView hooks."
         },
         %{
-          title: "shadcn-aligned styles",
-          body_html:
-            "Broad API surface aligned with <a href=\"#{shadcn_url}\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"underline underline-offset-4\">shadcn/ui</a> conventions and token semantics."
+          icon: "paintbrush",
+          title: "Themeable design tokens",
+          description:
+            "Customize colors, radius, and spacing through CSS variables \u2014 aligned with <a href=\"#{shadcn_url}\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"underline underline-offset-4\">shadcn/ui</a> conventions."
         },
         %{
-          title: "Production confidence",
-          body_html:
+          icon: "shield-check",
+          title: "Production tested",
+          description:
             "Unit, browser, and visual regression coverage keeps components stable as your app evolves."
         }
       ]
     }
 
     ~H"""
-    <section class="space-y-3">
-      <h2 class="text-2xl font-semibold tracking-tight">What you get</h2>
-      <div class="grid gap-4 md:grid-cols-2">
+    <section class="mx-auto max-w-[1200px] px-4 py-16 md:px-6 md:py-24">
+      <div class="mb-10 flex items-end gap-4">
+        <span class="home-section-number">03</span>
+        <div>
+          <h2 class="text-3xl font-black tracking-tight sm:text-4xl">What you get</h2>
+          <p class="mt-2 text-muted-foreground">Everything you need to ship polished Phoenix apps.</p>
+        </div>
+      </div>
+
+      <div class="grid gap-6 sm:grid-cols-2">
         <.marketing_feature_card
           :for={feature <- @features}
+          icon={feature.icon}
           title={feature.title}
-          body_html={feature.body_html}
+          description={feature.description}
         />
       </div>
     </section>
@@ -559,22 +578,43 @@ defmodule CinderUI.Site.Marketing do
     |> to_html()
   end
 
+  attr :icon, :string, required: true
   attr :title, :string, required: true
-  attr :body_html, :string, required: true
+  attr :description, :string, required: true
 
   defp marketing_feature_card(assigns) do
     ~H"""
-    <Layout.card>
+    <Layout.card class="home-feature-card">
       <Layout.card_header>
+        <div class="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Icons.icon name={@icon} class="size-5" />
+        </div>
         <Layout.card_title>{@title}</Layout.card_title>
       </Layout.card_header>
       <Layout.card_content>
         <Layout.card_description>
-          {rendered(@body_html)}
+          {rendered(@description)}
         </Layout.card_description>
       </Layout.card_content>
     </Layout.card>
     """
+  end
+
+  defp footer_cta_html(docs_path) do
+    assigns = %{
+      docs_path: docs_path,
+      install_docs_path: Path.join(docs_path, "install/")
+    }
+
+    ~H"""
+    <Actions.button as="a" href={@docs_path} size={:lg}>
+      Browse Components
+    </Actions.button>
+    <Actions.button as="a" variant={:outline} href={@install_docs_path} size={:lg}>
+      Installation Guide
+    </Actions.button>
+    """
+    |> to_html()
   end
 
   defp theme_bootstrap_script do
