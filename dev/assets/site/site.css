@@ -116,6 +116,10 @@ body.home-page::before {
   background-size: 256px 256px;
 }
 
+body.home-page {
+  overflow-x: clip;
+}
+
 [data-theme="dark"] body.home-page::before {
   opacity: 0.04;
 }
@@ -124,6 +128,7 @@ body.home-page::before {
 .hero-section {
   position: relative;
   isolation: isolate;
+  overflow-x: clip;
 }
 
 html:not(.dark):not([data-theme="dark"]) .home-page .hero-section::before {
