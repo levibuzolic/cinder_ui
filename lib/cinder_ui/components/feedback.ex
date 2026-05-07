@@ -393,7 +393,7 @@ defmodule CinderUI.Components.Feedback do
       <:description :if={@title}>{msg}</:description>
       <button
         type="button"
-        class="absolute top-3 right-3 rounded-md p-1 hover:bg-black/10 dark:hover:bg-white/10"
+        class="absolute top-3 right-3 inline-flex size-6 items-center justify-center rounded-md text-current hover:bg-black/10 dark:hover:bg-white/10"
         aria-label="Close"
       >
         <CinderUI.Icons.icon name="x" class="size-4 opacity-60" />

@@ -65,6 +65,7 @@ defmodule CinderUI.Components.FeedbackTest do
       })
 
     assert html =~ ~s(aria-label="Close")
+    assert html =~ "inline-flex size-6 items-center justify-center"
   end
 
   test "flash supports success and warning kinds" do
