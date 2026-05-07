@@ -21,6 +21,10 @@ defmodule CinderUI.Components.Advanced do
 
   These components intentionally favor no-JS defaults and expose hooks/classes so
   advanced interactions can be layered in using LiveView hooks.
+
+  ## Interactive docs
+
+  [View live Advanced examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#advanced).
   """
 
   use Phoenix.Component

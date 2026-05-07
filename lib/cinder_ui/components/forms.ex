@@ -24,6 +24,10 @@ defmodule CinderUI.Components.Forms do
   - `input_group/1`
   - `input_group_addon/1`
   - `input_otp/1`
+
+  ## Interactive docs
+
+  [View live Forms examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#forms).
   """
 
   use Phoenix.Component

@@ -11,6 +11,9 @@ defmodule CinderUI.ComponentDocsTest do
     assert module.first(:ok) == :ok
     assert module.legacy(:ok) == :ok
     assert module.already(:ok) == :ok
+
+    assert CinderUI.ComponentDocs.component_docs_url(module, :first) ==
+             "https://levibuzolic.github.io/cinder_ui/docs/#{module_slug}-first/"
   end
 
   test "doc/1 macro passes through non-binary docs" do
@@ -19,6 +22,14 @@ defmodule CinderUI.ComponentDocsTest do
 
     [{^module, _beam}] = Code.compile_file(file)
     assert module.hidden(:ok) == :ok
+  end
+
+  test "section_docs_url/1 returns docs site anchors for component family modules" do
+    assert CinderUI.ComponentDocs.section_docs_url(CinderUI.Components.Forms) ==
+             "https://levibuzolic.github.io/cinder_ui/docs/#forms"
+
+    assert CinderUI.ComponentDocs.section_docs_url(CinderUI.Components.DataDisplay) ==
+             "https://levibuzolic.github.io/cinder_ui/docs/#data-display"
   end
 
   defp unique_module(suffix) do

@@ -9,6 +9,10 @@ defmodule CinderUI.Components.DataDisplay do
   - `accordion/1`
   - `collapsible/1`
   - `code_block/1`
+
+  ## Interactive docs
+
+  [View live Data Display examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#data-display).
   """
 
   use Phoenix.Component

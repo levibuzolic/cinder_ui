@@ -55,8 +55,25 @@ defmodule CinderUI.Docs.CatalogTest do
         assert is_list(entry.attributes)
         assert is_list(entry.slots)
         assert entry.docs_path == "#{entry.id}/index.html"
+
+        assert entry.docs_full =~ "## Interactive docs"
+        assert entry.docs_full =~ "View live examples and full component docs"
+
+        assert entry.docs_full =~
+                 "https://levibuzolic.github.io/cinder_ui/docs/#{String.replace_suffix(entry.docs_path, "index.html", "")}"
+
         assert entry.shadcn_url =~ "https://ui.shadcn.com/docs/components"
       end)
+    end)
+  end
+
+  test "component family module docs link to their docs site sections" do
+    Enum.each(Catalog.section_definitions(), fn section ->
+      {:docs_v1, _, _, _, %{"en" => module_doc}, _, _} = Code.fetch_docs(section.module)
+
+      assert module_doc =~ "## Interactive docs"
+      assert module_doc =~ "View live #{section.title} examples and component docs"
+      assert module_doc =~ "https://levibuzolic.github.io/cinder_ui/docs/##{section.id}"
     end)
   end
 

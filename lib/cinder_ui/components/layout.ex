@@ -13,6 +13,10 @@ defmodule CinderUI.Components.Layout do
   - `kbd_group/1`
   - `scroll_area/1`
   - `resizable/1` (in progress, not ready for use)
+
+  ## Interactive docs
+
+  [View live Layout examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#layout).
   """
 
   use Phoenix.Component

@@ -13,15 +13,20 @@ defmodule CinderUI.Icons do
       {:lucide_icons, "~> 2.0"}
 
   If the dependency is missing, `icon/1` raises a descriptive error.
+
+  ## Interactive docs
+
+  [View live Icons examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#icons).
   """
 
   use Phoenix.Component
 
   import CinderUI.Classes
+  import CinderUI.ComponentDocs, only: [doc: 1]
 
   @lookup_cache_key {__MODULE__, :icon_lookup}
 
-  @doc """
+  doc("""
   Renders a Lucide icon by name.
 
   `name` accepts either kebab-case (`"chevron-down"`) or snake_case
@@ -35,7 +40,8 @@ defmodule CinderUI.Icons do
 
   - [Full Lucide icon directory](https://lucide.dev/icons)
   - [lucide_icons package](https://hex.pm/packages/lucide_icons)
-  """
+  """)
+
   attr :name, :string, required: true
   attr :class, :string, default: nil
   attr :rest, :global

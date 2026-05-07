@@ -9,6 +9,10 @@ defmodule CinderUI.Components.Navigation do
   - `tabs/1`
   - `menu/1`
   - `navigation_menu/1`
+
+  ## Interactive docs
+
+  [View live Navigation examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#navigation).
   """
 
   use Phoenix.Component
