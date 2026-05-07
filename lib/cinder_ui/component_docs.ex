@@ -54,8 +54,8 @@ defmodule CinderUI.ComponentDocs do
 
       function ->
         markdown
-        |> append_docs_link(env.module, function)
         |> append_screenshot(env.module, function)
+        |> append_docs_link(env.module, function)
     end
   end
 
@@ -66,7 +66,7 @@ defmodule CinderUI.ComponentDocs do
       markdown
     else
       String.trim_trailing(markdown) <>
-        "\n\n## Interactive docs\n\n[View live examples and full component docs](#{docs_url}).\n"
+        "\n\n[View live examples and full component docs](#{docs_url}).\n"
     end
   end
 

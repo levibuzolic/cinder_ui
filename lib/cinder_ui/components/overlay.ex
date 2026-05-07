@@ -17,8 +17,6 @@ defmodule CinderUI.Components.Overlay do
   Components requiring toggled visibility expose `data-*` attributes and optional
   LiveView hooks installed by `mix cinder_ui.install`.
 
-  ## Interactive docs
-
   [View live Overlay examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#overlay).
   """
 

@@ -14,8 +14,6 @@ defmodule CinderUI.Icons do
 
   If the dependency is missing, `icon/1` raises a descriptive error.
 
-  ## Interactive docs
-
   [View live Icons examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#icons).
   """
 

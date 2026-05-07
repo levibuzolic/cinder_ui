@@ -49,6 +49,8 @@ defmodule CinderUI.Docs.BuildTaskTest do
     assert component_page =~ "Attributes"
     assert component_page =~ "Slots"
     assert component_page =~ "https://ui.shadcn.com/docs/components/button"
+    refute component_page =~ "View live examples and full component docs"
+    refute component_page =~ "https://levibuzolic.github.io/cinder_ui/docs/actions-button/"
     assert component_page =~ ~s(data-slot="preview")
     assert component_page =~ ~s(class="code-highlight block min-w-max whitespace-pre")
     assert component_page =~ ~s(<span class="tok-tag">.button</span>)

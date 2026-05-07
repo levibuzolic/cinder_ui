@@ -17,6 +17,7 @@ defmodule CinderUI.Docs.Catalog do
   alias CinderUI.Icons
   alias Phoenix.HTML.Safe
 
+  @cinder_docs_base "https://levibuzolic.github.io/cinder_ui/docs"
   @shadcn_base "https://ui.shadcn.com/docs/components"
   @grouped_shadcn_slugs %{
     "alert" => "alert",
@@ -188,10 +189,20 @@ defmodule CinderUI.Docs.Catalog do
     with {:docs_v1, _, _, _, _, _, docs} <- Code.fetch_docs(module),
          {{:function, ^function, 1}, _, _, %{"en" => doc}, _}
          when is_binary(doc) <- Enum.find(docs, &doc_entry?(&1, function)) do
-      String.trim(doc)
+      doc
+      |> String.trim()
+      |> strip_generated_docs_site_link()
     else
       _ -> "No documentation available."
     end
+  end
+
+  defp strip_generated_docs_site_link(doc) do
+    String.replace(
+      doc,
+      ~r/\n*\[View live examples and full component docs\]\(#{Regex.escape(@cinder_docs_base)}\/[^)]+\)\.\s*/u,
+      ""
+    )
   end
 
   defp first_paragraph(doc) when is_binary(doc) do

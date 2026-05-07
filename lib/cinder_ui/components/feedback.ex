@@ -12,8 +12,6 @@ defmodule CinderUI.Components.Feedback do
   - `spinner/1`
   - `empty_state/1`
 
-  ## Interactive docs
-
   [View live Feedback examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#feedback).
   """
 

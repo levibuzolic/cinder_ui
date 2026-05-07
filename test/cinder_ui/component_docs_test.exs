@@ -32,6 +32,16 @@ defmodule CinderUI.ComponentDocsTest do
              "https://levibuzolic.github.io/cinder_ui/docs/#data-display"
   end
 
+  test "compiled component docs append the live examples link without a section heading" do
+    doc = compiled_function_doc(CinderUI.Components.Forms, :input)
+
+    assert doc =~ "## Screenshot"
+    refute doc =~ "## Interactive docs"
+
+    assert doc =~
+             "![input/1 screenshot](screenshots/forms-input.png)\n\n[View live examples and full component docs](https://levibuzolic.github.io/cinder_ui/docs/forms-input/)."
+  end
+
   defp unique_module(suffix) do
     Module.concat([
       CinderUI,
@@ -91,6 +101,18 @@ defmodule CinderUI.ComponentDocsTest do
       def hidden(assigns), do: assigns
     end
     """
+  end
+
+  defp compiled_function_doc(module, function) do
+    {:docs_v1, _, _, _, _, _, docs} = Code.fetch_docs(module)
+
+    assert {{:function, ^function, 1}, _, _, %{"en" => doc}, _} =
+             Enum.find(docs, fn
+               {{:function, name, 1}, _, _, _, _} -> name == function
+               _ -> false
+             end)
+
+    doc
   end
 
   defp module_slug(module) do

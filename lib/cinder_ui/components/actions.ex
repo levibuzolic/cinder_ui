@@ -14,8 +14,6 @@ defmodule CinderUI.Components.Actions do
       <.button>Save</.button>
       <.button variant={:outline} size={:sm}>Cancel</.button>
 
-  ## Interactive docs
-
   [View live Actions examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#actions).
   """
 
