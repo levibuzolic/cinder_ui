@@ -776,13 +776,14 @@ defmodule CinderUI.Components.Forms do
 
   def checkbox(assigns) do
     had_field = not is_nil(assigns[:field])
+    field_value = if had_field, do: assigns.field.value
 
     assigns =
       assigns
       |> unwrap_field()
       |> then(fn a ->
         if had_field do
-          assign(a, :checked, Form.normalize_value("checkbox", a[:value]))
+          assign(a, :checked, Form.normalize_value("checkbox", field_value))
         else
           a
         end
@@ -894,13 +895,14 @@ defmodule CinderUI.Components.Forms do
 
   def switch(assigns) do
     had_field = not is_nil(assigns[:field])
+    field_value = if had_field, do: assigns.field.value
 
     assigns =
       assigns
       |> unwrap_field()
       |> then(fn a ->
         if had_field do
-          assign(a, :checked, Form.normalize_value("checkbox", a[:value]))
+          assign(a, :checked, Form.normalize_value("checkbox", field_value))
         else
           a
         end
@@ -1869,7 +1871,7 @@ defmodule CinderUI.Components.Forms do
 
   attr :id, :string, default: nil
   attr :name, :string, default: nil
-  attr :value, :any, default: 0
+  attr :value, :any, default: nil
   attr :field, Phoenix.HTML.FormField, default: nil
   attr :label, :string, default: nil
   attr :errors, :list, default: nil
@@ -1883,6 +1885,7 @@ defmodule CinderUI.Components.Forms do
     assigns =
       assigns
       |> unwrap_field()
+      |> then(fn a -> if is_nil(a[:value]), do: assign(a, :value, 0), else: a end)
       |> then(fn a -> if is_nil(a[:errors]), do: assign(a, :errors, []), else: a end)
       |> assign(:classes, [
         "accent-primary h-2 w-full cursor-pointer appearance-none rounded-full bg-primary/20",

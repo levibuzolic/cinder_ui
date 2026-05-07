@@ -507,6 +507,20 @@ defmodule CinderUI.Components.FormsTest do
       assert TestHelpers.attr(html, "[data-slot='checkbox']", "checked") == "checked"
     end
 
+    test "renders unchecked when field value is false" do
+      form = Phoenix.Component.to_form(%{"online" => false}, as: :store)
+      html = render_component(&Forms.checkbox/1, %{field: form[:online]})
+      refute TestHelpers.attr(html, "[data-slot='checkbox']", "checked")
+      assert TestHelpers.attr(html, "[data-slot='checkbox']", "value") == "true"
+    end
+
+    test "explicit input value does not force checked when field value is false" do
+      form = Phoenix.Component.to_form(%{"online" => false}, as: :store)
+      html = render_component(&Forms.checkbox/1, %{field: form[:online], value: "yes"})
+      refute TestHelpers.attr(html, "[data-slot='checkbox']", "checked")
+      assert TestHelpers.attr(html, "[data-slot='checkbox']", "value") == "yes"
+    end
+
     test "renders hidden input for unchecked submission" do
       form = Phoenix.Component.to_form(%{"active" => false}, as: :item)
       html = render_component(&Forms.checkbox/1, %{field: form[:active]})
@@ -554,6 +568,22 @@ defmodule CinderUI.Components.FormsTest do
       assert TestHelpers.attr(html, "[data-slot='switch']", "name") == "prefs[notifications]"
     end
 
+    test "renders unchecked when field value is false" do
+      form = Phoenix.Component.to_form(%{"notifications" => false}, as: :prefs)
+      html = render_component(&Forms.switch/1, %{field: form[:notifications]})
+      refute TestHelpers.attr(html, "[data-slot='switch']", "checked")
+      assert TestHelpers.attr(html, "[data-slot='switch']", "data-state") == "unchecked"
+      assert TestHelpers.attr(html, "[data-slot='switch']", "value") == "true"
+    end
+
+    test "explicit input value does not force checked when field value is false" do
+      form = Phoenix.Component.to_form(%{"notifications" => false}, as: :prefs)
+      html = render_component(&Forms.switch/1, %{field: form[:notifications], value: "yes"})
+      refute TestHelpers.attr(html, "[data-slot='switch']", "checked")
+      assert TestHelpers.attr(html, "[data-slot='switch']", "data-state") == "unchecked"
+      assert TestHelpers.attr(html, "[data-slot='switch']", "value") == "yes"
+    end
+
     test "renders label from label attr inline" do
       form = Phoenix.Component.to_form(%{"notify" => false}, as: :prefs)
       html = render_component(&Forms.switch/1, %{field: form[:notify], label: "Notifications"})
@@ -581,6 +611,7 @@ defmodule CinderUI.Components.FormsTest do
       form = Phoenix.Component.to_form(%{"volume" => "75"}, as: :settings)
       html = render_component(&Forms.slider/1, %{id: "volume", field: form[:volume]})
       assert TestHelpers.attr(html, "[data-slot='slider']", "name") == "settings[volume]"
+      assert TestHelpers.attr(html, "[data-slot='slider']", "value") == "75"
     end
   end
 
