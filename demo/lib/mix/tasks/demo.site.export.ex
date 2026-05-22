@@ -4,7 +4,7 @@ defmodule Mix.Tasks.Demo.Site.Export do
   Starts the demo endpoint, requests the live-rendered marketing/docs pages,
   and writes a static site bundle to `../dist/site`.
 
-  The exported site is suitable for GitHub Pages publishing.
+  The exported site is suitable for static hosting.
 
       cd demo && mix demo.site.export
   """

@@ -86,7 +86,7 @@ MIX_ENV=test mix coveralls.cobertura --raise
 mix cinder_ui.docs.build
 ```
 
-From `demo/`, export the live-rendered Phoenix pages to `dist/site` (GitHub Pages artifact):
+From `demo/`, export the live-rendered Phoenix pages to `dist/site` (static site artifact):
 
 ```bash
 cd demo
@@ -196,7 +196,7 @@ In short:
 3. Publish a GitHub Release with a `vX.Y.Z` tag that matches `mix.exs`.
 4. GitHub Actions publishes the Hex package and HexDocs through `.github/workflows/publish-hex.yml`.
 
-Site deploys separately through `.github/workflows/publish-site.yml`.
+Site deploys separately through `.github/workflows/publish-site.yml`. Netlify deploy previews are handled by `.github/workflows/netlify-site.yml` when the Netlify secrets in `docs/netlify.md` are configured.
 
 ## Need Help?
 
