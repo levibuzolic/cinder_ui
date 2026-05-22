@@ -1919,8 +1919,10 @@ const CuiCombobox = {
       }
     }
 
-    this.onFocus = () => {
-      this.filterItems()
+    this.onFocus = (event) => {
+      if (!event.relatedTarget || !this.content?.contains(event.relatedTarget)) {
+        this.filterItems()
+      }
     }
 
     this.onInput = () => {
