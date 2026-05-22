@@ -48,6 +48,11 @@ defmodule CinderUI.InstallTaskTest do
     assert File.exists?(Path.join(assets, "js/cinder_ui.js"))
     assert File.read!(Path.join(assets, "css/cinder_ui.css")) == File.read!(@css_template_path)
 
+    installed_js = File.read!(Path.join(assets, "js/cinder_ui.js"))
+    assert installed_js =~ "export const CinderUIHooks"
+    assert installed_js =~ "export const CinderUI"
+    refute installed_js =~ ~r/^import \{/m
+
     npm_args = File.read!(Path.join(project, ".npm-args"))
     assert npm_args =~ "install"
     assert npm_args =~ "-D"

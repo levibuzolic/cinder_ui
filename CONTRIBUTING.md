@@ -51,6 +51,8 @@ Default hooks:
 ## Development Workspaces
 
 - Library: `lib/cinder_ui/**`
+- Hook JS sources: `priv/templates/cinder_ui/**`
+- Assembled hook install artifact: `priv/templates/cinder_ui.js`
 - Public install task: `lib/mix/tasks/cinder_ui.install.ex`
 - Internal docs/site tasks: `dev/lib/mix/tasks/**`
 - Static docs catalog definitions: `dev/lib/cinder_ui/docs/catalog.ex`
@@ -66,8 +68,9 @@ Default hooks:
 4. Add or adjust unit/browser tests.
    Interaction changes should cover both confirm and cancel paths such as
    `Enter`, `Escape`, and outside-click behavior where applicable.
-5. If the change relates to strategic component coverage or interaction quality, update `docs/competitive-audit-roadmap.md`.
-6. Run quality gates.
+5. For hook JavaScript changes, edit `priv/templates/cinder_ui/**`, then run `bin/build-cinder-ui-js` to refresh the single install artifact.
+6. If the change relates to strategic component coverage or interaction quality, update `docs/competitive-audit-roadmap.md`.
+7. Run quality gates.
 
 ## Quality Gates
 
