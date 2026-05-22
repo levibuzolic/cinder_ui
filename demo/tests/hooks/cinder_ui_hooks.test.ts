@@ -135,6 +135,52 @@ describe("Cinder UI hook harness", () => {
     expect(content.classList.contains("hidden")).toBe(true)
   })
 
+  it("autocomplete respects LiveView updates that clear the committed selection", () => {
+    const { el, hook } = mountHook(
+      "CuiAutocomplete",
+      `
+        <div data-slot="autocomplete" data-state="closed" data-selected-label="Levi Buzolic">
+          <input data-slot="autocomplete-value" type="hidden" value="levi" />
+          <input
+            data-autocomplete-input
+            value="Levi Buzolic"
+            aria-expanded="false"
+            aria-activedescendant=""
+          />
+          <div data-autocomplete-content class="hidden">
+            <button id="owner-levi" type="button" data-autocomplete-item data-value="levi" data-label="Levi Buzolic">
+              Levi
+            </button>
+            <button id="owner-mira" type="button" data-autocomplete-item data-value="mira" data-label="Mira Chen">
+              Mira
+            </button>
+            <div data-slot="autocomplete-empty" class="hidden">No matches</div>
+          </div>
+        </div>
+      `,
+    )
+
+    const input = el.querySelector("[data-autocomplete-input]") as HTMLInputElement
+    const hiddenInput = el.querySelector("[data-slot='autocomplete-value']") as HTMLInputElement
+
+    el.dataset.selectedLabel = ""
+    input.value = ""
+    hiddenInput.value = ""
+    hook.updated?.()
+
+    input.value = "Mira"
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+
+    expect(input.value).toBe("")
+    expect(hiddenInput.value).toBe("")
+
+    input.value = "Mira"
+    document.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+
+    expect(input.value).toBe("")
+    expect(hiddenInput.value).toBe("")
+  })
+
   it("combobox stays closed when focus returns from the option list", () => {
     const { el } = mountHook(
       "CuiCombobox",
