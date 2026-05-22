@@ -382,7 +382,7 @@ defmodule CinderUI.Components.Feedback do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> JS.hide(to: "##{@id}")}
       class={
         classes([
-          "fixed top-2 right-2 z-50 w-80 sm:w-96 pr-12",
+          "fixed top-2 right-2 z-50 w-80 sm:w-96 pr-12 backdrop-blur-md",
           @style_classes
         ])
       }

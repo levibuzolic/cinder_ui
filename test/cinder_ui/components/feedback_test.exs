@@ -40,6 +40,7 @@ defmodule CinderUI.Components.FeedbackTest do
     assert html =~ ~s(role="alert")
     assert html =~ ~s(id="flash-info")
     assert html =~ "border-primary/20"
+    assert html =~ "backdrop-blur-md"
     assert html =~ "Saved"
     assert html =~ "Saved successfully"
     assert html =~ "lv:clear-flash"
