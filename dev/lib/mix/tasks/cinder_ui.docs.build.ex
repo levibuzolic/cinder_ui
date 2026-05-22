@@ -17,15 +17,10 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
   """
 
   use Mix.Task
-  use Phoenix.Component
 
   alias CinderUI.Docs.Catalog
-  alias CinderUI.Docs.UIComponents.Catalog, as: DocsCatalogUI
-  alias CinderUI.Docs.UIComponents.Shell, as: DocsShellUI
+  alias CinderUI.Docs.StaticRenderer
   alias CinderUI.Site.Marketing
-  alias Phoenix.HTML.Safe
-
-  @theme_bootstrap_path Path.expand("../../../../priv/site_templates/theme_bootstrap.js", __DIR__)
 
   @impl true
   def run(argv) do
@@ -87,119 +82,30 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
   end
 
   defp overview_page_html(sections, home_url, github_url, hex_package_url) do
-    page_shell(
+    StaticRenderer.docs_index_html(sections,
       title: "Cinder UI Docs",
       description: "Static component docs for Cinder UI",
-      body_content: overview_body_html(sections),
       asset_prefix: ".",
-      sections: sections,
       root_prefix: ".",
-      active_entry_id: nil,
-      active_page: :overview,
       home_url: home_url,
       github_url: github_url,
-      hex_package_url: hex_package_url
+      hex_package_url: hex_package_url,
+      after_body_html: docs_speculation_rules_html()
     )
   end
 
   defp component_page_html(entry, sections, home_url, github_url, hex_package_url) do
-    page_shell(
+    StaticRenderer.docs_component_html(entry, sections,
       title: "#{entry.module_name}.#{entry.title} · Cinder UI",
       description: entry.docs,
-      body_content: component_body_html(entry, sections),
       asset_prefix: "..",
-      sections: sections,
       root_prefix: "..",
-      active_entry_id: entry.id,
-      active_page: nil,
       home_url: home_url,
       github_url: github_url,
-      hex_package_url: hex_package_url
+      hex_package_url: hex_package_url,
+      after_body_html: docs_speculation_rules_html()
     )
   end
-
-  defp page_shell(opts) do
-    assigns = %{
-      title: opts[:title],
-      description: opts[:description],
-      body_content: opts[:body_content],
-      asset_prefix: opts[:asset_prefix],
-      sections: opts[:sections],
-      root_prefix: opts[:root_prefix],
-      active_entry_id: opts[:active_entry_id],
-      active_page: opts[:active_page],
-      home_url: opts[:home_url],
-      github_url: opts[:github_url],
-      hex_package_url: opts[:hex_package_url]
-    }
-
-    ~H"""
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{@title}</title>
-        <meta name="description" content={@description} />
-        {rendered(theme_bootstrap_script())}
-        <link rel="stylesheet" href={"#{@asset_prefix}/assets/theme.css"} />
-        <link rel="stylesheet" href={"#{@asset_prefix}/assets/site.css"} />
-      </head>
-      <body class="bg-background text-foreground">
-        <DocsShellUI.docs_layout
-          sections={@sections}
-          mode={:static}
-          root_prefix={@root_prefix}
-          active_entry_id={@active_entry_id}
-          active_page={@active_page}
-          home_url={@home_url}
-          github_url={@github_url}
-          hex_package_url={@hex_package_url}
-        >
-          {rendered(@body_content)}
-        </DocsShellUI.docs_layout>
-
-        <script type="module" src={"#{@asset_prefix}/assets/static_docs.js"}>
-        </script>
-        {rendered(docs_speculation_rules_html())}
-      </body>
-    </html>
-    """
-    |> to_html()
-  end
-
-  defp overview_body_html(sections) do
-    assigns = %{sections: sections}
-
-    ~H"""
-    <DocsCatalogUI.docs_overview_intro />
-
-    <DocsCatalogUI.docs_overview_sections sections={@sections} mode={:static} root_prefix="." />
-    """
-    |> to_html()
-  end
-
-  defp component_body_html(entry, sections) do
-    assigns = %{entry: entry, sections: sections}
-
-    ~H"""
-    <DocsCatalogUI.docs_component_detail
-      entry={@entry}
-      sections={@sections}
-      mode={:static}
-      root_prefix=".."
-    />
-    """
-    |> to_html()
-  end
-
-  defp to_html(rendered) do
-    rendered
-    |> Safe.to_iodata()
-    |> IO.iodata_to_binary()
-  end
-
-  defp rendered(html) when is_binary(html), do: Phoenix.HTML.raw(html)
 
   defp site_js do
     docs_asset!("static_docs.js") <> ";\n"
@@ -267,10 +173,6 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
   defp docs_speculation_rules_html do
     template!("docs_speculation_rules.html.eex")
     |> EEx.eval_string([])
-  end
-
-  defp theme_bootstrap_script do
-    "<script>\n#{File.read!(@theme_bootstrap_path)}\n</script>"
   end
 
   defp docs_asset!(name) do

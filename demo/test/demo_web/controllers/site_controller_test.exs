@@ -22,6 +22,17 @@ defmodule DemoWeb.SiteControllerTest do
     assert body =~ "Server-rendered"
   end
 
+  test "GET /docs?static=1 renders static component index", %{conn: conn} do
+    conn = get(conn, ~p"/docs?static=1")
+    body = html_response(conn, 200)
+
+    assert body =~ "<!doctype html>"
+    assert body =~ "Component Library"
+    assert body =~ "data-testid=\"component-count\""
+    assert body =~ ~s(href="../")
+    assert body =~ ~s(src="../assets/static_docs.js")
+  end
+
   test "GET /docs/:id renders component page", %{conn: conn} do
     entry =
       SiteRuntime.catalog_sections()
