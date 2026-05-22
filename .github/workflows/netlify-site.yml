@@ -80,6 +80,7 @@ jobs:
         run: |
           deploy_args=(
             --dir dist/site
+            --no-build
             --message "${GITHUB_WORKFLOW} ${GITHUB_SHA}"
             --site "${NETLIFY_SITE_ID}"
             --json

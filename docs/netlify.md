@@ -18,7 +18,7 @@ Until both secrets are configured, the workflow exits with a notice and does not
 - Pull requests from this repository deploy a stable preview alias with `netlify deploy --alias deploy-preview-<number>`.
 - Pull requests from forks are skipped because GitHub does not expose repository secrets to untrusted fork workflows.
 
-The repository also includes a `netlify.toml` file that points Netlify at `dist/site` and intentionally fails native Netlify Git builds. This prevents accidental source-code deploys from Netlify's Git integration. The GitHub Actions workflow deploys the already-built `dist/site` directory directly with `netlify deploy --dir dist/site`.
+The repository also includes a `netlify.toml` file that points Netlify at `dist/site` and intentionally fails native Netlify Git builds. This prevents accidental source-code deploys from Netlify's Git integration. The GitHub Actions workflow deploys the already-built `dist/site` directory directly with `netlify deploy --dir dist/site --no-build`.
 
 Default preview URLs look like:
 
