@@ -21,6 +21,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
   alias CinderUI.Docs.Catalog
   alias CinderUI.Docs.StaticRenderer
   alias CinderUI.Assets
+  alias CinderUI.Docs.ThemeModel
   alias CinderUI.Site.Marketing
 
   @impl true
@@ -109,7 +110,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
   end
 
   defp site_js do
-    docs_asset!("static_docs.js") <> ";\n"
+    ThemeModel.static_docs_js(docs_asset!("static_docs.js"))
   end
 
   defp cinder_ui_js do

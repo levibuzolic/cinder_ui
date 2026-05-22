@@ -6,6 +6,7 @@ defmodule CinderUI.Docs.UIComponents.Shell do
   import CinderUI.Classes
 
   alias CinderUI.Components.{Actions, Advanced, Forms}
+  alias CinderUI.Docs.ThemeModel
   alias CinderUI.Icons
 
   attr :href, :string, required: true
@@ -331,22 +332,11 @@ defmodule CinderUI.Docs.UIComponents.Shell do
   end
 
   defp color_options do
-    Enum.map(["neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe"], fn option ->
-      %{value: option, label: option |> String.replace("_", " ") |> String.capitalize()}
-    end)
+    ThemeModel.color_options()
   end
 
   defp radius_options do
-    Enum.map(
-      [
-        {"maia", "Compact (6px / 0.375rem)"},
-        {"mira", "Small (8px / 0.5rem)"},
-        {"nova", "Default (12px / 0.75rem)"},
-        {"lyra", "Large (14px / 0.875rem)"},
-        {"vega", "XL (16px / 1rem)"}
-      ],
-      fn {value, label} -> %{value: value, label: label} end
-    )
+    ThemeModel.radius_options()
   end
 
   defp overview_href(:static, root_prefix), do: "#{root_prefix}/"

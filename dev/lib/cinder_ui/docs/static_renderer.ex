@@ -3,10 +3,9 @@ defmodule CinderUI.Docs.StaticRenderer do
 
   use Phoenix.Component
 
+  alias CinderUI.Docs.ThemeModel
   alias CinderUI.Docs.UIComponents
   alias Phoenix.HTML.Safe
-
-  @theme_bootstrap_path Path.expand("../../../../priv/site_templates/theme_bootstrap.js", __DIR__)
 
   def docs_index_html(sections, opts) when is_list(sections) and is_list(opts) do
     root_prefix = Keyword.fetch!(opts, :root_prefix)
@@ -327,7 +326,7 @@ defmodule CinderUI.Docs.StaticRenderer do
   defp rendered(html) when is_binary(html), do: Phoenix.HTML.raw(html)
 
   defp theme_bootstrap_script do
-    "<script>\n#{File.read!(@theme_bootstrap_path)}\n</script>"
+    ThemeModel.bootstrap_script()
   end
 
   defp to_html(rendered) do

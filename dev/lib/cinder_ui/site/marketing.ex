@@ -9,6 +9,7 @@ defmodule CinderUI.Site.Marketing do
   alias CinderUI.Components.Layout
   alias CinderUI.Components.Navigation
   alias CinderUI.Docs.Catalog
+  alias CinderUI.Docs.ThemeModel
   alias CinderUI.Docs.UIComponents, as: Docs
   alias CinderUI.Icons
   alias Phoenix.HTML.Safe
@@ -600,7 +601,7 @@ defmodule CinderUI.Site.Marketing do
   end
 
   defp theme_bootstrap_script do
-    "<script>\n#{template!("theme_bootstrap.js")}\n</script>"
+    ThemeModel.bootstrap_script()
   end
 
   defp hero_embers do

@@ -7,67 +7,7 @@
     <.live_title default="Demo" suffix=" · Phoenix Framework">
       {assigns[:page_title]}
     </.live_title>
-    <script>
-      (() => {
-        const media = window.matchMedia("(prefers-color-scheme: dark)");
-        const root = document.documentElement;
-        const cinderThemeKey = "cui:theme:mode";
-        const legacyThemeKey = "phx:theme";
-
-        const readMode = () => {
-          const cinderMode = localStorage.getItem(cinderThemeKey);
-
-          if (["light", "dark", "auto"].includes(cinderMode)) {
-            return cinderMode;
-          }
-
-          const legacyMode = localStorage.getItem(legacyThemeKey);
-
-          if (["light", "dark"].includes(legacyMode)) {
-            return legacyMode;
-          }
-
-          return "auto";
-        };
-
-        const syncLegacy = (mode) => {
-          if (mode === "auto") {
-            localStorage.removeItem(legacyThemeKey);
-          } else {
-            localStorage.setItem(legacyThemeKey, mode);
-          }
-        };
-
-        const applyMode = (mode) => {
-          const resolvedMode = mode === "auto" ? (media.matches ? "dark" : "light") : mode;
-
-          root.classList.toggle("dark", resolvedMode === "dark");
-          root.dataset.theme = resolvedMode;
-          root.dataset.themeMode = mode;
-        };
-
-        const applyStoredMode = () => {
-          const mode = readMode();
-          applyMode(mode);
-          syncLegacy(mode);
-        };
-
-        applyStoredMode();
-
-        if (typeof media.addEventListener === "function") {
-          media.addEventListener("change", () => {
-            if (readMode() === "auto") applyMode("auto");
-          });
-        }
-
-        window.addEventListener("storage", (event) => {
-          if (event.key === cinderThemeKey || event.key === legacyThemeKey) {
-            applyStoredMode();
-          }
-        });
-
-      })();
-    </script>
+    {Phoenix.HTML.raw(CinderUI.Docs.ThemeModel.bootstrap_script())}
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <link rel="stylesheet" href={~p"/assets/site.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
