@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 
 concurrency:
   group: netlify-site-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
@@ -106,6 +107,7 @@ jobs:
 
       - name: Comment preview URL
         if: steps.netlify.outputs.configured == 'true' && github.event_name == 'pull_request'
+        continue-on-error: true
         uses: actions/github-script@v8
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
