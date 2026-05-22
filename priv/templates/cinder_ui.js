@@ -117,6 +117,121 @@ const createItemHighlighter = (getItems, onAfterHighlight) => {
 }
 
 /**
+ * Shared behavior for select/autocomplete/combobox-style listboxes.
+ *
+ * Keeps the hooks in charge of their specific inputs and commands while this
+ * controller owns item state, filtering, keyboard focus, checks, and active
+ * descendant sync.
+ *
+ * @param {object} options
+ * @param {() => HTMLElement[]} options.getItems
+ * @param {(item: HTMLElement) => boolean} [options.isItemVisible]
+ * @param {(item: HTMLElement) => boolean} [options.isItemDisabled]
+ * @param {() => HTMLElement | Element | null} [options.getActiveElement]
+ * @param {() => void} [options.onAfterHighlight]
+ */
+const createListboxController = ({
+  getItems,
+  isItemVisible = (item) => !item.classList.contains("hidden"),
+  isItemDisabled = (item) => item.dataset.disabled === "true" || item.disabled,
+  getActiveElement = () => document.activeElement,
+  onAfterHighlight,
+}) => {
+  const items = () => getItems()
+  const highlighter = createItemHighlighter(items, onAfterHighlight)
+
+  const enabledItems = () => items().filter((item) => !isItemDisabled(item))
+  const visibleItems = () => enabledItems().filter((item) => isItemVisible(item))
+  const selectedItem = () => items().find((item) => item.dataset.selected === "true") || null
+  const highlightedItem = (sourceItems = items()) =>
+    sourceItems.find((item) => item.dataset.highlighted === "true") || null
+
+  const syncActiveDescendant = (control, open) => {
+    if (!control) return
+    const activeItem = highlightedItem()
+    control.setAttribute("aria-activedescendant", open && activeItem?.id ? activeItem.id : "")
+  }
+
+  const focusItem = (item) => {
+    if (!item) return null
+    highlighter.highlight(item)
+    item.focus()
+    return item
+  }
+
+  const focusAt = (sourceItems, index) => {
+    if (!sourceItems.length) return null
+    return focusItem(sourceItems[clamp(index, 0, sourceItems.length - 1)])
+  }
+
+  const highlightDefault = (sourceItems, { preferSelection = false } = {}) => {
+    if (!sourceItems.length) {
+      highlighter.highlight(null)
+      return null
+    }
+
+    const target = preferSelection
+      ? sourceItems.find((item) => item.dataset.selected === "true") || sourceItems[0]
+      : sourceItems[0]
+    highlighter.highlight(target)
+    return target
+  }
+
+  const moveBy = (sourceItems, delta, { current = getActiveElement(), useHighlightedFallback = false } = {}) => {
+    if (!sourceItems.length) return null
+
+    const currentIndex = sourceItems.indexOf(current)
+    if (currentIndex === -1) {
+      const highlightedIndex = useHighlightedFallback
+        ? sourceItems.findIndex((item) => item.dataset.highlighted === "true")
+        : -1
+      return focusAt(sourceItems, highlightedIndex === -1 ? 0 : highlightedIndex)
+    }
+
+    return focusAt(sourceItems, (currentIndex + delta + sourceItems.length) % sourceItems.length)
+  }
+
+  const filter = (query, getText) => {
+    const normalizedQuery = (query || "").toLowerCase()
+    for (const item of items()) {
+      const text = (getText(item) || "").toLowerCase()
+      item.classList.toggle("hidden", !text.includes(normalizedQuery))
+    }
+  }
+
+  const setSelectedItem = (target, { checkSelector = "[data-slot='select-check']", clearHighlight = true } = {}) => {
+    for (const item of items()) {
+      const selected = item === target
+      item.dataset.selected = selected ? "true" : "false"
+      if (clearHighlight) item.dataset.highlighted = "false"
+      item.setAttribute("aria-selected", selected ? "true" : "false")
+      const check = item.querySelector(checkSelector)
+      if (check) check.classList.toggle("hidden", !selected)
+    }
+  }
+
+  const clearSelection = (options) => setSelectedItem(null, options)
+
+  return {
+    bind: highlighter.bind,
+    unbind: highlighter.unbind,
+    highlight: highlighter.highlight,
+    enabledItems,
+    visibleItems,
+    selectedItem,
+    highlightedItem,
+    syncActiveDescendant,
+    focusAt,
+    highlightDefault,
+    moveBy,
+    filter,
+    setSelectedItem,
+    clearSelection,
+    isItemDisabled,
+  }
+}
+
+/**
  * Create a simple typeahead matcher for menu/listbox items.
  *
  * Repeated printable keys within a short window extend the current query.
@@ -901,15 +1016,12 @@ const CuiSelect = {
       this.items = Array.from(this.el.querySelectorAll("[data-select-item]"))
     }
 
-    /** @returns {HTMLElement[]} Enabled (non-disabled) option items. */
-    this.enabledItems = () => this.items.filter((item) => item.dataset.disabled !== "true" && !item.disabled)
-
-    /** @returns {number} Index of the currently selected item, or -1. */
-    this.selectedIndex = () =>
-      this.items.findIndex((item) => item.dataset.selected === "true")
-
-    this._hl = createItemHighlighter(() => this.items, () => this.sync())
-    this.highlightItem = this._hl.highlight
+    this.listbox = createListboxController({
+      getItems: () => this.items,
+      onAfterHighlight: () => this.sync(),
+    })
+    this.enabledItems = this.listbox.enabledItems
+    this.highlightItem = this.listbox.highlight
     this.typeahead = createTypeaheadMatcher(
       () => this.enabledItems(),
       (item) => item.dataset.label || item.textContent || "",
@@ -923,8 +1035,7 @@ const CuiSelect = {
     this.sync = () => {
       this.el.dataset.state = this.open ? "open" : "closed"
       if (this.trigger) this.trigger.setAttribute("aria-expanded", this.open ? "true" : "false")
-      const activeItem = this.items.find((item) => item.dataset.highlighted === "true")
-      if (this.trigger) this.trigger.setAttribute("aria-activedescendant", this.open && activeItem ? activeItem.id : "")
+      this.listbox.syncActiveDescendant(this.trigger, this.open)
       toggleVisibility(this.content, this.open)
     }
 
@@ -934,11 +1045,7 @@ const CuiSelect = {
      */
     this.focusItem = (index) => {
       const enabledItems = this.enabledItems()
-      if (!enabledItems.length) return
-
-      const nextIndex = Math.min(Math.max(index, 0), enabledItems.length - 1)
-      this.highlightItem(enabledItems[nextIndex])
-      enabledItems[nextIndex].focus()
+      this.listbox.focusAt(enabledItems, index)
     }
 
     /** Open the dropdown and focus the selected or first item. */
@@ -950,9 +1057,9 @@ const CuiSelect = {
       const enabledItems = this.enabledItems()
       if (!enabledItems.length) return
 
-      const selectedIndex = this.selectedIndex()
-      const selectedItem = selectedIndex >= 0 ? this.items[selectedIndex] : enabledItems[0]
-      window.requestAnimationFrame(() => selectedItem && selectedItem.focus())
+      const selectedItem = this.listbox.selectedItem()
+      const targetItem = selectedItem && !this.listbox.isItemDisabled(selectedItem) ? selectedItem : enabledItems[0]
+      window.requestAnimationFrame(() => targetItem && targetItem.focus())
     }
 
     /** Close the dropdown. */
@@ -971,14 +1078,7 @@ const CuiSelect = {
       const label = item.dataset.label || item.textContent.trim()
 
       if (this.input) this.input.value = value
-      this.items.forEach((entry) => {
-        const selected = entry === item
-        entry.dataset.selected = selected ? "true" : "false"
-        entry.dataset.highlighted = "false"
-        entry.setAttribute("aria-selected", selected ? "true" : "false")
-        const check = entry.querySelector("[data-slot='select-check']")
-        if (check) check.classList.toggle("hidden", !selected)
-      })
+      this.listbox.setSelectedItem(item)
 
       const valueEl = this.el.querySelector("[data-slot='select-value']")
       if (valueEl) valueEl.textContent = label
@@ -996,13 +1096,7 @@ const CuiSelect = {
     this.clearSelection = () => {
       const placeholder = this.el.dataset.placeholder || ""
       if (this.input) this.input.value = ""
-      this.items.forEach((entry) => {
-        entry.dataset.selected = "false"
-        entry.dataset.highlighted = "false"
-        entry.setAttribute("aria-selected", "false")
-        const check = entry.querySelector("[data-slot='select-check']")
-        if (check) check.classList.add("hidden")
-      })
+      this.listbox.clearSelection()
 
       const valueEl = this.el.querySelector("[data-slot='select-value']")
       if (valueEl) valueEl.textContent = placeholder
@@ -1021,11 +1115,7 @@ const CuiSelect = {
      */
     this.move = (delta, current) => {
       const enabledItems = this.enabledItems()
-      if (!enabledItems.length) return
-
-      const currentIndex = enabledItems.indexOf(current)
-      const nextIndex = currentIndex === -1 ? 0 : (currentIndex + delta + enabledItems.length) % enabledItems.length
-      enabledItems[nextIndex].focus()
+      this.listbox.moveBy(enabledItems, delta, { current })
     }
 
     // -- Event handlers -------------------------------------------------------
@@ -1132,7 +1222,7 @@ const CuiSelect = {
       this.trigger && this.trigger.addEventListener("keydown", this.onTriggerKeyDown)
       this.content && this.content.addEventListener("keydown", this.onContentKeyDown)
       this.items.forEach((item) => item.addEventListener("click", this.onItemClick))
-      this._hl.bind(this.items)
+      this.listbox.bind(this.items)
       document.addEventListener("click", this.onDocumentClick)
     }
 
@@ -1142,7 +1232,7 @@ const CuiSelect = {
       this.trigger && this.trigger.removeEventListener("keydown", this.onTriggerKeyDown)
       this.content && this.content.removeEventListener("keydown", this.onContentKeyDown)
       this.items.forEach((item) => item.removeEventListener("click", this.onItemClick))
-      this._hl.unbind(this.items)
+      this.listbox.unbind(this.items)
       document.removeEventListener("click", this.onDocumentClick)
     }
 
@@ -1212,12 +1302,12 @@ const CuiAutocomplete = {
       this.loading = this.el.querySelector("[data-slot='autocomplete-loading']")
     }
 
-    /** @returns {HTMLElement[]} Visible, enabled option items. */
-    this.visibleItems = () =>
-      this.items.filter((item) => !item.classList.contains("hidden") && item.dataset.disabled !== "true" && !item.disabled)
-
-    this._hl = createItemHighlighter(() => this.items, () => this.sync())
-    this.highlightItem = this._hl.highlight
+    this.listbox = createListboxController({
+      getItems: () => this.items,
+      onAfterHighlight: () => this.sync(),
+    })
+    this.visibleItems = this.listbox.visibleItems
+    this.highlightItem = this.listbox.highlight
 
     /**
      * Highlight the selected visible item or first visible item.
@@ -1225,26 +1315,14 @@ const CuiAutocomplete = {
      * @returns {HTMLElement | null}
      */
     this.highlightVisibleDefault = ({ preferSelection = false } = {}) => {
-      const visibleItems = this.visibleItems()
-      if (!visibleItems.length) {
-        this.highlightItem(null)
-        return null
-      }
-
-      const target = preferSelection
-        ? visibleItems.find((item) => item.dataset.selected === "true") || visibleItems[0]
-        : visibleItems[0]
-
-      this.highlightItem(target)
-      return target
+      return this.listbox.highlightDefault(this.visibleItems(), { preferSelection })
     }
 
     /** Synchronize DOM state (visibility, ARIA attributes) with `this.open`. */
     this.sync = () => {
       this.el.dataset.state = this.open ? "open" : "closed"
       if (this.input) this.input.setAttribute("aria-expanded", this.open ? "true" : "false")
-      const activeItem = this.items.find((item) => item.dataset.highlighted === "true")
-      if (this.input) this.input.setAttribute("aria-activedescendant", this.open && activeItem ? activeItem.id : "")
+      this.listbox.syncActiveDescendant(this.input, this.open)
       toggleVisibility(this.content, this.open)
     }
 
@@ -1273,14 +1351,7 @@ const CuiAutocomplete = {
       if (this.input) this.input.value = label
       if (this.valueInput) this.valueInput.value = value
 
-      this.items.forEach((entry) => {
-        const selected = entry === item
-        entry.dataset.selected = selected ? "true" : "false"
-        entry.dataset.highlighted = "false"
-        entry.setAttribute("aria-selected", selected ? "true" : "false")
-        const check = entry.querySelector("[data-slot='select-check']")
-        if (check) check.classList.toggle("hidden", !selected)
-      })
+      this.listbox.setSelectedItem(item)
 
       this.open = false
       this.sync()
@@ -1297,10 +1368,7 @@ const CuiAutocomplete = {
     this.filterItems = ({ preferSelection = false } = {}) => {
       const query = (this.input?.value || "").toLowerCase()
 
-      this.items.forEach((item) => {
-        const text = (item.dataset.label || item.textContent || "").toLowerCase()
-        item.classList.toggle("hidden", !text.includes(query))
-      })
+      this.listbox.filter(query, (item) => item.dataset.label || item.textContent || "")
 
       if (this.valueInput && (this.input?.value || "") !== this.selectedLabel) {
         this.valueInput.value = ""
@@ -1327,12 +1395,7 @@ const CuiAutocomplete = {
      */
     this.move = (delta) => {
       const visibleItems = this.visibleItems()
-      if (!visibleItems.length) return
-
-      const currentIndex = visibleItems.findIndex((item) => item === document.activeElement)
-      const nextIndex = currentIndex === -1 ? 0 : (currentIndex + delta + visibleItems.length) % visibleItems.length
-      this.highlightItem(visibleItems[nextIndex])
-      visibleItems[nextIndex].focus()
+      this.listbox.moveBy(visibleItems, delta)
     }
 
     /**
@@ -1341,11 +1404,7 @@ const CuiAutocomplete = {
      */
     this.focusVisibleItem = (index) => {
       const visibleItems = this.visibleItems()
-      if (!visibleItems.length) return
-
-      const nextIndex = clamp(index, 0, visibleItems.length - 1)
-      this.highlightItem(visibleItems[nextIndex])
-      visibleItems[nextIndex].focus()
+      this.listbox.focusAt(visibleItems, index)
     }
 
     // -- Event handlers -------------------------------------------------------
@@ -1398,8 +1457,10 @@ const CuiAutocomplete = {
         const firstVisible = this.visibleItems()[0]
         if (!this.open || !firstVisible) return
         event.preventDefault()
-        const highlighted = this.visibleItems().find((item) => item.dataset.highlighted === "true")
-        this.applySelection(document.activeElement?.dataset?.autocompleteItem !== undefined ? document.activeElement : highlighted || firstVisible)
+        const highlighted = this.listbox.highlightedItem(this.visibleItems())
+        const activeAutocompleteItem =
+          document.activeElement?.dataset?.autocompleteItem !== undefined ? document.activeElement : null
+        this.applySelection(activeAutocompleteItem || highlighted || firstVisible)
       }
 
       if (event.key === "Escape") {
@@ -1468,7 +1529,7 @@ const CuiAutocomplete = {
       this.input?.addEventListener("keydown", this.onKeyDown)
       this.content?.addEventListener("keydown", this.onContentKeyDown)
       this.items.forEach((item) => item.addEventListener("click", this.onItemClick))
-      this._hl.bind(this.items)
+      this.listbox.bind(this.items)
       document.addEventListener("click", this.onDocumentClick)
     }
 
@@ -1478,7 +1539,7 @@ const CuiAutocomplete = {
       this.input?.removeEventListener("keydown", this.onKeyDown)
       this.content?.removeEventListener("keydown", this.onContentKeyDown)
       this.items.forEach((item) => item.removeEventListener("click", this.onItemClick))
-      this._hl.unbind(this.items)
+      this.listbox.unbind(this.items)
       document.removeEventListener("click", this.onDocumentClick)
     }
 
@@ -1727,18 +1788,18 @@ const CuiCombobox = {
     this.committedValue = this.input?.value || ""
     this.open = false
 
-    /** @returns {HTMLElement[]} Visible combobox items. */
-    this.visibleItems = () => this.items.filter((item) => !item.classList.contains("hidden"))
-
-    this._hl = createItemHighlighter(() => this.items, () => this.sync())
-    this.highlightItem = this._hl.highlight
+    this.listbox = createListboxController({
+      getItems: () => this.items,
+      onAfterHighlight: () => this.sync(),
+    })
+    this.visibleItems = this.listbox.visibleItems
+    this.highlightItem = this.listbox.highlight
 
     /** Synchronize visibility and active descendant state. */
     this.sync = () => {
       if (this.input) {
         this.input.setAttribute("aria-expanded", this.open ? "true" : "false")
-        const activeItem = this.items.find((item) => item.dataset.highlighted === "true")
-        this.input.setAttribute("aria-activedescendant", this.open && activeItem?.id ? activeItem.id : "")
+        this.listbox.syncActiveDescendant(this.input, this.open)
       }
       toggleVisibility(this.content, this.open)
     }
@@ -1748,19 +1809,13 @@ const CuiCombobox = {
      * @returns {HTMLElement | null}
      */
     this.highlightFirstVisible = () => {
-      const firstVisible = this.visibleItems()[0] || null
-      this.highlightItem(firstVisible)
-      return firstVisible
+      return this.listbox.highlightDefault(this.visibleItems())
     }
 
     /** Filter options using the current input text and highlight the top match. */
     this.filterItems = () => {
       const value = (this.input.value || "").toLowerCase()
-      this.items.forEach((item) => {
-        const text = item.textContent.toLowerCase()
-        const visible = text.includes(value)
-        item.classList.toggle("hidden", !visible)
-      })
+      this.listbox.filter(value, (item) => item.textContent || "")
       this.highlightFirstVisible()
       this.open = true
       this.sync()
@@ -1772,11 +1827,7 @@ const CuiCombobox = {
      */
     this.focusVisibleItem = (index) => {
       const visibleItems = this.visibleItems()
-      if (!visibleItems.length) return
-
-      const nextIndex = clamp(index, 0, visibleItems.length - 1)
-      this.highlightItem(visibleItems[nextIndex])
-      visibleItems[nextIndex].focus()
+      this.listbox.focusAt(visibleItems, index)
     }
 
     /**
@@ -1785,19 +1836,7 @@ const CuiCombobox = {
      */
     this.move = (delta) => {
       const visibleItems = this.visibleItems()
-      if (!visibleItems.length) return
-
-      const currentIndex = visibleItems.findIndex((item) => item === document.activeElement)
-      const highlightedIndex = visibleItems.findIndex((item) => item.dataset.highlighted === "true")
-
-      if (currentIndex === -1) {
-        const fallbackIndex = highlightedIndex === -1 ? 0 : highlightedIndex
-        this.focusVisibleItem(fallbackIndex)
-        return
-      }
-
-      const nextIndex = (currentIndex + delta + visibleItems.length) % visibleItems.length
-      this.focusVisibleItem(nextIndex)
+      this.listbox.moveBy(visibleItems, delta, { useHighlightedFallback: true })
     }
 
     /**
@@ -1807,13 +1846,7 @@ const CuiCombobox = {
     this.applySelection = (item) => {
       this.committedValue = item.dataset.value || item.textContent.trim()
       if (this.input) this.input.value = this.committedValue
-      this.items.forEach((entry) => {
-        const selected = entry === item
-        entry.dataset.selected = selected ? "true" : "false"
-        entry.setAttribute("aria-selected", selected ? "true" : "false")
-        const check = entry.querySelector("[data-slot='select-check']")
-        if (check) check.classList.toggle("hidden", !selected)
-      })
+      this.listbox.setSelectedItem(item, { clearHighlight: false })
       this.open = false
       this.highlightItem(null)
       this.sync()
@@ -1870,7 +1903,7 @@ const CuiCombobox = {
       }
 
       if (event.key === "Enter") {
-        const highlighted = this.visibleItems().find((item) => item.dataset.highlighted === "true")
+        const highlighted = this.listbox.highlightedItem(this.visibleItems())
         if (!this.open || !highlighted) return
         event.preventDefault()
         this.applySelection(highlighted)
@@ -1934,7 +1967,7 @@ const CuiCombobox = {
     this.input && this.input.addEventListener("keydown", this.onKeyDown)
     this.content && this.content.addEventListener("keydown", this.onContentKeyDown)
     this.items.forEach((item) => item.addEventListener("click", this.onItemClick))
-    this._hl.bind(this.items)
+    this.listbox.bind(this.items)
     document.addEventListener("click", this.onDocumentClick)
     this.removeCommandListener = registerCommandListener(this.el, {
       open: () => {
@@ -1960,12 +1993,7 @@ const CuiCombobox = {
       clear: () => {
         this.committedValue = ""
         if (this.input) this.input.value = ""
-        this.items.forEach((entry) => {
-          entry.dataset.selected = "false"
-          entry.setAttribute("aria-selected", "false")
-          const check = entry.querySelector("[data-slot='select-check']")
-          if (check) check.classList.add("hidden")
-        })
+        this.listbox.clearSelection()
         this.filterItems()
       },
     })
@@ -1978,7 +2006,7 @@ const CuiCombobox = {
     this.input && this.input.removeEventListener("keydown", this.onKeyDown)
     this.content && this.content.removeEventListener("keydown", this.onContentKeyDown)
     this.items.forEach((item) => item.removeEventListener("click", this.onItemClick))
-    this._hl.unbind(this.items)
+    this.listbox.unbind(this.items)
     document.removeEventListener("click", this.onDocumentClick)
     this.removeCommandListener && this.removeCommandListener()
   },

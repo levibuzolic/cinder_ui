@@ -171,6 +171,55 @@ describe("Cinder UI hook harness", () => {
     expect(content.classList.contains("hidden")).toBe(true)
   })
 
+  it("combobox filters, syncs active descendant, and selects the highlight", () => {
+    const { el } = mountHook(
+      "CuiCombobox",
+      `
+        <div data-slot="combobox">
+          <input data-combobox-input value="Pro" aria-expanded="false" aria-activedescendant="" />
+          <div data-combobox-content class="hidden">
+            <button id="combo-free" type="button" data-slot="combobox-item" data-value="Free">
+              Free
+              <span data-slot="select-check" class="hidden"></span>
+            </button>
+            <button id="combo-pro" type="button" data-slot="combobox-item" data-value="Pro" data-selected="true" aria-selected="true">
+              Pro
+              <span data-slot="select-check"></span>
+            </button>
+            <button id="combo-team" type="button" data-slot="combobox-item" data-value="Team">
+              Team
+              <span data-slot="select-check" class="hidden"></span>
+            </button>
+          </div>
+        </div>
+      `,
+    )
+
+    const input = el.querySelector("[data-combobox-input]") as HTMLInputElement
+    const content = el.querySelector("[data-combobox-content]") as HTMLElement
+    const free = el.querySelector("#combo-free") as HTMLButtonElement
+    const pro = el.querySelector("#combo-pro") as HTMLButtonElement
+    const freeCheck = free.querySelector("[data-slot='select-check']") as HTMLElement
+    const proCheck = pro.querySelector("[data-slot='select-check']") as HTMLElement
+
+    input.value = "Fr"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+
+    expect(content.dataset.state).toBe("open")
+    expect(free.dataset.highlighted).toBe("true")
+    expect(pro.classList.contains("hidden")).toBe(true)
+    expect(input.getAttribute("aria-activedescendant")).toBe("combo-free")
+
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+
+    expect(input.value).toBe("Free")
+    expect(content.classList.contains("hidden")).toBe(true)
+    expect(free.dataset.selected).toBe("true")
+    expect(pro.dataset.selected).toBe("false")
+    expect(freeCheck.classList.contains("hidden")).toBe(false)
+    expect(proCheck.classList.contains("hidden")).toBe(true)
+  })
+
   it("input otp distributes pasted digits across remaining cells", () => {
     const { el } = mountHook(
       "CuiInputOtp",
