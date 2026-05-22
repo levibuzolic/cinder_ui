@@ -56,4 +56,7 @@ defmodule CinderUI.TestHelpers do
   defp as_doc(doc), do: doc
 end
 
+Code.require_file("support/generated_assets.exs", __DIR__)
+CinderUI.GeneratedAssetsSupport.ensure_demo_assets!()
+
 ExUnit.start()

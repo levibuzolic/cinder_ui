@@ -145,63 +145,284 @@ defmodule Mix.Tasks.CinderUi.Install do
 
   defp inject_hooks_merge(content) do
     cond do
-      String.contains?(content, "...CinderUIHooks") or
-          String.contains?(content, "Object.assign(Hooks, CinderUIHooks)") ->
+      cinder_ui_hooks_integrated?(content) ->
         content
 
-      Regex.match?(~r/hooks:\s*\{(?<hooks_body>[^}]*)\}/s, content) ->
-        merge_hooks_object(content)
+      patched = patch_hooks_object_literal(content) ->
+        patched
 
-      Regex.match?(~r/hooks:\s*\{\s*\.\.\.colocatedHooks\s*\}/, content) ->
-        Regex.replace(
-          ~r/hooks:\s*\{\s*\.\.\.colocatedHooks\s*\}/,
-          content,
-          "hooks: {...colocatedHooks, ...CinderUIHooks}"
-        )
+      patched = patch_empty_hooks_binding(content, "Hooks") ->
+        patched
 
-      String.contains?(content, "let Hooks = {}") ->
-        String.replace(
-          content,
-          "let Hooks = {}",
-          "let Hooks = {}\nObject.assign(Hooks, CinderUIHooks)"
-        )
-
-      String.contains?(content, "let hooks = {}") ->
-        String.replace(
-          content,
-          "let hooks = {}",
-          "let hooks = {}\nObject.assign(hooks, CinderUIHooks)"
-        )
+      patched = patch_empty_hooks_binding(content, "hooks") ->
+        patched
 
       true ->
         append_hooks_fallback(content)
     end
   end
 
-  defp merge_hooks_object(content) do
-    Regex.replace(~r/hooks:\s*\{(?<hooks_body>[^}]*)\}/s, content, fn _match, hooks_body ->
-      "hooks: {#{merged_hooks_body(hooks_body)}}"
-    end)
+  defp cinder_ui_hooks_integrated?(content) do
+    String.contains?(content, "...CinderUIHooks") or
+      Regex.match?(
+        ~r/Object\.assign\(\s*[_$[:alpha:]][_$[:alnum:]]*\s*,\s*CinderUIHooks\s*\)/,
+        content
+      )
   end
 
-  defp merged_hooks_body(hooks_body) do
-    trimmed = String.trim(hooks_body)
+  defp patch_hooks_object_literal(content) do
+    case find_hooks_object_literal(content) do
+      {:ok, open_index, close_index} ->
+        body_start = open_index + 1
+        body_length = close_index - body_start
+        body = binary_part(content, body_start, body_length)
+        replacement = merge_hooks_object_body(body)
+
+        binary_part(content, 0, body_start) <>
+          replacement <>
+          binary_part(content, close_index, byte_size(content) - close_index)
+
+      :error ->
+        nil
+    end
+  end
+
+  defp find_hooks_object_literal(content), do: find_hooks_object_literal(content, 0)
+
+  defp find_hooks_object_literal(content, index) when index >= byte_size(content), do: :error
+
+  defp find_hooks_object_literal(content, index) do
+    case skip_js_token(content, index) do
+      {:ok, next_index} ->
+        find_hooks_object_literal(content, next_index)
+
+      :cont ->
+        if hooks_property_at?(content, index) do
+          maybe_hooks_object_literal(content, index)
+        else
+          find_hooks_object_literal(content, index + 1)
+        end
+    end
+  end
+
+  defp maybe_hooks_object_literal(content, index) do
+    property_end = skip_whitespace(content, index + byte_size("hooks"))
+
+    value_index =
+      case skip_colon(content, property_end) do
+        {:ok, after_colon} -> skip_whitespace(content, after_colon)
+        :error -> :error
+      end
+
+    with object_index when is_integer(object_index) <- value_index,
+         true <- byte_at?(content, object_index, ?{),
+         {:ok, close_index} <- find_matching_brace(content, object_index) do
+      {:ok, object_index, close_index}
+    else
+      _ -> find_hooks_object_literal(content, index + byte_size("hooks"))
+    end
+  end
+
+  defp hooks_property_at?(content, index) do
+    starts_with?(content, index, "hooks") and
+      identifier_boundary_before?(content, index) and
+      identifier_boundary_after?(content, index + byte_size("hooks"))
+  end
+
+  defp merge_hooks_object_body(body) do
+    trimmed = String.trim(body)
 
     cond do
       trimmed == "" ->
         "...CinderUIHooks"
 
-      String.ends_with?(trimmed, ",") ->
-        "#{String.trim_trailing(hooks_body)} ...CinderUIHooks"
+      String.contains?(body, "\n") ->
+        merge_multiline_hooks_object_body(body, trimmed)
 
       true ->
-        "#{String.trim_trailing(hooks_body)}, ...CinderUIHooks"
+        "#{String.trim_trailing(body)}, ...CinderUIHooks"
+    end
+  end
+
+  defp merge_multiline_hooks_object_body(body, trimmed) do
+    separator = if String.ends_with?(trimmed, ","), do: "\n", else: ",\n"
+
+    String.trim_trailing(body) <>
+      separator <>
+      hooks_object_entry_indent(body) <>
+      "...CinderUIHooks" <>
+      trailing_whitespace(body)
+  end
+
+  defp hooks_object_entry_indent(body) do
+    body
+    |> String.split("\n")
+    |> Enum.find_value("", fn line ->
+      if String.trim(line) == "" do
+        nil
+      else
+        line
+        |> String.to_charlist()
+        |> Enum.take_while(&(&1 in [?\s, ?\t]))
+        |> to_string()
+      end
+    end)
+  end
+
+  defp patch_empty_hooks_binding(content, hooks_name) do
+    hooks_name = Regex.escape(hooks_name)
+    regex = ~r/\b(?:let|const|var)\s+#{hooks_name}\s*=\s*\{\s*\}\s*;?/
+
+    if Regex.match?(regex, content) do
+      Regex.replace(
+        regex,
+        content,
+        fn declaration -> "#{declaration}\nObject.assign(#{hooks_name}, CinderUIHooks)" end,
+        global: false
+      )
     end
   end
 
   defp append_hooks_fallback(content) do
     content <>
       "\nlet Hooks = window.Hooks || {}\nObject.assign(Hooks, CinderUIHooks)\nwindow.Hooks = Hooks\n"
+  end
+
+  defp find_matching_brace(content, open_index) do
+    find_matching_brace(content, open_index + 1, 1)
+  end
+
+  defp find_matching_brace(content, index, _depth) when index >= byte_size(content), do: :error
+
+  defp find_matching_brace(content, index, depth) do
+    case skip_js_token(content, index) do
+      {:ok, next_index} ->
+        find_matching_brace(content, next_index, depth)
+
+      :cont ->
+        advance_matching_brace(content, index, depth)
+    end
+  end
+
+  defp advance_matching_brace(content, index, depth) do
+    cond do
+      byte_at?(content, index, ?{) ->
+        find_matching_brace(content, index + 1, depth + 1)
+
+      byte_at?(content, index, ?}) and depth == 1 ->
+        {:ok, index}
+
+      byte_at?(content, index, ?}) ->
+        find_matching_brace(content, index + 1, depth - 1)
+
+      true ->
+        find_matching_brace(content, index + 1, depth)
+    end
+  end
+
+  defp skip_colon(content, index) do
+    if byte_at?(content, index, ?:), do: {:ok, index + 1}, else: :error
+  end
+
+  defp skip_whitespace(content, index) when index >= byte_size(content), do: index
+
+  defp skip_whitespace(content, index) do
+    if byte_at(content, index) in [?\s, ?\n, ?\r, ?\t] do
+      skip_whitespace(content, index + 1)
+    else
+      index
+    end
+  end
+
+  defp skip_line_comment(content, index) when index >= byte_size(content), do: index
+
+  defp skip_line_comment(content, index) do
+    if byte_at?(content, index, ?\n),
+      do: index + 1,
+      else: skip_line_comment(content, index + 1)
+  end
+
+  defp skip_block_comment(content, index) when index >= byte_size(content), do: index
+
+  defp skip_block_comment(content, index) do
+    if starts_with?(content, index, "*/"),
+      do: index + 2,
+      else: skip_block_comment(content, index + 1)
+  end
+
+  defp skip_js_token(content, index) do
+    cond do
+      starts_with?(content, index, "//") ->
+        {:ok, skip_line_comment(content, index + 2)}
+
+      starts_with?(content, index, "/*") ->
+        {:ok, skip_block_comment(content, index + 2)}
+
+      byte_at?(content, index, ?") ->
+        {:ok, skip_quoted(content, index + 1, ?")}
+
+      byte_at?(content, index, ?') ->
+        {:ok, skip_quoted(content, index + 1, ?')}
+
+      byte_at?(content, index, ?`) ->
+        {:ok, skip_quoted(content, index + 1, ?`)}
+
+      true ->
+        :cont
+    end
+  end
+
+  defp skip_quoted(content, index, _quote) when index >= byte_size(content), do: index
+
+  defp skip_quoted(content, index, quote) do
+    cond do
+      byte_at?(content, index, ?\\) ->
+        skip_quoted(content, min(index + 2, byte_size(content)), quote)
+
+      byte_at?(content, index, quote) ->
+        index + 1
+
+      true ->
+        skip_quoted(content, index + 1, quote)
+    end
+  end
+
+  defp identifier_boundary_before?(_content, 0), do: true
+
+  defp identifier_boundary_before?(content, index) do
+    not identifier_byte?(byte_at(content, index - 1))
+  end
+
+  defp identifier_boundary_after?(content, index) when index >= byte_size(content), do: true
+
+  defp identifier_boundary_after?(content, index) do
+    not identifier_byte?(byte_at(content, index))
+  end
+
+  defp identifier_byte?(byte) do
+    byte in ?a..?z or byte in ?A..?Z or byte in ?0..?9 or byte in [?_, ?$]
+  end
+
+  defp trailing_whitespace(value) do
+    case Regex.run(~r/\s*$/, value) do
+      [whitespace] -> whitespace
+      _ -> ""
+    end
+  end
+
+  defp byte_at?(content, index, byte) when index < byte_size(content) do
+    byte_at(content, index) == byte
+  end
+
+  defp byte_at?(_content, _index, _byte), do: false
+
+  defp byte_at(content, index), do: :binary.at(content, index)
+
+  defp starts_with?(content, index, value) do
+    value_size = byte_size(value)
+
+    index + value_size <= byte_size(content) and
+      binary_part(content, index, value_size) == value
   end
 
   defp ensure_line(content, line) do
