@@ -2,6 +2,7 @@ defmodule CinderUI.InstallTaskTest do
   use ExUnit.Case, async: false
 
   @task "cinder_ui.install"
+  @css_template_path Path.expand("../../priv/templates/cinder_ui.css", __DIR__)
 
   setup do
     tmp_dir =
@@ -45,6 +46,8 @@ defmodule CinderUI.InstallTaskTest do
 
     assert File.exists?(Path.join(assets, "css/cinder_ui.css"))
     assert File.exists?(Path.join(assets, "js/cinder_ui.js"))
+    assert File.read!(Path.join(assets, "css/cinder_ui.css")) == File.read!(@css_template_path)
+
     npm_args = File.read!(Path.join(project, ".npm-args"))
     assert npm_args =~ "install"
     assert npm_args =~ "-D"
