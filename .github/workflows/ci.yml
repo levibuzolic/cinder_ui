@@ -74,6 +74,12 @@ jobs:
         with:
           cache-key-prefix: root-test
 
+      - name: Prepare generated demo asset copies
+        run: |
+          mkdir -p demo/assets/css demo/assets/js
+          cp priv/templates/cinder_ui.css demo/assets/css/cinder_ui.css
+          cp priv/templates/cinder_ui.js demo/assets/js/cinder_ui.js
+
       - name: Run unit tests with coverage gate + Cobertura export
         run: MIX_ENV=test mix coveralls.cobertura --raise
 
