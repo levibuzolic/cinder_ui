@@ -4,6 +4,8 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 :root {
+  color-scheme: light;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -48,6 +50,8 @@
 :root.dark,
 :root[data-theme="dark"],
 [data-theme="dark"] {
+  color-scheme: dark;
+
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -90,6 +94,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not(.dark):not([data-theme="dark"]):not([data-theme="light"]):not([data-theme-mode="light"]) {
+    color-scheme: dark;
+
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);

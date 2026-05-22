@@ -1,0 +1,40 @@
+defmodule CinderUI.ThemeCSSTest do
+  use ExUnit.Case, async: true
+
+  @css_path Path.expand("../../priv/templates/cinder_ui.css", __DIR__)
+  @docs_theme_path Path.expand("../../dev/assets/docs/theme.css", __DIR__)
+  @demo_css_path Path.expand("../../demo/assets/css/cinder_ui.css", __DIR__)
+
+  test "theme CSS opts native form controls into the active color scheme" do
+    css = File.read!(@css_path)
+
+    assert css =~ ~r/:root\s*\{[^}]*color-scheme:\s*light;/s
+
+    assert css =~
+             ~r/:root\.dark,\s*:root\[data-theme="dark"\],\s*\[data-theme="dark"\]\s*\{[^}]*color-scheme:\s*dark;/s
+
+    assert css =~
+             ~r/:root:not\(\.dark\):not\(\[data-theme="dark"\]\):not\(\[data-theme="light"\]\):not\(\[data-theme-mode="light"\]\)\s*\{[^}]*color-scheme:\s*dark;/s
+  end
+
+  test "docs theme imports the packaged CSS template as its source of truth" do
+    docs_theme = File.read!(@docs_theme_path)
+
+    assert docs_theme
+           |> String.split("\n", parts: 2)
+           |> hd() == ~s(@import "../../../priv/templates/cinder_ui.css";)
+  end
+
+  test "Hex package includes the CSS template consumed by the install task" do
+    package_files =
+      Mix.Project.config()
+      |> Keyword.fetch!(:package)
+      |> Keyword.fetch!(:files)
+
+    assert "priv" in package_files
+  end
+
+  test "demo CSS copy is regenerated from the packaged CSS template" do
+    assert File.read!(@demo_css_path) == File.read!(@css_path)
+  end
+end

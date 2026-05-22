@@ -23,6 +23,7 @@ defmodule CinderUI.Docs.BuildTaskTest do
     marketing_index = File.read!(Path.join(@output, "index.html"))
     docs_index = File.read!(Path.join(@output, "docs/index.html"))
     component_page = File.read!(Path.join(@output, "docs/actions-button/index.html"))
+    theme_css = File.read!(Path.join(@output, "docs/assets/theme.css"))
     site_js = File.read!(Path.join(@output, "docs/assets/static_docs.js"))
     site_css = File.read!(Path.join(@output, "docs/assets/site.css"))
 
@@ -54,6 +55,10 @@ defmodule CinderUI.Docs.BuildTaskTest do
     assert component_page =~ ~s(data-slot="preview")
     assert component_page =~ ~s(class="code-highlight block min-w-max whitespace-pre")
     assert component_page =~ ~s(<span class="tok-tag">.button</span>)
+
+    assert theme_css =~ ".accent-primary"
+    assert theme_css =~ "accent-color: var(--primary);"
+    assert theme_css =~ "color-scheme: dark;"
 
     assert site_js =~ "initCommandPalette"
     assert site_js =~ "restoreSidebarScroll"

@@ -557,6 +557,7 @@ defmodule CinderUI.Components.FormsTest do
       })
 
     assert TestHelpers.attr(html, "[data-slot='checkbox']", "checked") == "checked"
+    assert TestHelpers.has_class?(html, "[data-slot='checkbox']", "accent-primary")
     assert TestHelpers.text(html, "label") == "Accept terms"
   end
 
@@ -677,6 +678,12 @@ defmodule CinderUI.Components.FormsTest do
 
     assert TestHelpers.attr(html, "[data-slot='radio-group']", "data-slot") == "radio-group"
     assert TestHelpers.find_all(html, "[data-slot='radio-group-item']") |> length() == 2
+
+    assert TestHelpers.has_class?(
+             html,
+             "[data-slot='radio-group-item'][value='us']",
+             "accent-primary"
+           )
 
     assert TestHelpers.attr(html, "[data-slot='radio-group-item'][value='eu']", "disabled") ==
              "disabled"
