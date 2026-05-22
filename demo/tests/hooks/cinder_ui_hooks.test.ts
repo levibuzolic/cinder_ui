@@ -135,6 +135,42 @@ describe("Cinder UI hook harness", () => {
     expect(content.classList.contains("hidden")).toBe(true)
   })
 
+  it("combobox stays closed when focus returns from the option list", () => {
+    const { el } = mountHook(
+      "CuiCombobox",
+      `
+        <div data-slot="combobox" data-state="closed">
+          <input data-combobox-input value="Alpha" aria-expanded="false" aria-activedescendant="" />
+          <div data-combobox-content class="hidden">
+            <button id="combo-alpha" type="button" data-slot="combobox-item" data-value="Alpha">
+              Alpha
+              <span data-slot="select-check"></span>
+            </button>
+            <button id="combo-beta" type="button" data-slot="combobox-item" data-value="Beta">
+              Beta
+              <span data-slot="select-check" class="hidden"></span>
+            </button>
+          </div>
+        </div>
+      `,
+    )
+
+    const input = el.querySelector("[data-combobox-input]") as HTMLInputElement
+    const content = el.querySelector("[data-combobox-content]") as HTMLElement
+    const beta = el.querySelector("#combo-beta") as HTMLButtonElement
+
+    input.focus()
+    expect(content.dataset.state).toBe("open")
+
+    beta.focus()
+    beta.click()
+
+    expect(input.value).toBe("Beta")
+    expect(document.activeElement).toBe(input)
+    expect(content.dataset.state).toBe("closed")
+    expect(content.classList.contains("hidden")).toBe(true)
+  })
+
   it("input otp distributes pasted digits across remaining cells", () => {
     const { el } = mountHook(
       "CuiInputOtp",
