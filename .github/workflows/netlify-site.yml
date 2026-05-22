@@ -87,9 +87,9 @@ jobs:
           )
 
           if [ "${IS_PULL_REQUEST}" = "true" ]; then
-            deploy_args+=(--context deploy-preview --alias "deploy-preview-${PR_NUMBER}")
+            deploy_args+=(--alias "deploy-preview-${PR_NUMBER}")
           else
-            deploy_args+=(--prod --context production)
+            deploy_args+=(--prod)
           fi
 
           npx --yes netlify-cli@latest deploy "${deploy_args[@]}" > netlify-deploy.json
