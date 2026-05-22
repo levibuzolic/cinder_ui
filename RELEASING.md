@@ -95,5 +95,5 @@ This will publish the Hex package as a prerelease version. HexDocs publication i
 - The tag must match the version exactly. `v0.1.0` requires `@version "0.1.0"` in `mix.exs`.
 - Prerelease versions must also be marked as GitHub prereleases. For example, `v0.1.0-beta.1` requires `@version "0.1.0-beta.1"` and a GitHub prerelease.
 - Hex will reject publishing a version that already exists.
-- Site publishing is handled separately by [`.github/workflows/publish-site.yml`](./.github/workflows/publish-site.yml) on pushes to `main` or manual workflow dispatch. GitHub Releases do not deploy the site.
+- Site publishing is handled separately by [`.github/workflows/publish-site.yml`](./.github/workflows/publish-site.yml) and the optional Netlify workflow in [`.github/workflows/netlify-site.yml`](./.github/workflows/netlify-site.yml). GitHub Releases do not deploy the site.
 - If you prefer, you can still create and push the tag manually before publishing the GitHub Release, but it is not required.

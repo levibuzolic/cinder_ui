@@ -1,0 +1,144 @@
+name: Netlify Site
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: netlify-site-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  deploy:
+    name: Deploy Static Site
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Netlify configuration
+        id: netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "${NETLIFY_AUTH_TOKEN:-}" ] || [ -z "${NETLIFY_SITE_ID:-}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping Netlify deploy because NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID are not both configured."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.netlify.outputs.configured == 'true'
+        uses: actions/checkout@v6
+
+      - name: Setup toolchains
+        if: steps.netlify.outputs.configured == 'true'
+        uses: ./.github/actions/setup-toolchains
+        with:
+          node-cache: npm
+          node-cache-dependency-path: demo/package-lock.json
+
+      - name: Setup root Mix
+        if: steps.netlify.outputs.configured == 'true'
+        uses: ./.github/actions/setup-root-mix
+        with:
+          cache-key-prefix: netlify-site
+
+      - name: Setup demo Mix
+        if: steps.netlify.outputs.configured == 'true'
+        uses: ./.github/actions/setup-demo-mix
+        with:
+          cache-key-prefix: netlify-site
+
+      - name: Build static site from demo app
+        if: steps.netlify.outputs.configured == 'true'
+        working-directory: demo
+        run: |
+          npm ci
+          mix assets.build
+          mix site.export
+
+      - name: Deploy to Netlify
+        if: steps.netlify.outputs.configured == 'true'
+        id: deploy
+        env:
+          IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          deploy_args=(
+            --dir dist/site
+            --no-build
+            --message "${GITHUB_WORKFLOW} ${GITHUB_SHA}"
+            --site "${NETLIFY_SITE_ID}"
+            --json
+          )
+
+          if [ "${IS_PULL_REQUEST}" = "true" ]; then
+            deploy_args+=(--alias "deploy-preview-${PR_NUMBER}")
+          else
+            deploy_args+=(--prod)
+          fi
+
+          npx --yes netlify-cli@latest deploy "${deploy_args[@]}" > netlify-deploy.json
+          node .github/scripts/netlify_deploy_outputs.mjs netlify-deploy.json >> "$GITHUB_OUTPUT"
+
+      - name: Publish deployment summary
+        if: steps.netlify.outputs.configured == 'true'
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          {
+            echo "### Netlify deployment"
+            echo
+            echo "${DEPLOY_URL}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment preview URL
+        if: steps.netlify.outputs.configured == 'true' && github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        with:
+          script: |
+            const marker = "<!-- cinder-ui-netlify-preview -->";
+            const body = `${marker}
+            Netlify preview: ${process.env.DEPLOY_URL}`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const previous = comments.find((comment) =>
+              comment.user?.type === "Bot" && comment.body?.includes(marker)
+            );
+
+            if (previous) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: previous.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

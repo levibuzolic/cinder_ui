@@ -1,0 +1,3 @@
+[build]
+  command = "echo 'Static site deploys are built in GitHub Actions via .github/workflows/netlify-site.yml.' && exit 1"
+  publish = "dist/site"
