@@ -3,6 +3,7 @@ defmodule CinderUI.ThemeCSSTest do
 
   @css_path Path.expand("../../priv/templates/cinder_ui.css", __DIR__)
   @docs_theme_path Path.expand("../../dev/assets/docs/theme.css", __DIR__)
+  @demo_mix_path Path.expand("../../demo/mix.exs", __DIR__)
   @demo_app_css_path Path.expand("../../demo/assets/css/app.css", __DIR__)
 
   test "theme CSS opts native form controls into the active color scheme" do
@@ -34,7 +35,11 @@ defmodule CinderUI.ThemeCSSTest do
     assert "priv" in package_files
   end
 
-  test "demo CSS imports the generated packaged CSS copy" do
-    assert File.read!(@demo_app_css_path) =~ ~s(@import "./cinder_ui.css";)
+  test "demo asset build regenerates its generated CSS copy" do
+    demo_mix = File.read!(@demo_mix_path)
+    demo_app_css = File.read!(@demo_app_css_path)
+
+    assert demo_mix =~ ~s("cinder_ui.install --assets-path assets --skip-patching")
+    assert demo_app_css =~ ~s(@import "./cinder_ui.css";)
   end
 end
