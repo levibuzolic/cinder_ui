@@ -23,6 +23,8 @@ defmodule CinderUI.Components.Forms do
   - `slider/1`
   - `input_group/1`
   - `input_group_addon/1`
+  - `input_group_button/1`
+  - `input_group_text/1`
   - `input_otp/1`
 
   [View live Forms examples and component docs](https://levibuzolic.github.io/cinder_ui/docs/#forms).
@@ -44,7 +46,8 @@ defmodule CinderUI.Components.Forms do
     {CinderUI.Components.Forms.Controls,
      [:input, :number_field, :textarea, :checkbox, :switch, :native_select, :radio_group, :slider]},
     {CinderUI.Components.Forms.Select, [:select, :autocomplete]},
-    {CinderUI.Components.Forms.Groups, [:input_group, :input_group_addon, :input_otp]}
+    {CinderUI.Components.Forms.Groups,
+     [:input_group, :input_group_addon, :input_group_button, :input_group_text, :input_otp]}
   ]
 
   for {module, functions} <- @component_modules, function <- functions do

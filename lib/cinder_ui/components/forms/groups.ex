@@ -10,30 +10,38 @@ defmodule CinderUI.Components.Forms.Groups do
   doc("""
   Wraps an input and sibling controls (buttons/icons) in a single inline group.
 
-  Use `input_group_addon/1` for static text, icons, status copy, or other
-  non-interactive content that should visually attach to the grouped controls.
+  Use `input_group_addon/1` for static text, icons, status copy, or compact
+  buttons that should visually attach to the grouped controls.
 
   ## Examples
 
   ```heex title="Search with action" align="full"
   <.input_group>
     <.input placeholder="Search" />
-    <.button variant={:secondary} size={:xs}>Go</.button>
+    <.input_group_addon>
+      <.input_group_button variant={:secondary}>Go</.input_group_button>
+    </.input_group_addon>
   </.input_group>
   ```
 
   ```heex title="Handle input" align="full"
   <.input_group>
-    <.input_group_addon>@</.input_group_addon>
     <.input placeholder="organization" />
+    <.input_group_addon>
+      <.input_group_text>@company.com</.input_group_text>
+    </.input_group_addon>
   </.input_group>
   ```
 
   ```heex title="URL builder" align="full"
   <.input_group>
-    <.input_group_addon>https://</.input_group_addon>
+    <.input_group_addon>
+      <.input_group_text>https://</.input_group_text>
+    </.input_group_addon>
     <.input value="cinder-ui" />
-    <.input_group_addon>.com</.input_group_addon>
+    <.input_group_addon>
+      <.input_group_text>.com</.input_group_text>
+    </.input_group_addon>
   </.input_group>
   ```
 
@@ -54,7 +62,7 @@ defmodule CinderUI.Components.Forms.Groups do
     <.input placeholder="Generating invite link..." disabled />
     <.input_group_addon>
       <.spinner class="size-4" />
-      <span>Syncing</span>
+      <.input_group_text>Syncing</.input_group_text>
     </.input_group_addon>
   </.input_group>
   ```
@@ -87,7 +95,23 @@ defmodule CinderUI.Components.Forms.Groups do
   ```heex title="Copy URL action" align="full"
   <.input_group>
     <.input placeholder="https://example.com" />
-    <.button variant={:outline} size={:sm}>Copy</.button>
+    <.input_group_addon>
+      <.input_group_button variant={:outline}>Copy</.input_group_button>
+    </.input_group_addon>
+  </.input_group>
+  ```
+
+  ```heex title="Icon actions" align="full"
+  <.input_group>
+    <.input value="ck_live_************************" readonly />
+    <.input_group_addon>
+      <.input_group_button size={:icon_xs} aria-label="Reveal key">
+        <.icon name="eye" />
+      </.input_group_button>
+      <.input_group_button size={:icon_xs} aria-label="Copy key">
+        <.icon name="copy" />
+      </.input_group_button>
+    </.input_group_addon>
   </.input_group>
   ```
   """)
@@ -120,7 +144,8 @@ defmodule CinderUI.Components.Forms.Groups do
         "[&>[data-slot=textarea]]:min-h-[5.5rem] [&>[data-slot=textarea]]:w-full [&>[data-slot=textarea]]:rounded-none [&>[data-slot=textarea]]:border-0 [&>[data-slot=textarea]]:bg-transparent [&>[data-slot=textarea]]:px-3 [&>[data-slot=textarea]]:py-3 [&>[data-slot=textarea]]:shadow-none [&>[data-slot=textarea]]:focus-visible:ring-0",
         "[&>[data-slot=select]]:min-w-0 [&>[data-slot=select]]:shrink-0 [&>[data-slot=select]_[data-slot=select-trigger]]:h-full [&>[data-slot=select]_[data-slot=select-trigger]]:rounded-none [&>[data-slot=select]_[data-slot=select-trigger]]:border-0 [&>[data-slot=select]_[data-slot=select-trigger]]:bg-transparent [&>[data-slot=select]_[data-slot=select-trigger]]:px-3 [&>[data-slot=select]_[data-slot=select-trigger]]:py-2 [&>[data-slot=select]_[data-slot=select-trigger]]:shadow-none [&>[data-slot=select]_[data-slot=select-trigger]]:focus-visible:ring-0",
         "[&>[data-slot=native-select-wrapper]]:min-w-0 [&>[data-slot=native-select-wrapper]]:shrink-0 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:h-full [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:rounded-none [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:border-0 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:bg-transparent [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:px-3 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:py-2 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:shadow-none [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:focus-visible:ring-0 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:pr-8 [&>[data-slot=native-select-wrapper]_.lucide-chevron-down]:right-3",
-        "[&>[data-slot=button]]:h-6 [&>[data-slot=button]]:self-center [&>[data-slot=button]]:rounded-[calc(var(--radius)-5px)] [&>[data-slot=button]]:border-0 [&>[data-slot=button]]:px-2 [&>[data-slot=button]]:text-sm [&>[data-slot=button]]:shadow-none [&>[data-slot=button]]:focus-visible:ring-0",
+        "[&>[data-slot=button]]:h-6 [&>[data-slot=button]]:self-center [&>[data-slot=button]]:rounded-[calc(var(--radius)-5px)] [&>[data-slot=button]]:border-0 [&>[data-slot=button]]:px-2 [&>[data-slot=button]]:text-sm [&>[data-slot=button]]:shadow-none [&>[data-slot=button]]:focus-visible:ring-0 [&>[data-slot=button]:first-child]:ml-1.5 [&>[data-slot=button]:last-child]:mr-1.5",
+        "[&>[data-slot=input-group-addon]_[data-slot=button]]:h-6 [&>[data-slot=input-group-addon]_[data-slot=button]]:rounded-[calc(var(--radius)-5px)] [&>[data-slot=input-group-addon]_[data-slot=button]]:border-0 [&>[data-slot=input-group-addon]_[data-slot=button]]:px-2 [&>[data-slot=input-group-addon]_[data-slot=button]]:text-sm [&>[data-slot=input-group-addon]_[data-slot=button]]:shadow-none [&>[data-slot=input-group-addon]_[data-slot=button]]:focus-visible:ring-0",
         "[&>[data-slot=input-group-addon][data-align=block-end]_[data-slot=button]]:h-8 [&>[data-slot=input-group-addon][data-align=block-end]_[data-slot=button]]:self-auto [&>[data-slot=input-group-addon][data-align=block-end]_[data-slot=button]]:px-3",
         assigns.class
       ])
@@ -133,7 +158,7 @@ defmodule CinderUI.Components.Forms.Groups do
   end
 
   doc("""
-  Non-interactive text/icon/status segment used inside `input_group/1`.
+  Text/icon/status/action segment used inside `input_group/1`.
 
   This is useful for prefixes, suffixes, inline status, and small utility
   content that should attach to the surrounding grouped field.
@@ -161,6 +186,7 @@ defmodule CinderUI.Components.Forms.Groups do
       |> assign(:align_attr, if(assigns.align == :block_end, do: "block-end", else: "inline"))
       |> assign(:classes, [
         "inline-flex items-center gap-2 whitespace-nowrap bg-transparent",
+        assigns.align == :inline && "has-[>[data-slot=button]]:-mx-1.5",
         assigns.align == :block_end && "whitespace-normal",
         assigns.class
       ])
@@ -169,6 +195,95 @@ defmodule CinderUI.Components.Forms.Groups do
     <div data-slot="input-group-addon" data-align={@align_attr} class={classes(@classes)} {@rest}>
       {render_slot(@inner_block)}
     </div>
+    """
+  end
+
+  doc("""
+  Compact action button for use inside `input_group_addon/1`.
+
+  This is intentionally smaller than the general `button/1` API. Use it for
+  short text actions and icon-only utility actions embedded in an input group.
+
+  ## Example
+
+  ```heex title="Input group button" align="full"
+  <.input_group>
+    <.input placeholder="Search" />
+    <.input_group_addon>
+      <.input_group_button>Search</.input_group_button>
+    </.input_group_addon>
+  </.input_group>
+  ```
+  """)
+
+  attr :variant, :atom,
+    default: :ghost,
+    values: [:default, :destructive, :outline, :secondary, :ghost, :link]
+
+  attr :size, :atom, default: :xs, values: [:xs, :icon_xs]
+  attr :type, :string, default: "button"
+  attr :class, :string, default: nil
+
+  attr :rest, :global,
+    include:
+      ~w(disabled name value form id aria-label aria-expanded aria-controls aria-haspopup title)
+
+  slot :inner_block, required: true
+
+  def input_group_button(assigns) do
+    assigns =
+      assign(assigns, :classes, [
+        "shadow-none focus-visible:ring-0",
+        assigns.class
+      ])
+
+    ~H"""
+    <CinderUI.Components.Actions.button
+      variant={@variant}
+      size={@size}
+      type={@type}
+      class={classes(@classes)}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+    </CinderUI.Components.Actions.button>
+    """
+  end
+
+  doc("""
+  Styled text segment for use inside `input_group_addon/1`.
+
+  Use this for prefixes, suffixes, units, and short status text when the addon
+  also contains icons or buttons.
+
+  ## Example
+
+  ```heex title="Input group text" align="full"
+  <.input_group>
+    <.input placeholder="Amount" />
+    <.input_group_addon>
+      <.input_group_text>USD</.input_group_text>
+    </.input_group_addon>
+  </.input_group>
+  ```
+  """)
+
+  attr :class, :string, default: nil
+  attr :rest, :global
+  slot :inner_block, required: true
+
+  def input_group_text(assigns) do
+    assigns =
+      assign(assigns, :classes, [
+        "inline-flex items-center gap-2 whitespace-nowrap text-muted-foreground",
+        "[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        assigns.class
+      ])
+
+    ~H"""
+    <span data-slot="input-group-text" class={classes(@classes)} {@rest}>
+      {render_slot(@inner_block)}
+    </span>
     """
   end
 
