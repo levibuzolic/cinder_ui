@@ -596,6 +596,32 @@ test.describe("interactive previews", () => {
     await expect(trigger).toHaveAttribute("aria-expanded", "false")
   })
 
+  test("command palette opens from homepage trigger and keyboard shortcut", async ({ page }) => {
+    await page.goto("/")
+
+    const trigger = page.locator("[data-open-command-palette]").first()
+    const shell = page.locator(".docs-k")
+    const input = page.locator(".docs-k-input")
+    const listItems = page.locator(".docs-k-item")
+
+    await shell.waitFor({ state: "attached" })
+
+    await expect(trigger).toBeVisible()
+    await trigger.click()
+
+    await expect(shell).toBeVisible()
+    await expect(input).toBeFocused()
+    await expect(listItems.first()).toContainText("Overview")
+
+    await page.keyboard.press("Escape")
+    await expect(shell).toHaveClass(/hidden/)
+
+    await page.keyboard.press("ControlOrMeta+K")
+    await expect(shell).toBeVisible()
+    await input.fill("Forms.input")
+    await expect(listItems.first()).toContainText("Forms.input")
+  })
+
   test("dialog applies inert to background when open", async ({ page }) => {
     const root = page.locator("[data-slot='dialog']").first()
     const trigger = root.locator("[data-dialog-trigger]")

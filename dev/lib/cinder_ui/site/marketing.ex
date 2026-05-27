@@ -8,6 +8,7 @@ defmodule CinderUI.Site.Marketing do
   alias CinderUI.Components.Forms
   alias CinderUI.Components.Layout
   alias CinderUI.Components.Navigation
+  alias CinderUI.Docs.Catalog
   alias CinderUI.Docs.UIComponents, as: Docs
   alias CinderUI.Icons
   alias Phoenix.HTML.Safe
@@ -20,7 +21,8 @@ defmodule CinderUI.Site.Marketing do
     hex_url = Map.get(opts, :hex_url, "https://hex.pm/packages/cinder_ui")
     hexdocs_url = Map.get(opts, :hexdocs_url, "https://hexdocs.pm/cinder_ui")
     version = Map.get(opts, :version, to_string(project[:version] || "0.0.0"))
-    component_count = Map.get(opts, :component_count, 0)
+    sections = Map.get(opts, :sections, Catalog.sections())
+    component_count = Map.get(opts, :component_count, entry_count(sections))
     docs_path = Map.get(opts, :docs_path, "./docs/")
     theme_css_path = Map.get(opts, :theme_css_path, "./docs/assets/theme.css")
     site_css_path = Map.get(opts, :site_css_path, "./assets/site.css")
@@ -38,6 +40,7 @@ defmodule CinderUI.Site.Marketing do
         github_url,
         hex_url,
         hexdocs_url,
+        sections,
         theme_css_path,
         docs_path,
         site_css_path,
@@ -54,7 +57,8 @@ defmodule CinderUI.Site.Marketing do
     hex_url = Map.get(opts, :hex_url, "https://hex.pm/packages/cinder_ui")
     hexdocs_url = Map.get(opts, :hexdocs_url, "https://hexdocs.pm/cinder_ui")
     version = Map.get(opts, :version, to_string(project[:version] || "0.0.0"))
-    component_count = Map.get(opts, :component_count, 0)
+    sections = Map.get(opts, :sections, Catalog.sections())
+    component_count = Map.get(opts, :component_count, entry_count(sections))
     docs_path = Map.get(opts, :docs_path, "./docs/")
     theme_css_path = Map.get(opts, :theme_css_path, "./docs/assets/theme.css")
     site_css_path = Map.get(opts, :site_css_path, "./assets/site.css")
@@ -68,6 +72,7 @@ defmodule CinderUI.Site.Marketing do
       github_url,
       hex_url,
       hexdocs_url,
+      sections,
       theme_css_path,
       docs_path,
       site_css_path,
@@ -81,6 +86,7 @@ defmodule CinderUI.Site.Marketing do
          github_url,
          hex_url,
          hexdocs_url,
+         sections,
          theme_css_path,
          docs_path,
          site_css_path,
@@ -93,6 +99,7 @@ defmodule CinderUI.Site.Marketing do
       theme_css_path: theme_css_path,
       site_css_path: site_css_path,
       header_controls_html: header_controls_html(docs_path, github_url, hex_url, hexdocs_url),
+      command_palette_html: command_palette_html(sections, docs_path),
       shadcn_url: shadcn_url,
       hero_html: hero_html(version, component_count, shadcn_url, docs_path),
       component_examples_html: component_examples_html(shadcn_url),
@@ -117,6 +124,7 @@ defmodule CinderUI.Site.Marketing do
 
     ~H"""
     <div class="flex flex-wrap items-center gap-2 md:justify-end">
+      <Docs.docs_search_button class="w-full sm:w-auto sm:min-w-[11rem]" />
       <Docs.docs_external_link_button
         :if={is_binary(@github_url) and @github_url != ""}
         href={@github_url}
@@ -144,6 +152,51 @@ defmodule CinderUI.Site.Marketing do
 
       <Docs.theme_mode_toggle class="site-theme-toggle" />
     </div>
+    """
+    |> to_html()
+  end
+
+  defp command_palette_html(sections, docs_path) do
+    assigns = %{
+      sections: sections,
+      overview_path: docs_path,
+      install_path: join_public_path(docs_path, "install/"),
+      docs_path: docs_path
+    }
+
+    ~H"""
+    <nav hidden aria-hidden="true" data-command-palette-source>
+      <a
+        href={@overview_path}
+        data-command-palette-item
+        data-command-palette-title="Overview"
+        data-command-palette-group="Cinder UI"
+      >
+        Overview
+      </a>
+      <a
+        href={@install_path}
+        data-command-palette-item
+        data-command-palette-title="Installation"
+        data-command-palette-group="Cinder UI"
+      >
+        Installation
+      </a>
+      <%= for section <- @sections do %>
+        <a
+          :for={entry <- section.entries}
+          href={
+            join_public_path(@docs_path, String.replace_suffix(entry.docs_path, "/index.html", "/"))
+          }
+          data-command-palette-item
+          data-command-palette-title={entry.title}
+          data-command-palette-module={entry.module_name}
+          data-command-palette-group={section.title}
+        >
+          {entry.module_name}.{entry.title}
+        </a>
+      <% end %>
+    </nav>
     """
     |> to_html()
   end
@@ -828,6 +881,16 @@ defmodule CinderUI.Site.Marketing do
       ember.opacity,
       ";"
     ]
+  end
+
+  defp entry_count(sections) do
+    sections
+    |> Enum.flat_map(& &1.entries)
+    |> length()
+  end
+
+  defp join_public_path(prefix, suffix) do
+    String.trim_trailing(prefix, "/") <> "/" <> String.trim_leading(suffix, "/")
   end
 
   defp template!(name), do: File.read!(Path.join(@template_dir, name))
