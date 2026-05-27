@@ -11,6 +11,7 @@ defmodule CinderUI.Components.Layout do
   - `aspect_ratio/1`
   - `kbd/1`
   - `kbd_group/1`
+  - `typography/1`
   - `scroll_area/1`
   - `resizable/1` (in progress, not ready for use)
 
@@ -21,6 +22,37 @@ defmodule CinderUI.Components.Layout do
 
   import CinderUI.Classes
   import CinderUI.ComponentDocs, only: [doc: 1]
+
+  @typography_variants %{
+    h1: "scroll-m-20 text-4xl font-extrabold leading-tight text-balance lg:text-5xl",
+    h2: "scroll-m-20 border-b pb-2 text-3xl font-semibold leading-tight first:mt-0",
+    h3: "scroll-m-20 text-2xl font-semibold leading-snug",
+    h4: "scroll-m-20 text-xl font-semibold leading-snug",
+    p: "leading-7 [&:not(:first-child)]:mt-6",
+    lead: "text-muted-foreground text-xl leading-7",
+    large: "text-lg font-semibold leading-7",
+    small: "text-sm leading-none font-medium",
+    muted: "text-muted-foreground text-sm leading-normal",
+    blockquote: "border-l-2 pl-6 text-muted-foreground italic",
+    inline_code:
+      "bg-muted text-foreground rounded px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold",
+    list: "my-6 ml-6 list-disc [&>li]:mt-2"
+  }
+
+  @typography_tags %{
+    h1: "h1",
+    h2: "h2",
+    h3: "h3",
+    h4: "h4",
+    p: "p",
+    lead: "p",
+    large: "div",
+    small: "small",
+    muted: "p",
+    blockquote: "blockquote",
+    inline_code: "code",
+    list: "ul"
+  }
 
   doc("""
   Card container.
@@ -510,6 +542,97 @@ defmodule CinderUI.Components.Layout do
 
     ~H"""
     <kbd data-slot="kbd-group" class={classes(@classes)} {@rest}>{render_slot(@inner_block)}</kbd>
+    """
+  end
+
+  doc("""
+  Shadcn-inspired typography recipe for semantic headings and text treatments.
+
+  `typography/1` is intentionally small: it applies token-based Tailwind
+  classes to a single semantic element and does not style arbitrary prose
+  descendants. Use `as` when the visual treatment should render as a different
+  HTML tag.
+
+  ## Attributes
+
+  - `variant`: `:h1 | :h2 | :h3 | :h4 | :p | :lead | :large | :small | :muted | :blockquote | :inline_code | :list`
+  - `as`: optional HTML tag override
+
+  ## Examples
+
+  ```heex title="Article heading stack" align="full" vrt
+  <div class="max-w-2xl">
+    <.typography variant={:h1}>Realtime payments need boring interfaces</.typography>
+    <.typography variant={:lead} class="mt-4">
+      Operators need clear hierarchy, calm defaults, and text that survives dense workflows.
+    </.typography>
+    <.typography>
+      Use typography recipes when component copy needs consistent rhythm without introducing
+      a rich text renderer or client-side dependency.
+    </.typography>
+  </div>
+  ```
+
+  ```heex title="Inline UI copy" align="full"
+  <div class="max-w-md space-y-3">
+    <.typography variant={:h3}>Workspace limits</.typography>
+    <.typography variant={:muted}>
+      API keys expire after <.typography variant={:inline_code}>90d</.typography>.
+    </.typography>
+    <.typography variant={:small} as="p">Last updated by the billing service.</.typography>
+  </div>
+  ```
+
+  ```heex title="List recipe" align="full"
+  <.typography variant={:list}>
+    <li>Keep headings semantic.</li>
+    <li>Use tokens like <.typography variant={:inline_code}>text-muted-foreground</.typography>.</li>
+    <li>Reach for component slots before custom wrappers.</li>
+  </.typography>
+  ```
+  """)
+
+  attr :variant, :atom,
+    default: :p,
+    values: [
+      :h1,
+      :h2,
+      :h3,
+      :h4,
+      :p,
+      :lead,
+      :large,
+      :small,
+      :muted,
+      :blockquote,
+      :inline_code,
+      :list
+    ]
+
+  attr :as, :string, default: nil
+  attr :class, :string, default: nil
+  attr :rest, :global
+  slot :inner_block, required: true
+
+  def typography(assigns) do
+    assigns =
+      assigns
+      |> assign(:tag_name, assigns.as || Map.fetch!(@typography_tags, assigns.variant))
+      |> assign(:classes, [
+        variant(@typography_variants, assigns.variant, @typography_variants.p),
+        assigns.class
+      ])
+
+    ~H"""
+    <.dynamic_tag
+      tag_name={@tag_name}
+      data-slot="typography"
+      data-variant={@variant}
+      class={classes(@classes)}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+    </.dynamic_tag>
     """
   end
 

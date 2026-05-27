@@ -221,6 +221,26 @@ Try a component in any template:
 <.button>Click me</.button>
 ```
 
+## Typography Recipes
+
+`typography/1` provides a small set of Shadcn-inspired text treatments without
+adding a prose renderer or client-side dependency. Variants use the same
+Tailwind token classes as the rest of Cinder UI and render semantic tags by
+default.
+
+```heex
+<article class="max-w-2xl">
+  <.typography variant={:h1}>Realtime payments need boring interfaces</.typography>
+  <.typography variant={:lead} class="mt-4">
+    Operators need clear hierarchy, calm defaults, and copy that survives dense workflows.
+  </.typography>
+  <.typography>
+    Inline values like <.typography variant={:inline_code}>90d</.typography>
+    stay aligned with the active theme tokens.
+  </.typography>
+</article>
+```
+
 ## Forms and Validation
 
 `CinderUI.Components.Forms` supports both simple field wrappers and more explicit
