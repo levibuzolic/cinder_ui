@@ -565,7 +565,10 @@ window.addEventListener("beforeunload", persistSidebarScroll)
 // ---------------------------------------------------------------------------
 
 const initCommandPalette = () => {
-  const navLinks = qs(document, "nav[aria-label='Component sections'] [data-slot='sidebar-item-link'][href]")
+  const navLinks = qs(
+    document,
+    "nav[aria-label='Component sections'] [data-slot='sidebar-item-link'][href], [data-command-palette-item][href]",
+  )
   const items = []
   const seen = new Set()
 
@@ -602,9 +605,11 @@ const initCommandPalette = () => {
     if (seen.has(href)) return
     seen.add(href)
 
-    const moduleName = moduleNameForLink(link)
-    const groupName = groupNameForLink(link)
-    const title = (link.textContent || "").trim()
+    const moduleName = link.dataset.commandPaletteModule || moduleNameForLink(link)
+    const groupName = link.dataset.commandPaletteGroup || groupNameForLink(link)
+    const title = link.dataset.commandPaletteTitle || (link.textContent || "").trim()
+    if (!title) return
+
     const displayName = moduleName ? `${moduleName}.${title}` : title
 
     items.push({
