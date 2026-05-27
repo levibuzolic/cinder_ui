@@ -54,10 +54,12 @@ defmodule CinderUI.Docs.CatalogTest do
 
   test "component family module docs link to their docs site sections" do
     Enum.each(Catalog.section_definitions(), fn section ->
-      {:docs_v1, _, _, _, %{"en" => module_doc}, _, _} = Code.fetch_docs(section.module)
+      Enum.each(section_modules(section), fn module ->
+        {:docs_v1, _, _, _, %{"en" => module_doc}, _, _} = Code.fetch_docs(module)
 
-      assert module_doc =~ "View live #{section.title} examples and component docs"
-      assert module_doc =~ "https://levibuzolic.github.io/cinder_ui/docs/##{section.id}"
+        assert module_doc =~ "View live #{section.title} examples and component docs"
+        assert module_doc =~ "https://levibuzolic.github.io/cinder_ui/docs/##{section.id}"
+      end)
     end)
   end
 
@@ -196,6 +198,31 @@ defmodule CinderUI.Docs.CatalogTest do
     assert extended_example.template_heex =~ "<.card_footer"
   end
 
+  test "field family entries stay discoverable in the forms docs section" do
+    forms_section =
+      Catalog.sections()
+      |> Enum.find(&(&1.id == "forms"))
+
+    assert forms_section
+
+    field_group_entry =
+      forms_section.entries
+      |> find_entry(CinderUI.Components.FieldFamily, :field_group)
+
+    field_separator_entry =
+      forms_section.entries
+      |> find_entry(CinderUI.Components.FieldFamily, :field_separator)
+
+    assert field_group_entry
+    assert field_group_entry.runtime.kind == :server
+    assert length(field_group_entry.examples) >= 2
+    assert field_group_entry.preview_html =~ ~s(data-slot="field-group")
+    assert field_group_entry.template_heex =~ "<.field_group"
+
+    assert field_separator_entry
+    assert field_separator_entry.preview_html =~ ~s(data-slot="field-separator")
+  end
+
   test "avatar docs samples are sourced from documented usage snippets" do
     avatar_entry =
       Catalog.sections()
@@ -240,4 +267,7 @@ defmodule CinderUI.Docs.CatalogTest do
   defp find_entry(entries, module, function) do
     Enum.find(entries, fn entry -> entry.module == module and entry.function == function end)
   end
+
+  defp section_modules(%{modules: modules}), do: modules
+  defp section_modules(%{module: module}), do: [module]
 end

@@ -24,13 +24,22 @@ defmodule CinderUI.Docs.Catalog do
   Build a single section by id.
   """
   @spec build_section(map()) :: map()
-  def build_section(%{module: module} = section) do
+  def build_section(%{modules: modules} = section) do
     entries =
-      module
-      |> Registry.component_functions()
-      |> Enum.map(&entry(module, &1))
+      Enum.flat_map(modules, fn module ->
+        module
+        |> Registry.component_functions()
+        |> Enum.map(&entry(module, &1))
+      end)
 
     Map.put(section, :entries, entries)
+  end
+
+  def build_section(%{module: module} = section) do
+    section
+    |> Map.delete(:module)
+    |> Map.put(:modules, [module])
+    |> build_section()
   end
 
   @doc """
