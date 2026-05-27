@@ -785,6 +785,8 @@ defmodule CinderUI.Components.FormsTest do
     assert inline_class =~ "[data-slot=textarea]]:border-0"
     assert inline_class =~ "[data-slot=select]_[data-slot=select-trigger]]:border-0"
     assert inline_class =~ "[data-slot=button]]:border-0"
+    assert inline_class =~ "[data-slot=button]:last-child]:mr-1.5"
+    assert inline_class =~ "[data-slot=input-group-addon]_[data-slot=button]]:h-6"
 
     assert TestHelpers.attr(block_end_html, "[data-slot='input-group']", "data-align") ==
              "block-end"
@@ -799,7 +801,48 @@ defmodule CinderUI.Components.FormsTest do
 
     assert TestHelpers.has_class?(addon_html, "[data-slot='input-group-addon']", "inline-flex")
 
+    assert TestHelpers.has_class?(
+             addon_html,
+             "[data-slot='input-group-addon']",
+             "has-[>[data-slot=button]]:-mx-1.5"
+           )
+
     assert TestHelpers.attr(block_end_addon_html, "[data-slot='input-group-addon']", "data-align") ==
              "block-end"
+  end
+
+  test "input_group_button renders compact non-submit button defaults" do
+    html =
+      render_component(&Forms.input_group_button/1, %{
+        inner_block: TestHelpers.slot("Copy")
+      })
+
+    assert TestHelpers.attr(html, "[data-slot='button']", "type") == "button"
+    assert TestHelpers.attr(html, "[data-slot='button']", "data-variant") == "ghost"
+    assert TestHelpers.attr(html, "[data-slot='button']", "data-size") == "xs"
+    assert TestHelpers.has_class?(html, "[data-slot='button']", "shadow-none")
+
+    icon_html =
+      render_component(&Forms.input_group_button/1, %{
+        size: :icon_xs,
+        "aria-label": "Copy",
+        inner_block: TestHelpers.slot("C")
+      })
+
+    assert TestHelpers.attr(icon_html, "[data-slot='button']", "data-size") == "icon_xs"
+    assert TestHelpers.attr(icon_html, "[data-slot='button']", "aria-label") == "Copy"
+  end
+
+  test "input_group_text renders styled addon text segment" do
+    html =
+      render_component(&Forms.input_group_text/1, %{
+        inner_block: TestHelpers.slot("USD")
+      })
+
+    assert TestHelpers.attr(html, "[data-slot='input-group-text']", "data-slot") ==
+             "input-group-text"
+
+    assert TestHelpers.text(html, "[data-slot='input-group-text']") == "USD"
+    assert TestHelpers.has_class?(html, "[data-slot='input-group-text']", "text-muted-foreground")
   end
 end
