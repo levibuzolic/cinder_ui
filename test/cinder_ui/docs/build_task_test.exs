@@ -52,8 +52,10 @@ defmodule CinderUI.Docs.BuildTaskTest do
     assert recipes_page =~ "Recipes"
     assert recipes_page =~ "Settings page"
     assert recipes_page =~ "Admin shell"
+    assert recipes_page =~ "Data table"
     assert recipes_page =~ "These are copyable blocks, not new primitives."
     assert recipes_page =~ ~s(data-copy-template="recipe-settings-page")
+    assert recipes_page =~ ~s(data-copy-template="recipe-data-table")
     assert recipes_page =~ ~s(href="../")
 
     assert component_page =~ "Original shadcn/ui docs"
