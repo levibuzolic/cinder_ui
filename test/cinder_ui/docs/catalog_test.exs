@@ -227,7 +227,7 @@ defmodule CinderUI.Docs.CatalogTest do
     typography_entry =
       Catalog.sections()
       |> Enum.flat_map(& &1.entries)
-      |> find_entry(CinderUI.Components.Layout, :typography)
+      |> find_entry(CinderUI.Components.Typography, :typography)
 
     assert typography_entry
     assert typography_entry.runtime.kind == :server

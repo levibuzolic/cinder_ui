@@ -3,6 +3,12 @@ defmodule CinderUI.DefaultImportProbe do
 
   @imports __ENV__.functions
   def imported_functions, do: @imports
+
+  def render(assigns) do
+    ~H"""
+    <.typography variant={:lead}>Revenue overview</.typography>
+    """
+  end
 end
 
 defmodule CinderUI.TypographyOptInProbe do
@@ -31,6 +37,16 @@ defmodule CinderUITest do
   use ExUnit.Case, async: true
 
   import Phoenix.LiveViewTest
+
+  test "use CinderUI imports typography by default" do
+    assert imported?(CinderUI.DefaultImportProbe, CinderUI.Components.Typography, :typography)
+
+    html = render_component(&CinderUI.DefaultImportProbe.render/1, %{})
+
+    assert html =~ "<p"
+    assert html =~ ~s(data-variant="lead")
+    assert html =~ "Revenue overview"
+  end
 
   test "use CinderUI does not import shorthand typography aliases by default" do
     refute imported?(CinderUI.DefaultImportProbe, CinderUI.Components.Typography, :h1)
