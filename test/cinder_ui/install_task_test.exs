@@ -209,6 +209,48 @@ defmodule CinderUI.InstallTaskTest do
     assert app_js =~ "...CinderUIHooks"
   end
 
+  test "merges Cinder UI hooks into nested inline hook objects", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+    bin_dir = Path.join(project, "bin")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.mkdir_p!(bin_dir)
+
+    File.write!(Path.join(project, "package.json"), "{\n  \"private\": true\n}\n")
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+
+    File.write!(
+      Path.join(assets, "js/app.js"),
+      """
+      const ignored = "hooks: {}"
+      const liveSocket = new LiveSocket("/live", Socket, {
+        hooks: {
+          DemoHook: {
+            mounted() {
+              this.payload = {nested: true}
+            },
+          },
+        },
+      })
+      """
+    )
+
+    write_fake_npm!(bin_dir)
+
+    with_fake_path(bin_dir, fn ->
+      File.cd!(project, fn ->
+        Mix.Task.reenable(@task)
+        Mix.Task.run(@task, ["--assets-path", "assets", "--package-manager", "npm"])
+      end)
+    end)
+
+    app_js = File.read!(Path.join(assets, "js/app.js"))
+    assert app_js =~ "this.payload = {nested: true}"
+    assert app_js =~ ~r/hooks:\s*\{.*DemoHook: \{.*\},\n\s+\.\.\.CinderUIHooks\n\s+\}/s
+  end
+
   test "skip-existing preserves generated files", %{tmp_dir: tmp_dir} do
     project = Path.join(tmp_dir, "project")
     assets = Path.join(project, "assets")
@@ -465,7 +507,16 @@ defmodule CinderUI.InstallTaskTest do
       end)
     end)
 
-    assert File.read!(Path.join(assets, "js/app.js")) =~ "Object.assign(hooks, CinderUIHooks)"
+    with_fake_path(bin_dir, fn ->
+      File.cd!(project, fn ->
+        Mix.Task.reenable(@task)
+        Mix.Task.run(@task, ["--assets-path", "assets", "--package-manager", "npm"])
+      end)
+    end)
+
+    app_js = File.read!(Path.join(assets, "js/app.js"))
+    assert app_js =~ "Object.assign(hooks, CinderUIHooks)"
+    assert length(:binary.matches(app_js, "Object.assign(hooks, CinderUIHooks)")) == 1
 
     File.write!(
       Path.join(assets, "js/app.js"),
