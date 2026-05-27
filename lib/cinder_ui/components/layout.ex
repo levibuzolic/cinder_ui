@@ -251,7 +251,9 @@ defmodule CinderUI.Components.Layout do
       <p class="text-sm">Your API key was generated successfully.</p>
       <.input_group>
         <.input value="ck_live_************************" readonly />
-        <.button variant={:outline} size={:sm}>Copy</.button>
+        <.input_group_addon>
+          <.input_group_button variant={:outline}>Copy</.input_group_button>
+        </.input_group_addon>
       </.input_group>
     </.card_content>
   </.card>
