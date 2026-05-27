@@ -58,4 +58,18 @@ defmodule Demo.SiteRenderer do
       hex_package_url: SiteRuntime.hex_package_url()
     )
   end
+
+  def recipes_html do
+    sections = SiteRuntime.catalog_sections()
+
+    StaticRenderer.recipes_html(sections,
+      title: "Recipes · Cinder UI",
+      description: "Composed LiveView recipes for Cinder UI",
+      root_prefix: "..",
+      home_url: "../../",
+      asset_prefix: "../..",
+      github_url: SiteRuntime.github_url(),
+      hex_package_url: SiteRuntime.hex_package_url()
+    )
+  end
 end

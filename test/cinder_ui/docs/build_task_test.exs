@@ -15,6 +15,7 @@ defmodule CinderUI.Docs.BuildTaskTest do
     assert File.exists?(Path.join(@output, "index.html"))
     assert File.exists?(Path.join(@output, ".nojekyll"))
     assert File.exists?(Path.join(@output, "docs/index.html"))
+    assert File.exists?(Path.join(@output, "docs/recipes/index.html"))
     assert File.exists?(Path.join(@output, "docs/actions-button/index.html"))
     assert File.exists?(Path.join(@output, "docs/layout-card/index.html"))
     assert File.exists?(Path.join(@output, "docs/assets/site.css"))
@@ -22,6 +23,7 @@ defmodule CinderUI.Docs.BuildTaskTest do
 
     marketing_index = File.read!(Path.join(@output, "index.html"))
     docs_index = File.read!(Path.join(@output, "docs/index.html"))
+    recipes_page = File.read!(Path.join(@output, "docs/recipes/index.html"))
     component_page = File.read!(Path.join(@output, "docs/actions-button/index.html"))
     theme_css = File.read!(Path.join(@output, "docs/assets/theme.css"))
     site_js = File.read!(Path.join(@output, "docs/assets/static_docs.js"))
@@ -42,9 +44,17 @@ defmodule CinderUI.Docs.BuildTaskTest do
     assert docs_index =~ "Actions.button"
     assert docs_index =~ "Open docs"
     assert docs_index =~ "./actions-button/"
+    assert docs_index =~ "./recipes/"
     assert docs_index =~ ~s(href="../")
     assert docs_index =~ "cui:theme:color"
     assert docs_index =~ "cui:theme:radius"
+
+    assert recipes_page =~ "Recipes"
+    assert recipes_page =~ "Settings page"
+    assert recipes_page =~ "Admin shell"
+    assert recipes_page =~ "These are copyable blocks, not new primitives."
+    assert recipes_page =~ ~s(data-copy-template="recipe-settings-page")
+    assert recipes_page =~ ~s(href="../")
 
     assert component_page =~ "Original shadcn/ui docs"
     assert component_page =~ "Attributes"

@@ -57,6 +57,17 @@ defmodule DemoWeb.SiteControllerTest do
     assert body =~ "tok-keyword"
   end
 
+  test "GET /docs/recipes renders composed recipe examples", %{conn: conn} do
+    conn = get(conn, ~p"/docs/recipes")
+    body = html_response(conn, 200)
+
+    assert body =~ "Recipes"
+    assert body =~ "Auth form"
+    assert body =~ "Settings page"
+    assert body =~ "Admin shell"
+    assert body =~ ~s(data-copy-template="recipe-auth-form")
+  end
+
   test "GET /assets/site.css serves docs CSS", %{conn: conn} do
     conn = get(conn, ~p"/assets/site.css")
 

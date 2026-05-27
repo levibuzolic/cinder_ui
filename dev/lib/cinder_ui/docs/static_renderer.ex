@@ -67,6 +67,23 @@ defmodule CinderUI.Docs.StaticRenderer do
     )
   end
 
+  def recipes_html(sections, opts) when is_list(sections) and is_list(opts) do
+    page_shell(
+      title: Keyword.fetch!(opts, :title),
+      description: Keyword.fetch!(opts, :description),
+      body_content: recipes_body(Keyword.fetch!(opts, :root_prefix)),
+      sections: sections,
+      active_entry_id: nil,
+      active_page: :recipes,
+      root_prefix: Keyword.fetch!(opts, :root_prefix),
+      home_url: Keyword.fetch!(opts, :home_url),
+      asset_prefix: Keyword.fetch!(opts, :asset_prefix),
+      github_url: Keyword.fetch!(opts, :github_url),
+      hex_package_url: Keyword.fetch!(opts, :hex_package_url),
+      after_body_html: Keyword.get(opts, :after_body_html)
+    )
+  end
+
   defp page_shell(opts) do
     assigns = %{
       title: opts[:title],
@@ -319,6 +336,15 @@ defmodule CinderUI.Docs.StaticRenderer do
         language={:heex}
       />
     </div>
+    """
+    |> to_html()
+  end
+
+  defp recipes_body(root_prefix) do
+    assigns = %{root_prefix: root_prefix}
+
+    ~H"""
+    <UIComponents.recipes_page mode={:static} root_prefix={@root_prefix} />
     """
     |> to_html()
   end

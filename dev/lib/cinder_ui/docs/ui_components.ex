@@ -7,6 +7,8 @@ defmodule CinderUI.Docs.UIComponents do
   alias CinderUI.Docs.UIComponents.Code
   alias CinderUI.Docs.UIComponents.Shell
 
+  defdelegate recipes_page(assigns), to: CinderUI.Docs.Recipes
+
   defdelegate docs_external_link_button(assigns), to: Shell
   defdelegate theme_mode_toggle(assigns), to: Shell
   defdelegate docs_layout(assigns), to: Shell

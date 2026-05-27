@@ -242,6 +242,12 @@ defmodule CinderUI.Docs.UIComponents.Shell do
         >
           Installation
         </Advanced.sidebar_item>
+        <Advanced.sidebar_item
+          href={recipes_href(@mode, @root_prefix)}
+          current={@active_page == :recipes}
+        >
+          Recipes
+        </Advanced.sidebar_item>
       </Advanced.sidebar_group>
 
       <Advanced.sidebar_group label="Components" class="mt-6">
@@ -318,7 +324,9 @@ defmodule CinderUI.Docs.UIComponents.Shell do
       type="button"
       variant={:outline}
       data-open-command-palette
-      class={classes(["h-10 w-full justify-between rounded-xl px-3 text-sm sm:min-w-[16rem]", @class])}
+      class={
+        classes(["h-10 w-full justify-between rounded-xl px-3 text-sm sm:min-w-[16rem]", @class])
+      }
       {@rest}
     >
       <span class="flex items-center gap-2">
@@ -354,6 +362,9 @@ defmodule CinderUI.Docs.UIComponents.Shell do
 
   defp install_href(:static, root_prefix), do: "#{root_prefix}/install/"
   defp install_href(:live, _root_prefix), do: "/docs/install/"
+
+  defp recipes_href(:static, root_prefix), do: "#{root_prefix}/recipes/"
+  defp recipes_href(:live, _root_prefix), do: "/docs/recipes/"
 
   defp entry_href(:static, root_prefix, entry),
     do: "#{root_prefix}/#{String.replace_suffix(entry.docs_path, "/index.html", "/")}"

@@ -51,6 +51,14 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
       overview_page_html(sections, home_url, github_url, hex_package_url)
     )
 
+    recipes_output_path = Path.join([docs_output_dir, "recipes", "index.html"])
+    File.mkdir_p!(Path.dirname(recipes_output_path))
+
+    File.write!(
+      recipes_output_path,
+      recipes_page_html(sections, home_url, github_url, hex_package_url)
+    )
+
     Enum.each(entries, fn entry ->
       output_path = Path.join(docs_output_dir, entry.docs_path)
       File.mkdir_p!(Path.dirname(output_path))
@@ -99,6 +107,19 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
     StaticRenderer.docs_component_html(entry, sections,
       title: "#{entry.module_name}.#{entry.title} · Cinder UI",
       description: entry.docs,
+      asset_prefix: "..",
+      root_prefix: "..",
+      home_url: home_url,
+      github_url: github_url,
+      hex_package_url: hex_package_url,
+      after_body_html: docs_speculation_rules_html()
+    )
+  end
+
+  defp recipes_page_html(sections, home_url, github_url, hex_package_url) do
+    StaticRenderer.recipes_html(sections,
+      title: "Recipes · Cinder UI",
+      description: "Composed LiveView recipes for Cinder UI",
       asset_prefix: "..",
       root_prefix: "..",
       home_url: home_url,

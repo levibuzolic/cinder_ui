@@ -27,6 +27,7 @@ defmodule DemoWeb.Router do
     get "/", SiteController, :marketing
     get "/docs", SiteController, :docs
     get "/docs/install", SiteController, :install
+    get "/docs/recipes", SiteController, :recipes
     get "/docs/:id", SiteController, :component
   end
 end

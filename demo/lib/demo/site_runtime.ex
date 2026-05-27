@@ -54,7 +54,7 @@ defmodule Demo.SiteRuntime do
   def static_paths do
     sections = catalog_sections()
 
-    ["/", "/docs/", "/docs/install/"] ++
+    ["/", "/docs/", "/docs/install/", "/docs/recipes/"] ++
       Enum.map(Enum.flat_map(sections, & &1.entries), fn entry ->
         "/docs/#{entry.id}/"
       end)
