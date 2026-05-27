@@ -466,10 +466,46 @@ defmodule CinderUI.Docs.UIComponents.Catalog do
   defp maybe_strip_leading_summary(doc, _summary), do: doc
 
   defp strip_markdown_sections(doc, headings) do
-    Enum.reduce(headings, doc, fn heading, acc ->
-      pattern = ~r/(?:^|\n)##+\s+#{heading}\b[\s\S]*?(?=\n##+\s|\z)/mi
-      String.replace(acc, pattern, "\n")
-    end)
+    heading_set = MapSet.new(headings)
+
+    {lines, _skip_level} =
+      doc
+      |> String.split("\n")
+      |> Enum.reduce({[], nil}, fn line, {lines, skip_level} ->
+        case heading_metadata(String.trim_leading(line)) do
+          {:heading, level, title} ->
+            if MapSet.member?(heading_set, normalize_heading_title(title)) do
+              {lines, level}
+            else
+              if is_integer(skip_level) and level > skip_level do
+                {lines, skip_level}
+              else
+                {[line | lines], nil}
+              end
+            end
+
+          :not_heading ->
+            if is_integer(skip_level), do: {lines, skip_level}, else: {[line | lines], nil}
+        end
+      end)
+
+    lines
+    |> Enum.reverse()
+    |> Enum.join("\n")
+  end
+
+  defp heading_metadata(line) do
+    case Regex.run(~r/^(#+)\s+(.+?)\s*$/, line, capture: :all_but_first) do
+      [hashes, title] -> {:heading, String.length(hashes), String.trim(title)}
+      _ -> :not_heading
+    end
+  end
+
+  defp normalize_heading_title(title) do
+    title
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/u, " ")
+    |> String.trim()
   end
 
   defp summary_markdown_html(text), do: Code.summary_markdown_html(text)

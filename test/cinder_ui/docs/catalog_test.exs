@@ -1,7 +1,10 @@
 defmodule CinderUI.Docs.CatalogTest do
   use ExUnit.Case, async: true
 
+  import Phoenix.LiveViewTest
+
   alias CinderUI.Docs.Catalog
+  alias CinderUI.Docs.UIComponents.Catalog, as: CatalogComponents
 
   @modules [
     CinderUI.Components.Actions,
@@ -158,6 +161,36 @@ defmodule CinderUI.Docs.CatalogTest do
     assert form_field_example.preview_html =~ ~s(name="example[email]")
     assert composed_example.preview_html =~ ~s(data-slot="field")
     assert composed_example.preview_html =~ ~s(for="example_email")
+  end
+
+  test "component detail strips nested example docs from residual prose" do
+    sections = Catalog.sections()
+    entries = Enum.flat_map(sections, & &1.entries)
+    input_entry = find_entry(entries, CinderUI.Components.Forms, :input)
+
+    html =
+      render_component(&CatalogComponents.docs_component_detail/1, %{
+        sections: sections,
+        entry: input_entry,
+        mode: :static,
+        root_prefix: "."
+      })
+
+    headings =
+      html
+      |> Floki.parse_document!()
+      |> Floki.find("h3")
+      |> Enum.map(fn heading ->
+        heading
+        |> Floki.text(sep: " ")
+        |> String.replace(~r/\s+/, " ")
+        |> String.trim()
+      end)
+
+    assert html =~ ~s(data-example-title="With FormField")
+    assert html =~ ~s(data-example-title="Inside field composition")
+    assert Enum.count(headings, &(&1 == "With FormField")) == 1
+    assert Enum.count(headings, &(&1 == "Inside field composition")) == 1
   end
 
   test "composite components can expose doc-derived generated examples" do
