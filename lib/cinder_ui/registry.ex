@@ -16,6 +16,7 @@ defmodule CinderUI.Registry do
   alias CinderUI.Components.Layout
   alias CinderUI.Components.Navigation
   alias CinderUI.Components.Overlay
+  alias CinderUI.Components.Typography
   alias CinderUI.Icons
 
   @sections [
@@ -27,7 +28,8 @@ defmodule CinderUI.Registry do
     %{id: "data-display", title: "Data Display", module: DataDisplay},
     %{id: "navigation", title: "Navigation", module: Navigation},
     %{id: "overlay", title: "Overlay", module: Overlay},
-    %{id: "advanced", title: "Advanced", module: Advanced}
+    %{id: "advanced", title: "Advanced", module: Advanced},
+    %{id: "typography", title: "Typography", module: Typography, functions: [:typography]}
   ]
 
   @runtime_kinds %{
@@ -92,14 +94,20 @@ defmodule CinderUI.Registry do
       raise ArgumentError, "unknown CinderUI component module: #{inspect(module)}"
     end
 
-    module
-    |> Kernel.apply(:__info__, [:functions])
-    |> Enum.filter(fn
-      {name, 1} -> not String.starts_with?(Atom.to_string(name), "__")
-      _ -> false
-    end)
-    |> Enum.map(&elem(&1, 0))
-    |> Enum.sort()
+    case section_for_module(module) do
+      %{functions: functions} ->
+        functions
+
+      _ ->
+        module
+        |> Kernel.apply(:__info__, [:functions])
+        |> Enum.filter(fn
+          {name, 1} -> not String.starts_with?(Atom.to_string(name), "__")
+          _ -> false
+        end)
+        |> Enum.map(&elem(&1, 0))
+        |> Enum.sort()
+    end
   end
 
   @doc """

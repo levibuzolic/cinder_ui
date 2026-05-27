@@ -205,6 +205,32 @@ import CinderUI.Components.Actions
 import CinderUI.Components.Forms
 ```
 
+Typography aliases such as `<.h1>` and `<.lead>` live in
+`CinderUI.Components.Typography` and are not imported by default because their
+short names are more likely to collide with application components. Import them
+manually when you want local shorthand components:
+
+```elixir
+import CinderUI.Components.Typography
+```
+
+Or opt in globally from your web helpers:
+
+```elixir
+use CinderUI, typography: true
+```
+
+For namespaced access without importing the aliases into the local component
+scope:
+
+```elixir
+alias CinderUI.Components.Typography
+```
+
+```heex
+<Typography.h1>Realtime payments need boring interfaces</Typography.h1>
+```
+
 ### 5. Start building
 
 Start your Phoenix server:
@@ -239,6 +265,15 @@ default.
     stay aligned with the active theme tokens.
   </.typography>
 </article>
+```
+
+When you opt in to typography aliases, the same styles are available as named
+components:
+
+```heex
+<.h1>Realtime payments need boring interfaces</.h1>
+<.lead class="mt-4">Operators need clear hierarchy.</.lead>
+<.p>Inline values like <.inline_code>90d</.inline_code> stay aligned.</.p>
 ```
 
 ## Forms and Validation

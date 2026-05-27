@@ -12,6 +12,7 @@ defmodule CinderUI.Components.Layout do
   - `kbd/1`
   - `kbd_group/1`
   - `typography/1`
+  - named typography aliases are available through `CinderUI.Components.Typography`
   - `scroll_area/1`
   - `resizable/1` (in progress, not ready for use)
 
@@ -612,17 +613,28 @@ defmodule CinderUI.Components.Layout do
         assigns.class
       ])
 
-    ~H"""
-    <.dynamic_tag
-      tag_name={@tag_name}
-      data-slot="typography"
-      data-variant={@variant}
-      class={classes(@classes)}
-      {@rest}
-    >
-      {render_slot(@inner_block)}
-    </.dynamic_tag>
-    """
+    if assigns.variant == :inline_code and assigns.tag_name == "code" do
+      ~H"""
+      <code
+        data-slot="typography"
+        data-variant={@variant}
+        class={classes(@classes)}
+        {@rest}
+      >{render_slot(@inner_block)}</code>
+      """noformat
+    else
+      ~H"""
+      <.dynamic_tag
+        tag_name={@tag_name}
+        data-slot="typography"
+        data-variant={@variant}
+        class={classes(@classes)}
+        {@rest}
+      >
+        {render_slot(@inner_block)}
+      </.dynamic_tag>
+      """
+    end
   end
 
   doc("""

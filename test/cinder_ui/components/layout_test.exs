@@ -45,6 +45,16 @@ defmodule CinderUI.Components.LayoutTest do
     refute html =~ "<small"
   end
 
+  test "typography inline code does not add wrapper whitespace" do
+    html =
+      render_component(&Layout.typography/1, %{
+        variant: :inline_code,
+        inner_block: TestHelpers.slot("90d")
+      })
+
+    assert html =~ ~r/<code[^>]*>90d<\/code>/
+  end
+
   test "resizable renders hook, handles, and optional storage key" do
     html =
       render_component(&Layout.resizable/1, %{
