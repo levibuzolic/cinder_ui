@@ -134,6 +134,55 @@ defmodule CinderUI.Components.Forms do
     </.field>
   </.form>
   ```
+
+  ```heex title="Date range fields" align="full"
+  <div class="grid gap-4 sm:grid-cols-2">
+    <.field>
+      <:label for="report_start_date">Start date</:label>
+      <.input
+        id="report_start_date"
+        name="report[start_date]"
+        type="date"
+        value="2026-06-01"
+      />
+      <:description>Use the first local day to include in the report.</:description>
+    </.field>
+
+    <.field invalid={true}>
+      <:label for="report_end_date">End date</:label>
+      <.input
+        id="report_end_date"
+        name="report[end_date]"
+        type="date"
+        value="2026-05-31"
+        min="2026-06-01"
+        aria-invalid="true"
+      />
+      <:error>End date must be on or after the start date.</:error>
+    </.field>
+  </div>
+  ```
+
+  ```heex title="LiveView date validation" align="full" vrt
+  <.form for={@form} phx-change="validate" phx-submit="save" class="grid gap-6">
+    <.field>
+      <:label for={@form[:start_date].id}>Start date</:label>
+      <.input field={@form[:start_date]} type="date" required />
+      <:description>Changes are validated by the LiveView on phx-change.</:description>
+    </.field>
+
+    <.field invalid={true}>
+      <:label for={@form[:end_date].id}>End date</:label>
+      <.input
+        field={@form[:end_date]}
+        type="date"
+        min="2026-06-01"
+        aria-invalid="true"
+      />
+      <:error>End date must be on or after the start date.</:error>
+    </.field>
+  </.form>
+  ```
   """)
 
   attr :class, :string, default: nil
@@ -379,6 +428,11 @@ defmodule CinderUI.Components.Forms do
   doc("""
   Renders an input with shadcn classes.
 
+  Date and time inputs intentionally use native browser controls. For date
+  ranges, compose two `input/1` controls inside `field/1` wrappers and validate
+  the relationship in your LiveView or changeset instead of adding a JavaScript
+  calendar widget.
+
   ## Examples
 
   ```heex title="Text input" align="full"
@@ -387,6 +441,43 @@ defmodule CinderUI.Components.Forms do
 
   ```heex title="With value" align="full"
   <.input id="username" name="username" value="levi" />
+  ```
+
+  ```heex title="Native date input" align="full"
+  <.input
+    id="due_on"
+    name="task[due_on]"
+    type="date"
+    value="2026-06-01"
+    min="2026-05-27"
+    max="2026-12-31"
+  />
+  ```
+
+  ```heex title="Native datetime input" align="full"
+  <.input
+    id="starts_at"
+    name="event[starts_at]"
+    type="datetime-local"
+    value="2026-06-01T09:30"
+    step="900"
+  />
+  ```
+
+  ```heex title="Date field with errors" align="full" vrt
+  <.field invalid={true}>
+    <:label for="publish_on">Publish date</:label>
+    <.input
+      id="publish_on"
+      name="post[publish_on]"
+      type="date"
+      value="2026-05-20"
+      min="2026-05-27"
+      aria-invalid="true"
+    />
+    <:description>Use the reader's local calendar date.</:description>
+    <:error>Publish date must be today or later.</:error>
+  </.field>
   ```
 
   ### With FormField
