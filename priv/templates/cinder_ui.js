@@ -1556,7 +1556,7 @@ const CuiAutocomplete = {
     }
 
     this.refreshElements()
-    this.selectedValue = this.valueInput?.value || ""
+    this.selectedValue = this.valueInput?.value ?? ""
     this.bindEvents()
     this.removeCommandListener = registerCommandListener(this.el, {
       open: () => {
@@ -1588,8 +1588,8 @@ const CuiAutocomplete = {
   updated() {
     this.unbindEvents()
     this.refreshElements()
-    this.selectedLabel = this.el.dataset.selectedLabel || this.selectedLabel
-    this.selectedValue = this.valueInput?.value || this.selectedValue
+    this.selectedLabel = this.el.dataset.selectedLabel ?? this.selectedLabel
+    this.selectedValue = this.valueInput?.value ?? this.selectedValue
     this.bindEvents()
     this.syncEmpty()
     this.sync()
