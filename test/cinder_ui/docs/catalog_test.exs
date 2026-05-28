@@ -223,6 +223,20 @@ defmodule CinderUI.Docs.CatalogTest do
     assert field_separator_entry.preview_html =~ ~s(data-slot="field-separator")
   end
 
+  test "typography recipe exposes generated examples without a client runtime" do
+    typography_entry =
+      Catalog.sections()
+      |> Enum.flat_map(& &1.entries)
+      |> find_entry(CinderUI.Components.Typography, :typography)
+
+    assert typography_entry
+    assert typography_entry.runtime.kind == :server
+    assert typography_entry.shadcn_slug == "typography"
+    assert length(typography_entry.examples) >= 3
+    assert typography_entry.preview_html =~ ~s(data-slot="typography")
+    assert typography_entry.template_heex =~ "<.typography"
+  end
+
   test "avatar docs samples are sourced from documented usage snippets" do
     avatar_entry =
       Catalog.sections()

@@ -29,7 +29,8 @@ defmodule CinderUI.RegistryTest do
              "data-display",
              "navigation",
              "overlay",
-             "advanced"
+             "advanced",
+             "typography"
            ]
 
     assert Registry.modules() == Enum.flat_map(sections, &section_modules/1)
@@ -43,7 +44,10 @@ defmodule CinderUI.RegistryTest do
     assert {CinderUI.Components.Actions, :button} in functions
     assert {CinderUI.Components.Forms, :input} in functions
     assert {CinderUI.Components.FieldFamily, :field_group} in functions
+    assert {CinderUI.Components.Typography, :typography} in functions
     assert {CinderUI.Icons, :icon} in functions
+
+    refute {CinderUI.Components.Typography, :h1} in functions
 
     refute Enum.any?(functions, fn {_module, function} ->
              String.starts_with?(to_string(function), "__")
@@ -54,6 +58,7 @@ defmodule CinderUI.RegistryTest do
     assert component_modules.button == CinderUI.Components.Actions
     assert component_modules.input == CinderUI.Components.Forms
     assert component_modules.field_group == CinderUI.Components.FieldFamily
+    assert component_modules.typography == CinderUI.Components.Typography
     assert component_modules.icon == CinderUI.Icons
   end
 

@@ -205,6 +205,32 @@ import CinderUI.Components.Actions
 import CinderUI.Components.Forms
 ```
 
+Typography aliases such as `<.h1>` and `<.lead>` live in
+`CinderUI.Components.Typography` and are not imported by default because their
+short names are more likely to collide with application components. Import them
+manually when you want local shorthand components:
+
+```elixir
+import CinderUI.Components.Typography
+```
+
+Or opt in globally from your web helpers:
+
+```elixir
+use CinderUI, typography: true
+```
+
+For namespaced access without importing the aliases into the local component
+scope:
+
+```elixir
+alias CinderUI.Components.Typography
+```
+
+```heex
+<Typography.h1>Realtime payments need boring interfaces</Typography.h1>
+```
+
 ### 5. Start building
 
 Start your Phoenix server:
@@ -219,6 +245,35 @@ Try a component in any template:
 
 ```heex
 <.button>Click me</.button>
+```
+
+## Typography Recipes
+
+`typography/1` provides a small set of Shadcn-inspired text treatments without
+adding a prose renderer or client-side dependency. Variants use the same
+Tailwind token classes as the rest of Cinder UI and render semantic tags by
+default.
+
+```heex
+<article class="max-w-2xl">
+  <.typography variant={:h1}>Realtime payments need boring interfaces</.typography>
+  <.typography variant={:lead} class="mt-4">
+    Operators need clear hierarchy, calm defaults, and copy that survives dense workflows.
+  </.typography>
+  <.typography>
+    Inline values like <.typography variant={:inline_code}>90d</.typography>
+    stay aligned with the active theme tokens.
+  </.typography>
+</article>
+```
+
+When you opt in to typography aliases, the same styles are available as named
+components:
+
+```heex
+<.h1>Realtime payments need boring interfaces</.h1>
+<.lead class="mt-4">Operators need clear hierarchy.</.lead>
+<.p>Inline values like <.inline_code>90d</.inline_code> stay aligned.</.p>
 ```
 
 ## Forms and Validation

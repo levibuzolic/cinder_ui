@@ -126,7 +126,8 @@ defmodule CinderUI.MixProject do
           CinderUI.Components.Forms,
           CinderUI.Components.Layout,
           CinderUI.Components.Navigation,
-          CinderUI.Components.Overlay
+          CinderUI.Components.Overlay,
+          CinderUI.Components.Typography
         ],
         "Mix Tasks": [Mix.Tasks.CinderUi.Install]
       ]
