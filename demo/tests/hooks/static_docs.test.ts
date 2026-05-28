@@ -3,11 +3,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 declare global {
   // eslint-disable-next-line no-var
   var __CUI_DISABLE_STATIC_DOCS_AUTO_INIT: boolean | undefined
+  // eslint-disable-next-line no-var
+  var CinderUIThemeModel: unknown
+  // eslint-disable-next-line no-var
+  var CinderUITheme: unknown
+  // eslint-disable-next-line no-var
+  var __cuiThemeSystemWatcher: unknown
+  // eslint-disable-next-line no-var
+  var __cuiThemeStorageWatcher: unknown
 }
 
 const loadStaticDocsModule = async () => {
   vi.resetModules()
   globalThis.__CUI_DISABLE_STATIC_DOCS_AUTO_INIT = true
+  const { readFileSync } = await import("node:fs")
+  globalThis.CinderUIThemeModel = JSON.parse(
+    readFileSync("../dev/assets/docs/theme_model.json", "utf8"),
+  )
+  // @ts-expect-error theme_bootstrap.js is plain JS without published types.
+  await import("../../../priv/site_templates/theme_bootstrap.js")
   // @ts-expect-error static_docs.js is plain JS without published types.
   return import("../../../dev/assets/docs/static_docs.js")
 }
@@ -34,6 +48,10 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks()
   delete globalThis.__CUI_DISABLE_STATIC_DOCS_AUTO_INIT
+  delete globalThis.CinderUIThemeModel
+  delete globalThis.CinderUITheme
+  delete globalThis.__cuiThemeSystemWatcher
+  delete globalThis.__cuiThemeStorageWatcher
   delete (window as Window & {
     CinderUIStaticHookNames?: string[]
     CinderUIStaticUsedHooks?: string[]

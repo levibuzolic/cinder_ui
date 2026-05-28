@@ -3,6 +3,7 @@ defmodule Demo.SiteRuntime do
 
   alias CinderUI.Assets
   alias CinderUI.Docs.Catalog
+  alias CinderUI.Docs.ThemeModel
 
   @repo_root Path.expand("../../..", __DIR__)
   @docs_assets_dir Path.join(@repo_root, "dev/assets/docs")
@@ -23,7 +24,7 @@ defmodule Demo.SiteRuntime do
   end
 
   def docs_site_js do
-    asset!("static_docs.js") <> ";\n"
+    ThemeModel.static_docs_js(asset!("static_docs.js"))
   end
 
   def cinder_ui_js do
