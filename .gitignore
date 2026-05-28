@@ -15,6 +15,7 @@
 /*.tar
 /*.dump
 /docs/plans/
+/priv/templates/cinder_ui.js
 /demo/assets/css/cinder_ui.css
 /demo/assets/js/cinder_ui.js
 /.worktrees/

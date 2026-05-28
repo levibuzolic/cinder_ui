@@ -20,6 +20,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
 
   alias CinderUI.Docs.Catalog
   alias CinderUI.Docs.StaticRenderer
+  alias CinderUI.Assets
   alias CinderUI.Site.Marketing
 
   @impl true
@@ -112,8 +113,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
   end
 
   defp cinder_ui_js do
-    Path.join([File.cwd!(), "priv", "templates", "cinder_ui.js"])
-    |> File.read!()
+    Assets.cinder_ui_js()
   end
 
   defp site_css do

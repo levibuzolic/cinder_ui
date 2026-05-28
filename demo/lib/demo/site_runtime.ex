@@ -1,6 +1,7 @@
 defmodule Demo.SiteRuntime do
   @moduledoc false
 
+  alias CinderUI.Assets
   alias CinderUI.Docs.Catalog
 
   @repo_root Path.expand("../../..", __DIR__)
@@ -15,7 +16,6 @@ defmodule Demo.SiteRuntime do
   def asset_path(path) when is_binary(path) do
     case path do
       "static_docs.js" -> Path.join(@docs_assets_dir, "static_docs.js")
-      "cinder_ui.js" -> Path.join(@repo_root, "priv/templates/cinder_ui.js")
       "site.css" -> Path.join(@site_assets_dir, "site.css")
       "theme.css" -> theme_css_path()
       _ -> nil
@@ -24,6 +24,10 @@ defmodule Demo.SiteRuntime do
 
   def docs_site_js do
     asset!("static_docs.js") <> ";\n"
+  end
+
+  def cinder_ui_js do
+    Assets.cinder_ui_js()
   end
 
   def catalog_sections do

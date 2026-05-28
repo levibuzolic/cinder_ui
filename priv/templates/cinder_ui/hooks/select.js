@@ -33,6 +33,9 @@ export const CuiSelect = {
     /** @returns {HTMLElement[]} Enabled (non-disabled) option items. */
     this.enabledItems = () => this.items.filter((item) => item.dataset.disabled !== "true" && !item.disabled)
 
+    /** @param {HTMLElement} item */
+    this.isItemDisabled = (item) => item.dataset.disabled === "true" || item.disabled
+
     /** @returns {number} Index of the currently selected item, or -1. */
     this.selectedIndex = () =>
       this.items.findIndex((item) => item.dataset.selected === "true")
@@ -81,7 +84,8 @@ export const CuiSelect = {
 
       const selectedIndex = this.selectedIndex()
       const selectedItem = selectedIndex >= 0 ? this.items[selectedIndex] : enabledItems[0]
-      window.requestAnimationFrame(() => selectedItem && selectedItem.focus())
+      const targetItem = selectedItem && !this.isItemDisabled(selectedItem) ? selectedItem : enabledItems[0]
+      window.requestAnimationFrame(() => targetItem && targetItem.focus())
     }
 
     /** Close the dropdown. */

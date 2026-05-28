@@ -5,13 +5,14 @@
 ## Key Paths
 
 - `lib/cinder_ui/`: library components, icons, hooks, classes
-- `priv/templates/`: source of truth for `cinder_ui.js` and `cinder_ui.css`
+- `priv/templates/cinder_ui/`: source of truth for Cinder UI hook JavaScript
+- `priv/templates/cinder_ui.css`: source of truth for Cinder UI CSS
 - `dev/`: static docs/site code
 - `demo/`: local integration app and browser tests
 
 ## Working Rules
 
-- Edit `priv/templates/cinder_ui.js` and `priv/templates/cinder_ui.css`; do not edit `demo/assets/js/cinder_ui.js` or `demo/assets/css/cinder_ui.css` because they are generated copies.
+- Edit `priv/templates/cinder_ui/**` and `priv/templates/cinder_ui.css`; do not edit `priv/templates/cinder_ui.js`, `demo/assets/js/cinder_ui.js`, or `demo/assets/css/cinder_ui.css` because they are generated copies.
 - Use `mise` for repo-managed tooling. On a fresh clone or whenever `.mise.toml` changes, run `mise trust` before `mise install` so the configured tasks and tool versions are allowed. Inside the repository working directory, plain `mix`, `elixir`, `erl`, and `node` commands will use the `mise` toolchain automatically.
 - Keep APIs Phoenix-first: HEEx function components, predictable assigns, typed `attr` and `slot`.
 - Prefer composing with existing components in docs and examples; use raw HTML only when necessary.
