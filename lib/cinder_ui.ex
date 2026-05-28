@@ -15,32 +15,10 @@ defmodule CinderUI do
   `CinderUI.UI` facade module (e.g., `alias CinderUI.UI` then `<UI.button>`).
   """
 
-  @all_modules [
-    CinderUI.Icons,
-    CinderUI.Components.Actions,
-    CinderUI.Components.Advanced,
-    CinderUI.Components.DataDisplay,
-    CinderUI.Components.Feedback,
-    CinderUI.Components.Forms,
-    CinderUI.Components.Layout,
-    CinderUI.Components.Navigation,
-    CinderUI.Components.Overlay
-  ]
-
-  # Internal Phoenix.Component functions that are not CinderUI components
-  @skip_functions [:__phoenix_component_verify__]
-
-  # Built at compile time: %{button: CinderUI.Components.Actions, icon: CinderUI.Icons, ...}
-  @component_modules for mod <- @all_modules,
-                         {func, 1} <- mod.__info__(:functions),
-                         func not in @skip_functions,
-                         into: %{},
-                         do: {func, mod}
-
   defmacro __using__(opts) do
     excluded = Keyword.get(opts, :except, [])
-    component_modules = @component_modules
-    all_modules = @all_modules
+    component_modules = CinderUI.Registry.component_modules()
+    all_modules = CinderUI.Registry.modules()
 
     unknown = excluded -- Map.keys(component_modules)
 

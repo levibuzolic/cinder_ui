@@ -1,12 +1,7 @@
 defmodule CinderUI.Docs.ComponentMetadata do
   @moduledoc false
 
-  alias CinderUI.Components.Advanced
-  alias CinderUI.Components.DataDisplay
-  alias CinderUI.Components.Forms
-  alias CinderUI.Components.Layout
-  alias CinderUI.Components.Navigation
-  alias CinderUI.Components.Overlay
+  alias CinderUI.Registry
 
   @cinder_docs_base "https://levibuzolic.github.io/cinder_ui/docs"
   @shadcn_base "https://ui.shadcn.com/docs/components"
@@ -30,26 +25,6 @@ defmodule CinderUI.Docs.ComponentMetadata do
     input_otp: "input-otp",
     item: "command",
     menu: "navigation-menu"
-  }
-  @component_runtimes %{
-    {Forms, :autocomplete} => :progressive,
-    {Forms, :input_otp} => :progressive,
-    {Forms, :select} => :progressive,
-    {Layout, :resizable} => :progressive,
-    {DataDisplay, :code_block} => :progressive,
-    {Navigation, :navigation_menu} => :scaffold,
-    {Overlay, :alert_dialog} => :progressive,
-    {Overlay, :dialog} => :progressive,
-    {Overlay, :drawer} => :progressive,
-    {Overlay, :dropdown_menu} => :progressive,
-    {Overlay, :menubar} => :progressive,
-    {Overlay, :popover} => :progressive,
-    {Overlay, :sheet} => :progressive,
-    {Advanced, :carousel} => :progressive,
-    {Advanced, :chart} => :scaffold,
-    {Advanced, :combobox} => :progressive,
-    {Advanced, :sidebar} => :progressive,
-    {Advanced, :sidebar_layout} => :progressive
   }
 
   def component_functions(module) do
@@ -107,11 +82,7 @@ defmodule CinderUI.Docs.ComponentMetadata do
 
   def source_line(module, function), do: component_spec(module, function).line
 
-  def runtime(module, function) do
-    module
-    |> then(&Map.get(@component_runtimes, {&1, function}, :server))
-    |> runtime_definition()
-  end
+  def runtime(module, function), do: Registry.runtime(module, function)
 
   def shadcn_slug(function) do
     case Map.fetch(@shadcn_slug_overrides, function) do
@@ -164,30 +135,6 @@ defmodule CinderUI.Docs.ComponentMetadata do
       default: Map.get(opts, :default),
       values: values,
       includes: opts |> Map.get(:include, []) |> List.wrap()
-    }
-  end
-
-  defp runtime_definition(:server) do
-    %{
-      kind: :server,
-      label: "Server-rendered",
-      summary: "Works with plain server-rendered HEEx and no client hook."
-    }
-  end
-
-  defp runtime_definition(:progressive) do
-    %{
-      kind: :progressive,
-      label: "Progressive",
-      summary: "Server-rendered first, with optional LiveView hooks for richer behavior."
-    }
-  end
-
-  defp runtime_definition(:scaffold) do
-    %{
-      kind: :scaffold,
-      label: "Scaffold",
-      summary: "Provides the styled API shell; application logic or extra JS is still up to you."
     }
   end
 

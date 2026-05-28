@@ -4,16 +4,13 @@ defmodule CinderUI.Components do
   """
 
   defmacro __using__(_opts) do
-    quote do
-      import CinderUI.Components.Advanced
-      import CinderUI.Components.Actions
-      import CinderUI.Components.DataDisplay
-      import CinderUI.Components.Feedback
-      import CinderUI.Components.Forms
-      import CinderUI.Components.Layout
-      import CinderUI.Components.Navigation
-      import CinderUI.Components.Overlay
-      import CinderUI.Icons
-    end
+    import_quotes =
+      Enum.map(CinderUI.Registry.modules(), fn module ->
+        quote do
+          import unquote(module)
+        end
+      end)
+
+    {:__block__, [], import_quotes}
   end
 end

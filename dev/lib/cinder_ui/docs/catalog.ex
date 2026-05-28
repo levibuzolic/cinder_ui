@@ -6,37 +6,18 @@ defmodule CinderUI.Docs.Catalog do
   required to build the static docs site.
   """
 
-  alias CinderUI.Components.Actions
-  alias CinderUI.Components.Advanced
-  alias CinderUI.Components.DataDisplay
-  alias CinderUI.Components.Feedback
-  alias CinderUI.Components.Forms
-  alias CinderUI.Components.Layout
-  alias CinderUI.Components.Navigation
-  alias CinderUI.Components.Overlay
   alias CinderUI.Docs.ComponentMetadata
   alias CinderUI.Docs.Examples
   alias CinderUI.Docs.InlineExamples
-  alias CinderUI.Icons
-
-  @sections [
-    %{id: "actions", title: "Actions", module: Actions},
-    %{id: "forms", title: "Forms", module: Forms},
-    %{id: "layout", title: "Layout", module: Layout},
-    %{id: "icons", title: "Icons", module: Icons},
-    %{id: "feedback", title: "Feedback", module: Feedback},
-    %{id: "data-display", title: "Data Display", module: DataDisplay},
-    %{id: "navigation", title: "Navigation", module: Navigation},
-    %{id: "overlay", title: "Overlay", module: Overlay},
-    %{id: "advanced", title: "Advanced", module: Advanced}
-  ]
+  alias CinderUI.Registry
 
   @doc """
   Returns catalog sections and pre-rendered component entries.
   """
   @spec sections() :: [map()]
   def sections do
-    Enum.map(@sections, &build_section/1)
+    Registry.sections()
+    |> Enum.map(&build_section/1)
   end
 
   @doc """
@@ -46,7 +27,7 @@ defmodule CinderUI.Docs.Catalog do
   def build_section(%{module: module} = section) do
     entries =
       module
-      |> ComponentMetadata.component_functions()
+      |> Registry.component_functions()
       |> Enum.map(&entry(module, &1))
 
     Map.put(section, :entries, entries)
@@ -58,14 +39,14 @@ defmodule CinderUI.Docs.Catalog do
   """
   @spec section_for_module(module()) :: map() | nil
   def section_for_module(module) do
-    Enum.find(@sections, &(&1.module == module))
+    Registry.section_for_module(module)
   end
 
   @doc """
   Returns all section definitions (without entries).
   """
   @spec section_definitions() :: [map()]
-  def section_definitions, do: @sections
+  def section_definitions, do: Registry.sections()
 
   @doc """
   Total number of component entries in the catalog.
@@ -81,11 +62,7 @@ defmodule CinderUI.Docs.Catalog do
   Returns list of all component `{module, function}` pairs.
   """
   @spec functions() :: [{module(), atom()}]
-  def functions do
-    for section <- @sections,
-        function <- ComponentMetadata.component_functions(section.module),
-        do: {section.module, function}
-  end
+  def functions, do: Registry.functions()
 
   defp entry(module, function) do
     doc = ComponentMetadata.function_doc(module, function)
@@ -111,7 +88,7 @@ defmodule CinderUI.Docs.Catalog do
       attributes: ComponentMetadata.attributes(module, function),
       slots: ComponentMetadata.slots(module, function),
       source_line: ComponentMetadata.source_line(module, function),
-      runtime: ComponentMetadata.runtime(module, function),
+      runtime: Registry.runtime(module, function),
       shadcn_slug: slug,
       shadcn_url: ComponentMetadata.shadcn_url(slug),
       docs_path: "#{id}/index.html"

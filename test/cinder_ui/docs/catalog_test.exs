@@ -5,33 +5,16 @@ defmodule CinderUI.Docs.CatalogTest do
 
   alias CinderUI.Docs.Catalog
   alias CinderUI.Docs.UIComponents.Catalog, as: CatalogComponents
-
-  @modules [
-    CinderUI.Components.Actions,
-    CinderUI.Components.Forms,
-    CinderUI.Components.Layout,
-    CinderUI.Icons,
-    CinderUI.Components.Feedback,
-    CinderUI.Components.DataDisplay,
-    CinderUI.Components.Navigation,
-    CinderUI.Components.Overlay,
-    CinderUI.Components.Advanced
-  ]
+  alias CinderUI.Registry
 
   test "catalog includes all public component functions" do
     expected_count =
-      @modules
-      |> Enum.flat_map(fn module ->
-        module
-        |> Kernel.apply(:__info__, [:functions])
-        |> Enum.filter(fn
-          {name, 1} -> not String.starts_with?(Atom.to_string(name), "__")
-          _ -> false
-        end)
-      end)
+      Registry.functions()
       |> length()
 
     assert Catalog.entry_count() == expected_count
+    assert Catalog.functions() == Registry.functions()
+    assert Catalog.section_definitions() == Registry.sections()
   end
 
   test "all entries render without runtime render errors" do
