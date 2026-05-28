@@ -29,7 +29,8 @@ defmodule Mix.Tasks.CinderUi.Install do
 
   use Mix.Task
 
-  @template_dir Path.expand("../../../priv/templates", __DIR__)
+  alias CinderUI.Assets
+
   @supported_pm ~w(npm pnpm yarn bun)
 
   @impl true
@@ -86,25 +87,23 @@ defmodule Mix.Tasks.CinderUi.Install do
   end
 
   defp install_css!(assets_path, skip_existing, dry_run) do
-    src = Path.join(@template_dir, "cinder_ui.css")
     target = Path.join([assets_path, "css", "cinder_ui.css"])
 
     unless dry_run do
       File.mkdir_p!(Path.dirname(target))
     end
 
-    write_generated_file!(target, File.read!(src), skip_existing, "created", dry_run)
+    write_generated_file!(target, Assets.cinder_ui_css(), skip_existing, "created", dry_run)
   end
 
   defp install_js!(assets_path, skip_existing, dry_run) do
-    src = Path.join(@template_dir, "cinder_ui.js")
     target = Path.join([assets_path, "js", "cinder_ui.js"])
 
     unless dry_run do
       File.mkdir_p!(Path.dirname(target))
     end
 
-    write_generated_file!(target, File.read!(src), skip_existing, "created", dry_run)
+    write_generated_file!(target, Assets.cinder_ui_js(), skip_existing, "created", dry_run)
   end
 
   defp patch_app_css!(assets_path, dry_run) do

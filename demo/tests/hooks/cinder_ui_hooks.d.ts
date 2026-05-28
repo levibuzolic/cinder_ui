@@ -1,4 +1,4 @@
-declare module "../../../priv/templates/cinder_ui.js" {
+declare module "../../../priv/templates/cinder_ui/index.js" {
   export const CinderUIHooks: Record<string, object>
   export const CinderUI: {
     dispatchCommand: (target: HTMLElement | null, command: string, detail?: object) => void

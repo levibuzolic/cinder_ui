@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-// @ts-expect-error priv/templates/cinder_ui.js is plain JS without published types.
-import { CinderUI, CinderUIHooks } from "../../../priv/templates/cinder_ui.js"
+// @ts-expect-error priv/templates/cinder_ui/index.js is plain JS without published types.
+import { CinderUI, CinderUIHooks } from "../../../priv/templates/cinder_ui/index.js"
 
 type HookName = keyof typeof CinderUIHooks
 type HookInstance = {
@@ -78,6 +78,52 @@ describe("Cinder UI hook harness", () => {
     expect(input.value).toBe("")
     expect(value.textContent).toBe("Choose a plan")
     expect(clearButton.classList.contains("hidden")).toBe(true)
+  })
+
+  it("select opens to first enabled item when selected item is disabled", async () => {
+    const { el } = mountHook(
+      "CuiSelect",
+      `
+        <div data-slot="select" data-state="closed" data-placeholder="Choose a plan">
+          <input data-slot="select-input" type="hidden" value="legacy" />
+          <button type="button" data-select-trigger aria-expanded="false">
+            <span data-slot="select-value">Legacy</span>
+          </button>
+          <div data-select-content class="hidden">
+            <button
+              id="plan-legacy"
+              type="button"
+              data-select-item
+              data-value="legacy"
+              data-label="Legacy"
+              data-selected="true"
+              aria-selected="true"
+              disabled
+            >
+              Legacy
+            </button>
+            <button id="plan-free" type="button" data-select-item data-value="free" data-label="Free">
+              Free
+            </button>
+            <button id="plan-team" type="button" data-select-item data-value="team" data-label="Team">
+              Team
+            </button>
+          </div>
+        </div>
+      `,
+    )
+
+    const trigger = el.querySelector("[data-select-trigger]") as HTMLButtonElement
+    const legacy = el.querySelector("#plan-legacy") as HTMLButtonElement
+    const free = el.querySelector("#plan-free") as HTMLButtonElement
+
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }))
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
+
+    expect(document.activeElement).toBe(free)
+    expect(free.dataset.highlighted).toBe("true")
+    expect(legacy.dataset.highlighted).not.toBe("true")
+    expect(trigger.getAttribute("aria-activedescendant")).toBe("plan-free")
   })
 
   it("autocomplete filters visible items and selects from keyboard navigation", () => {
