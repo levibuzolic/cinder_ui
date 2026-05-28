@@ -11,6 +11,7 @@ defmodule CinderUI.Registry do
   alias CinderUI.Components.Advanced
   alias CinderUI.Components.DataDisplay
   alias CinderUI.Components.Feedback
+  alias CinderUI.Components.FieldFamily
   alias CinderUI.Components.Forms
   alias CinderUI.Components.Layout
   alias CinderUI.Components.Navigation
@@ -19,7 +20,7 @@ defmodule CinderUI.Registry do
 
   @sections [
     %{id: "actions", title: "Actions", module: Actions},
-    %{id: "forms", title: "Forms", module: Forms},
+    %{id: "forms", title: "Forms", modules: [Forms, FieldFamily]},
     %{id: "layout", title: "Layout", module: Layout},
     %{id: "icons", title: "Icons", module: Icons},
     %{id: "feedback", title: "Feedback", module: Feedback},
@@ -71,7 +72,7 @@ defmodule CinderUI.Registry do
   @doc """
   Returns the canonical component sections.
   """
-  @spec sections() :: [%{id: String.t(), title: String.t(), module: module()}]
+  @spec sections() :: [%{id: String.t(), title: String.t(), modules: [module()]}]
   def sections, do: @sections
 
   @doc """
@@ -79,7 +80,7 @@ defmodule CinderUI.Registry do
   """
   @spec modules() :: [module()]
   def modules do
-    Enum.map(@sections, & &1.module)
+    Enum.flat_map(@sections, &section_modules/1)
   end
 
   @doc """
@@ -107,8 +108,9 @@ defmodule CinderUI.Registry do
   @spec functions() :: [{module(), atom()}]
   def functions do
     for section <- @sections,
-        function <- component_functions(section.module),
-        do: {section.module, function}
+        module <- section_modules(section),
+        function <- component_functions(module),
+        do: {module, function}
   end
 
   @doc """
@@ -124,7 +126,7 @@ defmodule CinderUI.Registry do
   """
   @spec section_for_module(module()) :: map() | nil
   def section_for_module(module) do
-    Enum.find(@sections, &(&1.module == module))
+    Enum.find(@sections, &(module in section_modules(&1)))
   end
 
   @doc """
@@ -149,5 +151,8 @@ defmodule CinderUI.Registry do
     Map.get(@runtime_kinds, {module, function}, :server)
   end
 
-  defp registered_module?(module), do: Enum.any?(@sections, &(&1.module == module))
+  defp registered_module?(module), do: module in modules()
+
+  defp section_modules(%{modules: modules}), do: modules
+  defp section_modules(%{module: module}), do: [module]
 end
