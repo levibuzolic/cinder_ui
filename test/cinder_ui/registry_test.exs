@@ -32,8 +32,9 @@ defmodule CinderUI.RegistryTest do
              "advanced"
            ]
 
-    assert Registry.modules() == Enum.map(sections, & &1.module)
+    assert Registry.modules() == Enum.flat_map(sections, &section_modules/1)
     assert Registry.section_for_module(CinderUI.Components.Forms).id == "forms"
+    assert Registry.section_for_module(CinderUI.Components.FieldFamily).id == "forms"
   end
 
   test "functions expose all public component functions" do
@@ -41,6 +42,7 @@ defmodule CinderUI.RegistryTest do
 
     assert {CinderUI.Components.Actions, :button} in functions
     assert {CinderUI.Components.Forms, :input} in functions
+    assert {CinderUI.Components.FieldFamily, :field_group} in functions
     assert {CinderUI.Icons, :icon} in functions
 
     refute Enum.any?(functions, fn {_module, function} ->
@@ -51,6 +53,7 @@ defmodule CinderUI.RegistryTest do
 
     assert component_modules.button == CinderUI.Components.Actions
     assert component_modules.input == CinderUI.Components.Forms
+    assert component_modules.field_group == CinderUI.Components.FieldFamily
     assert component_modules.icon == CinderUI.Icons
   end
 
@@ -67,4 +70,7 @@ defmodule CinderUI.RegistryTest do
     assert TestHelpers.text(ui_html, "[data-slot='button']") == "Save"
     assert TestHelpers.text(imported_html, "[data-slot='button']") == "Save"
   end
+
+  defp section_modules(%{modules: modules}), do: modules
+  defp section_modules(%{module: module}), do: [module]
 end
