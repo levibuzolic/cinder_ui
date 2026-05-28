@@ -10,8 +10,8 @@ defmodule CinderUI.Registry do
   alias CinderUI.Components.Actions
   alias CinderUI.Components.Advanced
   alias CinderUI.Components.DataDisplay
-  alias CinderUI.Components.FieldFamily
   alias CinderUI.Components.Feedback
+  alias CinderUI.Components.FieldFamily
   alias CinderUI.Components.Forms
   alias CinderUI.Components.Layout
   alias CinderUI.Components.Navigation
