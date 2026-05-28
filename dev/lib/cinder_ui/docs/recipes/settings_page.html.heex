@@ -1,0 +1,37 @@
+<div class="grid gap-6 lg:grid-cols-[12rem_1fr]">
+  <nav class="flex flex-col gap-1 text-sm">
+    <.button variant={:ghost} class="justify-start">Profile</.button>
+    <.button variant={:ghost} class="justify-start">Notifications</.button>
+    <.button variant={:ghost} class="justify-start">Billing</.button>
+  </nav>
+
+  <.card>
+    <.card_header>
+      <.card_title>Workspace settings</.card_title>
+      <.card_description>Manage defaults for new members.</.card_description>
+    </.card_header>
+    <.card_content class="grid gap-5">
+      <.field>
+        <:label for="workspace_name">Workspace name</:label>
+        <.input id="workspace_name" name="workspace[name]" value="Acme Operations" />
+      </.field>
+      <.field>
+        <:label for="workspace_region">Default region</:label>
+        <.select id="workspace_region" name="workspace[region]" value="au">
+          <:option value="au" label="Australia" />
+          <:option value="us" label="United States" />
+          <:option value="eu" label="Europe" />
+        </.select>
+      </.field>
+      <.field class="flex-row items-center justify-between rounded-lg border p-4">
+        <:label for="workspace_digest">Weekly digest</:label>
+        <:description>Send a Monday summary to workspace admins.</:description>
+        <.switch id="workspace_digest" name="workspace[digest]" checked />
+      </.field>
+    </.card_content>
+    <.card_footer class="justify-end border-t">
+      <.button variant={:outline}>Cancel</.button>
+      <.button>Save changes</.button>
+    </.card_footer>
+  </.card>
+</div>

@@ -1,0 +1,19 @@
+<.card class="mx-auto w-full max-w-sm">
+  <.card_header>
+    <.card_title>Sign in</.card_title>
+    <.card_description>Use your workspace account to continue.</.card_description>
+  </.card_header>
+  <.card_content>
+    <.form for={@form} phx-submit="sign_in" class="grid gap-4">
+      <.field>
+        <:label for="user_email">Email</:label>
+        <.input id="user_email" field={@form[:email]} type="email" placeholder="team@example.com" />
+      </.field>
+      <.field>
+        <:label for="user_password">Password</:label>
+        <.input id="user_password" field={@form[:password]} type="password" />
+      </.field>
+      <.button class="w-full">Sign in</.button>
+    </.form>
+  </.card_content>
+</.card>

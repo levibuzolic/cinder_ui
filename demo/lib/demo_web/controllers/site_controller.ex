@@ -33,6 +33,18 @@ defmodule DemoWeb.SiteController do
     end
   end
 
+  def recipes(conn, params) do
+    if static_render?(params) do
+      render_html(conn, SiteRenderer.recipes_html())
+    else
+      render(conn, :recipes,
+        sections: SiteRuntime.catalog_sections(),
+        github_url: SiteRuntime.github_url(),
+        hex_package_url: SiteRuntime.hex_package_url()
+      )
+    end
+  end
+
   def component(conn, %{"id" => id} = params) do
     case SiteRuntime.find_entry(id) do
       nil ->
