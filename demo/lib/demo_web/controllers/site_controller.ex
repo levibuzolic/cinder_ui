@@ -65,6 +65,18 @@ defmodule DemoWeb.SiteController do
   end
 
   def asset(conn, %{"path" => [name]}) do
+    send_asset(conn, name)
+  end
+
+  def asset(conn, _params), do: send_resp(conn, 404, "Not found")
+
+  defp send_asset(conn, "cinder_ui.js") do
+    conn
+    |> put_resp_content_type("text/javascript")
+    |> send_resp(200, SiteRuntime.cinder_ui_js())
+  end
+
+  defp send_asset(conn, name) do
     with path when is_binary(path) <- SiteRuntime.asset_path(name),
          true <- File.regular?(path) do
       conn
@@ -74,8 +86,6 @@ defmodule DemoWeb.SiteController do
       _ -> send_resp(conn, 404, "Not found")
     end
   end
-
-  def asset(conn, _params), do: send_resp(conn, 404, "Not found")
 
   defp static_render?(params) do
     params["static"] in ["1", "true"]
