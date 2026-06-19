@@ -178,6 +178,51 @@ defmodule CinderUI.Docs.CatalogTest do
     assert Enum.count(headings, &(&1 == "Inside field composition")) == 1
   end
 
+  test "component detail renders residual markdown headings" do
+    sections = Catalog.sections()
+    entries = Enum.flat_map(sections, & &1.entries)
+    autocomplete_entry = find_entry(entries, CinderUI.Components.Forms, :autocomplete)
+
+    html =
+      render_component(&CatalogComponents.docs_component_detail/1, %{
+        sections: sections,
+        entry: autocomplete_entry,
+        mode: :static,
+        root_prefix: "."
+      })
+
+    document = Floki.parse_document!(html)
+
+    assert document
+           |> Floki.find(".docs-markdown h2")
+           |> Enum.map(&Floki.text(&1, sep: " "))
+           |> Enum.any?(&(&1 == "When to use it"))
+
+    refute html =~ "## When to use it"
+  end
+
+  test "catalog docs normalize source heredoc indentation before markdown rendering" do
+    indented_headings =
+      Catalog.sections()
+      |> Enum.flat_map(& &1.entries)
+      |> Enum.flat_map(fn entry ->
+        entry.docs_full
+        |> String.split("\n")
+        |> Enum.filter(&Regex.match?(~r/^ +\#{1,6}\s+\S/, &1))
+        |> Enum.map(&{entry.id, &1})
+      end)
+
+    assert indented_headings == []
+
+    heading_concatenations =
+      Catalog.sections()
+      |> Enum.flat_map(& &1.entries)
+      |> Enum.filter(&Regex.match?(~r/\)\#{1,6}\s+\S/, &1.docs_full))
+      |> Enum.map(& &1.id)
+
+    assert heading_concatenations == []
+  end
+
   test "composite components can expose doc-derived generated examples" do
     card_entry =
       Catalog.sections()

@@ -53,6 +53,7 @@ defmodule CinderUI.Docs.ComponentMetadata do
          when is_binary(doc) <- Enum.find(docs, &doc_entry?(&1, function)) do
       doc
       |> String.trim()
+      |> normalize_markdown_indentation()
       |> strip_generated_docs_site_link()
     else
       _ -> "No documentation available."
@@ -100,12 +101,51 @@ defmodule CinderUI.Docs.ComponentMetadata do
   def shadcn_url(slug), do: "#{@shadcn_base}/#{slug}"
 
   defp strip_generated_docs_site_link(doc) do
-    String.replace(
-      doc,
+    Regex.replace(
       ~r/\n*\[View live examples and full component docs\]\(#{Regex.escape(@cinder_docs_base)}\/[^)]+\)\.\s*/u,
-      ""
+      doc,
+      "\n\n"
     )
+    |> String.trim()
   end
+
+  defp normalize_markdown_indentation(doc) do
+    if source_indented_markdown?(doc) do
+      doc
+      |> String.split("\n")
+      |> drop_common_source_indent()
+      |> Enum.join("\n")
+    else
+      doc
+    end
+  end
+
+  defp source_indented_markdown?(doc) do
+    Regex.match?(~r/^ {1,3}\#{1,6}\s+\S/m, doc)
+  end
+
+  defp drop_common_source_indent(lines) do
+    indent =
+      lines
+      |> Enum.map(&leading_spaces/1)
+      |> Enum.reject(&(&1 == 0))
+      |> Enum.min(fn -> 0 end)
+
+    Enum.map(lines, &drop_leading_spaces(&1, indent))
+  end
+
+  defp leading_spaces(line) do
+    case Regex.run(~r/^ */, line) do
+      [spaces] -> String.length(spaces)
+      nil -> 0
+    end
+  end
+
+  defp drop_leading_spaces(line, 0), do: line
+  defp drop_leading_spaces("", _indent), do: ""
+
+  defp drop_leading_spaces(line, indent),
+    do: String.replace_prefix(line, String.duplicate(" ", indent), "")
 
   defp doc_entry?({{:function, name, 1}, _, _, %{"en" => _}, _}, function), do: name == function
   defp doc_entry?(_, _function), do: false

@@ -46,7 +46,10 @@ defmodule CinderUI.ComponentDocs do
   defp append_generated_sections(markdown, _env) when not is_binary(markdown), do: markdown
 
   defp append_generated_sections(markdown, env) do
-    markdown = String.replace(markdown, "doc/screenshots/", "screenshots/")
+    markdown =
+      markdown
+      |> normalize_markdown_indentation()
+      |> String.replace("doc/screenshots/", "screenshots/")
 
     case documented_function(env.file, env.line) do
       nil ->
@@ -58,6 +61,44 @@ defmodule CinderUI.ComponentDocs do
         |> append_docs_link(env.module, function)
     end
   end
+
+  defp normalize_markdown_indentation(markdown) do
+    if source_indented_markdown?(markdown) do
+      markdown
+      |> String.split("\n")
+      |> drop_common_indent()
+      |> Enum.join("\n")
+    else
+      markdown
+    end
+  end
+
+  defp source_indented_markdown?(markdown) do
+    Regex.match?(~r/\A +\S/, markdown) or Regex.match?(~r/^ {1,3}\#{1,6}\s+\S/m, markdown)
+  end
+
+  defp drop_common_indent(lines) do
+    indent =
+      lines
+      |> Enum.map(&leading_spaces/1)
+      |> Enum.reject(&(&1 == 0))
+      |> Enum.min(fn -> 0 end)
+
+    Enum.map(lines, &drop_leading_spaces(&1, indent))
+  end
+
+  defp leading_spaces(line) do
+    case Regex.run(~r/^ */, line) do
+      [spaces] -> String.length(spaces)
+      nil -> 0
+    end
+  end
+
+  defp drop_leading_spaces(line, 0), do: line
+  defp drop_leading_spaces("", _indent), do: ""
+
+  defp drop_leading_spaces(line, indent),
+    do: String.replace_prefix(line, String.duplicate(" ", indent), "")
 
   defp append_docs_link(markdown, module, function) do
     docs_url = component_docs_url(module, function)
