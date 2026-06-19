@@ -4,7 +4,8 @@ defmodule CinderUI.Docs.UIComponents.CodeTest do
   alias CinderUI.Docs.UIComponents.Code
 
   test "renders markdown summaries through ExDoc markdown" do
-    html = Code.summary_markdown_html("Use `button/1` with [Phoenix](https://phoenixframework.org).")
+    html =
+      Code.summary_markdown_html("Use `button/1` with [Phoenix](https://phoenixframework.org).")
 
     assert html =~ ~s(<code class="inline">button/1</code>)
     assert html =~ ~s(<a href="https://phoenixframework.org">Phoenix</a>)
