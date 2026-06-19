@@ -45,10 +45,9 @@ defmodule CinderUI.Docs.UIComponents.Code do
   defp escape(text), do: text |> HTML.html_escape() |> HTML.safe_to_string()
 
   def summary_markdown_html(text) do
-    case Earmark.as_html(text, compact_output: true) do
-      {:ok, html, _messages} -> html
-      {:error, html, _messages} -> html
-    end
+    text
+    |> ExDoc.Markdown.to_ast(markdown_processor: ExDoc.Markdown.Earmark)
+    |> ExDoc.DocAST.to_html()
   rescue
     _ ->
       "<p>#{escape(text)}</p>"
