@@ -55,10 +55,9 @@ defmodule CinderUI.MixProject do
       {:phoenix, "~> 1.7 or ~> 1.8"},
       {:phoenix_live_view, "~> 1.0"},
       {:tailwind_combine, "~> 0.1.0"},
-      {:earmark, "~> 1.4", runtime: false},
       {:lucide_icons, "~> 2.0", optional: true},
       {:jason, "~> 1.4", optional: true},
-      {:ex_doc, "~> 0.34", only: [:dev, :docs], runtime: false},
+      {:ex_doc, "~> 0.34", only: [:dev, :test, :docs], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.18", only: :test},
       {:floki, ">= 0.35.0", only: :test}
