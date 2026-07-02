@@ -988,6 +988,33 @@ test.describe("static docs interactivity", () => {
     expect(await hasClass(content, "hidden")).toBe(true)
   })
 
+  test("static docs autocomplete popup opens from its trigger", async ({ page }) => {
+    await page.goto("/docs/forms-autocomplete?static=1")
+
+    const autocomplete = page.locator("#country-search")
+    const trigger = autocomplete.locator("[data-autocomplete-trigger]")
+    const input = autocomplete.locator("[data-autocomplete-input]")
+    const content = autocomplete.locator("[data-autocomplete-content]")
+
+    await autocomplete.scrollIntoViewIfNeeded()
+    expect(await hasClass(content, "hidden")).toBe(false)
+
+    await trigger.click()
+    expect(await hasClass(content, "hidden")).toBe(true)
+    await expect(trigger).toHaveAttribute("aria-expanded", "false")
+
+    await trigger.click()
+    expect(await hasClass(content, "hidden")).toBe(false)
+    await expect(trigger).toHaveAttribute("aria-expanded", "true")
+    await expect(input).toBeFocused()
+
+    await input.fill("New")
+    await expect(autocomplete.locator("[data-slot='autocomplete-item'][data-value='nz']")).toHaveAttribute(
+      "data-highlighted",
+      "true",
+    )
+  })
+
   test("static docs resizable handles respond to keyboard resizing", async ({ page }) => {
     await page.goto("/docs/layout-resizable?static=1")
 
