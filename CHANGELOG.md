@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-07-03
+
+### Added
+
+- Added autocomplete and combobox visual regression coverage, including custom and grouped item examples.
+
+### Changed
+
+- Improved autocomplete and combobox slot rendering for richer item content.
+
+### Fixed
+
+- Fixed select click-open behavior so the current selection is not highlighted as an active navigation target.
+
 ## [0.1.0] - 2026-06-19
 
 ### Added
