@@ -130,6 +130,7 @@ defmodule CinderUI.Components.AdvancedTest do
     assert TestHelpers.has_class?(html, "[data-slot='combobox-content']", "min-w-48")
     assert TestHelpers.find_all(html, "[data-slot='combobox-item']") |> length() == 2
     assert TestHelpers.find_all(html, "[data-slot='select-check']") |> length() == 2
+    refute TestHelpers.has_class?(html, "[data-slot='combobox-group']", "py-1")
   end
 
   test "combobox supports grouped and custom option content" do
@@ -161,6 +162,7 @@ defmodule CinderUI.Components.AdvancedTest do
       })
 
     assert TestHelpers.find_all(html, "[data-slot='combobox-group']") |> length() == 2
+    assert TestHelpers.has_class?(html, "[data-slot='combobox-group']", "py-1")
     assert TestHelpers.text(html, "[data-slot='combobox-group-label']") == "Frontend"
     assert TestHelpers.text(html, "[data-slot='custom-framework']") == "Next.js React framework"
 
