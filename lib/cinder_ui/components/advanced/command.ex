@@ -6,6 +6,7 @@ defmodule CinderUI.Components.Advanced.Command do
   import CinderUI.ComponentDocs, only: [doc: 1]
 
   alias CinderUI.Icons
+  alias Phoenix.HTML.Safe
 
   doc("""
   Command palette layout.
@@ -336,7 +337,7 @@ defmodule CinderUI.Components.Advanced.Command do
 
   defp slot_content_to_string(content) do
     content
-    |> Phoenix.HTML.Safe.to_iodata()
+    |> Safe.to_iodata()
     |> IO.iodata_to_binary()
   end
 end

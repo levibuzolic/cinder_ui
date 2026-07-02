@@ -8,6 +8,7 @@ defmodule CinderUI.Components.Forms.Select do
   import CinderUI.Components.Forms.Helpers
 
   alias CinderUI.Icons
+  alias Phoenix.HTML.Safe
 
   doc("""
   Renders a custom select with a button trigger and listbox content.
@@ -783,7 +784,7 @@ defmodule CinderUI.Components.Forms.Select do
 
   defp slot_content_to_string(content) do
     content
-    |> Phoenix.HTML.Safe.to_iodata()
+    |> Safe.to_iodata()
     |> IO.iodata_to_binary()
   end
 end
