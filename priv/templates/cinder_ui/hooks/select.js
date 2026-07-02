@@ -73,14 +73,22 @@ export const CuiSelect = {
       enabledItems[nextIndex].focus()
     }
 
-    /** Open the dropdown and focus the selected or first item. */
-    this.openMenu = () => {
+    /**
+     * Open the dropdown.
+     * @param {{ focusItem?: boolean }} [options]
+     */
+    this.openMenu = ({ focusItem = true } = {}) => {
       if (this.open) return
       this.open = true
       this.sync()
 
       const enabledItems = this.enabledItems()
       if (!enabledItems.length) return
+
+      if (!focusItem) {
+        this.highlightItem(null)
+        return
+      }
 
       const selectedIndex = this.selectedIndex()
       const selectedItem = selectedIndex >= 0 ? this.items[selectedIndex] : enabledItems[0]
@@ -167,7 +175,7 @@ export const CuiSelect = {
       if (this.open) {
         this.closeMenu()
       } else {
-        this.openMenu()
+        this.openMenu({ focusItem: false })
       }
     }
 

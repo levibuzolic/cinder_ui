@@ -227,6 +227,43 @@ describe("Cinder UI hook harness", () => {
     expect(hiddenInput.value).toBe("")
   })
 
+  it("autocomplete hides empty groups while filtering", () => {
+    const { el } = mountHook(
+      "CuiAutocomplete",
+      `
+        <div data-slot="autocomplete" data-state="closed" data-selected-label="">
+          <input data-slot="autocomplete-value" type="hidden" value="" />
+          <input data-autocomplete-input value="" aria-expanded="false" aria-activedescendant="" />
+          <div data-autocomplete-content class="hidden">
+            <div data-slot="autocomplete-group" data-autocomplete-group>
+              <div data-slot="autocomplete-group-label">Frontend</div>
+              <button id="framework-next" type="button" data-autocomplete-item data-value="next" data-label="Next.js">
+                <span>Next.js</span>
+              </button>
+            </div>
+            <div data-slot="autocomplete-group" data-autocomplete-group>
+              <div data-slot="autocomplete-group-label">Backend</div>
+              <button id="framework-phoenix" type="button" data-autocomplete-item data-value="phoenix" data-label="Phoenix">
+                <span>Phoenix</span>
+              </button>
+            </div>
+            <div data-slot="autocomplete-empty" class="hidden">No matches</div>
+          </div>
+        </div>
+      `,
+    )
+
+    const input = el.querySelector("[data-autocomplete-input]") as HTMLInputElement
+    const frontend = el.querySelector("[data-slot='autocomplete-group']") as HTMLElement
+    const backend = el.querySelectorAll("[data-slot='autocomplete-group']")[1] as HTMLElement
+
+    input.value = "phoenix"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+
+    expect(frontend.classList.contains("hidden")).toBe(true)
+    expect(backend.classList.contains("hidden")).toBe(false)
+  })
+
   it("combobox stays closed when focus returns from the option list", () => {
     const { el } = mountHook(
       "CuiCombobox",
@@ -310,6 +347,49 @@ describe("Cinder UI hook harness", () => {
     expect(pro.dataset.selected).toBe("false")
     expect(freeCheck.classList.contains("hidden")).toBe(false)
     expect(proCheck.classList.contains("hidden")).toBe(true)
+  })
+
+  it("combobox filters by labels and hides empty groups", () => {
+    const { el } = mountHook(
+      "CuiCombobox",
+      `
+        <div data-slot="combobox">
+          <input data-combobox-input value="" aria-expanded="false" aria-activedescendant="" />
+          <div data-combobox-content class="hidden">
+            <div data-slot="combobox-group" data-combobox-group>
+              <div data-slot="combobox-group-label">Frontend</div>
+              <button id="combo-next" type="button" data-slot="combobox-item" data-value="next" data-label="Next.js">
+                <span>Next.js</span>
+                <span data-slot="select-check" class="hidden"></span>
+              </button>
+            </div>
+            <div data-slot="combobox-group" data-combobox-group>
+              <div data-slot="combobox-group-label">Backend</div>
+              <button id="combo-phoenix" type="button" data-slot="combobox-item" data-value="phoenix" data-label="Phoenix">
+                <span>Phoenix</span>
+                <span data-slot="select-check" class="hidden"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `,
+    )
+
+    const input = el.querySelector("[data-combobox-input]") as HTMLInputElement
+    const next = el.querySelector("#combo-next") as HTMLButtonElement
+    const frontend = el.querySelector("[data-slot='combobox-group']") as HTMLElement
+    const backend = el.querySelectorAll("[data-slot='combobox-group']")[1] as HTMLElement
+
+    input.value = "next"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+
+    expect(frontend.classList.contains("hidden")).toBe(false)
+    expect(backend.classList.contains("hidden")).toBe(true)
+
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+
+    expect(input.value).toBe("Next.js")
+    expect(next.dataset.selected).toBe("true")
   })
 
   it("input otp distributes pasted digits across remaining cells", () => {

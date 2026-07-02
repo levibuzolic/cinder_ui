@@ -1,9 +1,29 @@
+defmodule CinderUI.Components.FormsTest.AutocompleteProbe do
+  use Phoenix.Component
+
+  import CinderUI.Components.Forms, only: [autocomplete: 1]
+
+  def render(assigns) do
+    ~H"""
+    <.autocomplete id="framework-search" name="framework" open={true}>
+      <:option value="next" label="Next.js">
+        <span data-slot="probe-custom-framework">
+          <strong>Next.js</strong>
+          <span>React framework</span>
+        </span>
+      </:option>
+    </.autocomplete>
+    """
+  end
+end
+
 defmodule CinderUI.Components.FormsTest do
   use ExUnit.Case, async: true
 
   import Phoenix.LiveViewTest
 
   alias CinderUI.Components.Forms
+  alias CinderUI.Components.FormsTest.AutocompleteProbe
   alias CinderUI.TestHelpers
   alias Phoenix.HTML
 
@@ -349,6 +369,89 @@ defmodule CinderUI.Components.FormsTest do
     assert TestHelpers.attr(html, "[data-slot='autocomplete-value']", "value") == "levi"
     assert TestHelpers.find_all(html, "[data-slot='autocomplete-item']") |> length() == 2
     assert TestHelpers.text(html, "[data-slot='autocomplete-empty']") == "No match"
+  end
+
+  test "autocomplete popup renders trigger and search input inside content" do
+    html =
+      render_component(&Forms.autocomplete/1, %{
+        id: "country",
+        name: "country",
+        value: "au",
+        variant: :popup,
+        open: true,
+        placeholder: "Search countries...",
+        option: [
+          %{value: "au", label: "Australia", inner_block: fn -> "" end},
+          %{value: "nz", label: "New Zealand", inner_block: fn -> "" end}
+        ]
+      })
+
+    assert TestHelpers.attr(html, "[data-slot='autocomplete']", "data-variant") == "popup"
+    assert TestHelpers.attr(html, "[data-slot='autocomplete']", "data-state") == "open"
+
+    assert TestHelpers.attr(html, "[data-slot='autocomplete-trigger']", "aria-haspopup") ==
+             "listbox"
+
+    assert TestHelpers.text(html, "[data-slot='autocomplete-trigger-value']") == "Australia"
+    assert TestHelpers.attr(html, "[data-slot='autocomplete-value']", "value") == "au"
+    assert TestHelpers.has_class?(html, "[data-slot='autocomplete-content']", "block")
+    refute TestHelpers.has_class?(html, "[data-slot='autocomplete-content']", "hidden")
+
+    assert TestHelpers.find_all(
+             html,
+             "[data-slot='autocomplete-content'] [data-slot='autocomplete-input']"
+           )
+           |> length() == 1
+  end
+
+  test "autocomplete supports grouped and custom option content" do
+    html =
+      render_component(&Forms.autocomplete/1, %{
+        id: "framework-search",
+        name: "framework",
+        option: [
+          %{
+            value: "next",
+            label: "Next.js",
+            group: "Frontend",
+            inner_block: fn _, _ ->
+              HTML.raw("""
+              <span data-slot="custom-framework">
+                <strong>Next.js</strong>
+                <span>React framework</span>
+              </span>
+              """)
+            end
+          },
+          %{
+            value: "phoenix",
+            label: "Phoenix",
+            group: "Backend",
+            description: "Elixir framework",
+            inner_block: fn -> "" end
+          }
+        ]
+      })
+
+    assert TestHelpers.find_all(html, "[data-slot='autocomplete-group']") |> length() == 2
+    assert TestHelpers.text(html, "[data-slot='autocomplete-group-label']") == "Frontend"
+    assert TestHelpers.text(html, "[data-slot='custom-framework']") == "Next.js React framework"
+
+    assert TestHelpers.attr(
+             html,
+             "[data-slot='autocomplete-item'][data-value='next']",
+             "data-label"
+           ) == "Next.js"
+
+    assert TestHelpers.text(html, "[data-slot='autocomplete-item'][data-value='phoenix']") =~
+             "Elixir framework"
+  end
+
+  test "autocomplete renders custom option bodies from HEEx slots" do
+    html = render_component(&AutocompleteProbe.render/1, %{})
+
+    assert TestHelpers.text(html, "[data-slot='probe-custom-framework']") ==
+             "Next.js React framework"
   end
 
   test "autocomplete renders loading text and server-search-friendly markup" do
@@ -782,6 +885,11 @@ defmodule CinderUI.Components.FormsTest do
     inline_class = TestHelpers.attr(html, "[data-slot='input-group']", "class")
     assert inline_class =~ "[data-slot=input-group-addon]]:inline-flex"
     assert inline_class =~ "[data-slot=input]]:border-0"
+    refute inline_class =~ "overflow-hidden"
+    assert inline_class =~ "[data-slot=autocomplete]]:flex-1"
+    assert inline_class =~ "[data-slot=autocomplete]>[data-slot=autocomplete-input]]:border-0"
+    assert inline_class =~ "[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:border-0"
+    assert inline_class =~ "[data-slot=combobox]>[data-slot=combobox-input]]:border-0"
     assert inline_class =~ "[data-slot=textarea]]:border-0"
     assert inline_class =~ "[data-slot=select]_[data-slot=select-trigger]]:border-0"
     assert inline_class =~ "[data-slot=button]]:border-0"

@@ -24,8 +24,9 @@ export const CuiCombobox = {
     this.input = this.el.querySelector("[data-combobox-input]")
     this.content = this.el.querySelector("[data-combobox-content]")
     this.items = Array.from(this.el.querySelectorAll("[data-slot='combobox-item']"))
+    this.groups = Array.from(this.el.querySelectorAll("[data-combobox-group]"))
     this.committedValue = this.input?.value || ""
-    this.open = false
+    this.open = this.el.dataset.state === "open"
 
     /** @returns {HTMLElement[]} Visible combobox items. */
     this.visibleItems = () => this.items.filter((item) => !item.classList.contains("hidden"))
@@ -53,14 +54,25 @@ export const CuiCombobox = {
       return firstVisible
     }
 
+    /** Hide group wrappers whose child items are all filtered out. */
+    this.syncGroups = () => {
+      this.groups.forEach((group) => {
+        const hasVisibleItems = Array.from(group.querySelectorAll("[data-slot='combobox-item']")).some(
+          (item) => !item.classList.contains("hidden")
+        )
+        group.classList.toggle("hidden", !hasVisibleItems)
+      })
+    }
+
     /** Filter options using the current input text and highlight the top match. */
     this.filterItems = () => {
       const value = (this.input.value || "").toLowerCase()
       this.items.forEach((item) => {
-        const text = item.textContent.toLowerCase()
+        const text = (item.dataset.label || item.textContent || "").toLowerCase()
         const visible = text.includes(value)
         item.classList.toggle("hidden", !visible)
       })
+      this.syncGroups()
       this.highlightFirstVisible()
       this.open = true
       this.sync()
@@ -105,7 +117,7 @@ export const CuiCombobox = {
      * @param {HTMLElement} item
      */
     this.applySelection = (item) => {
-      this.committedValue = item.dataset.value || item.textContent.trim()
+      this.committedValue = item.dataset.label || item.dataset.value || item.textContent.trim()
       if (this.input) this.input.value = this.committedValue
       this.items.forEach((entry) => {
         const selected = entry === item
