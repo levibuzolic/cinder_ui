@@ -26,10 +26,20 @@ defmodule CinderUI.Docs.ThemeModelTest do
     bootstrap = ThemeModel.bootstrap_script()
     static_docs = ThemeModel.static_docs_js("window.__themeTest = true")
 
+    static_docs_with_import =
+      ThemeModel.static_docs_js(
+        ~s(import { CinderUIHooks } from "./cinder_ui.js"\nwindow.__themeTest = true)
+      )
+
     assert bootstrap =~ "globalThis.CinderUIThemeModel ="
     assert bootstrap =~ "globalThis.CinderUITheme.applyStoredTheme"
     assert bootstrap =~ ~s("color": "neutral")
     assert static_docs =~ "globalThis.CinderUIThemeModel ="
     assert static_docs =~ "window.__themeTest = true"
+
+    assert String.starts_with?(
+             static_docs_with_import,
+             ~s(import { CinderUIHooks } from "./cinder_ui.js"\n)
+           )
   end
 end

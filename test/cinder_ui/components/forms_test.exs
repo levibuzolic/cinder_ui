@@ -229,6 +229,7 @@ defmodule CinderUI.Components.FormsTest do
     assert TestHelpers.attr(html, "[data-slot='select-input']", "value") == "admin"
     assert TestHelpers.find_all(html, "[data-select-item]") |> length() == 2
     assert TestHelpers.text(html, "[data-slot='select-value']") == "Admin"
+    refute TestHelpers.has_class?(html, "[data-slot='select-group']", "py-1")
   end
 
   test "select supports grouped options, clear button, and default empty state" do
@@ -252,6 +253,7 @@ defmodule CinderUI.Components.FormsTest do
       })
 
     assert TestHelpers.find_all(html, "[data-slot='select-group']") |> length() == 2
+    assert TestHelpers.has_class?(html, "[data-slot='select-group']", "py-1")
 
     assert TestHelpers.find_all(html, "[data-slot='select-group-label']")
            |> Enum.map(fn node -> node |> Floki.text() |> String.trim() end) == [
@@ -434,6 +436,7 @@ defmodule CinderUI.Components.FormsTest do
       })
 
     assert TestHelpers.find_all(html, "[data-slot='autocomplete-group']") |> length() == 2
+    assert TestHelpers.has_class?(html, "[data-slot='autocomplete-group']", "py-1")
     assert TestHelpers.text(html, "[data-slot='autocomplete-group-label']") == "Frontend"
     assert TestHelpers.text(html, "[data-slot='custom-framework']") == "Next.js React framework"
 
@@ -452,6 +455,8 @@ defmodule CinderUI.Components.FormsTest do
 
     assert TestHelpers.text(html, "[data-slot='probe-custom-framework']") ==
              "Next.js React framework"
+
+    refute TestHelpers.has_class?(html, "[data-slot='autocomplete-group']", "py-1")
   end
 
   test "autocomplete renders loading text and server-search-friendly markup" do

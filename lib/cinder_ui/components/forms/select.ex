@@ -251,7 +251,7 @@ defmodule CinderUI.Components.Forms.Select do
           :for={group <- grouped_options(@option)}
           :if={@option != []}
           data-slot="select-group"
-          class="py-1"
+          class={group.label && "py-1"}
         >
           <div
             :if={group.label}
@@ -677,7 +677,7 @@ defmodule CinderUI.Components.Forms.Select do
           :if={@option != []}
           data-slot="autocomplete-group"
           data-autocomplete-group
-          class="py-1"
+          class={group.label && "py-1"}
         >
           <div
             :if={group.label}

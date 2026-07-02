@@ -245,7 +245,7 @@ defmodule CinderUI.Components.Advanced.Command do
           :for={group <- grouped_options(@option)}
           data-slot="combobox-group"
           data-combobox-group
-          class="py-1"
+          class={group.label && "py-1"}
         >
           <div
             :if={group.label}
