@@ -31,11 +31,20 @@ defmodule CinderUI.Docs.ThemeModel do
   end
 
   def static_docs_js(static_docs_source) when is_binary(static_docs_source) do
-    runtime_js() <> "\n" <> static_docs_source <> ";\n"
+    {imports, body} = split_leading_imports(static_docs_source)
+
+    imports <> runtime_js() <> "\n" <> body <> ";\n"
   end
 
   defp model_assignment_js do
     "globalThis.CinderUIThemeModel = #{@model_json};\n"
+  end
+
+  defp split_leading_imports(source) do
+    case Regex.run(~r/\A((?:\s*import[^\n]*\n)+)(.*)\z/s, source, capture: :all_but_first) do
+      [imports, body] -> {imports <> "\n", body}
+      nil -> {"", source}
+    end
   end
 
   defp option_maps(key) do

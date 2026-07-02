@@ -343,6 +343,33 @@ test.describe("interactive previews", () => {
     await expect(hiddenInput).toHaveValue("levi")
   })
 
+  test("autocomplete popup trigger reopens the searchable list", async ({ page }) => {
+    await page.goto("/docs/forms-autocomplete/")
+
+    const autocomplete = page.locator("#country-search")
+    const trigger = autocomplete.locator("[data-autocomplete-trigger]")
+    const input = autocomplete.locator("[data-autocomplete-input]")
+    const content = autocomplete.locator("[data-autocomplete-content]")
+
+    await autocomplete.scrollIntoViewIfNeeded()
+    expect(await hasClass(content, "hidden")).toBe(false)
+
+    await trigger.click()
+    expect(await hasClass(content, "hidden")).toBe(true)
+    await expect(trigger).toHaveAttribute("aria-expanded", "false")
+
+    await trigger.click()
+    expect(await hasClass(content, "hidden")).toBe(false)
+    await expect(trigger).toHaveAttribute("aria-expanded", "true")
+    await expect(input).toBeFocused()
+
+    await input.fill("New")
+    await expect(autocomplete.locator("[data-slot='autocomplete-item'][data-value='nz']")).toHaveAttribute(
+      "data-highlighted",
+      "true",
+    )
+  })
+
   test("tabs switch active panel content", async ({ page }) => {
     await page.goto("/docs/navigation-tabs/")
 
