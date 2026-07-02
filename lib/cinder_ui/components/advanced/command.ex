@@ -154,24 +154,71 @@ defmodule CinderUI.Components.Advanced.Command do
     <:option value="Pro" label="Pro" />
   </.combobox>
   ```
+
+  ```heex title="Grouped combobox" align="full" vrt
+  <div class="pb-40">
+    <.combobox
+      id="timezone"
+      placeholder="Select a timezone"
+      open={true}
+    >
+      <:option value="new-york" label="(GMT-5) New York" group="Americas" />
+      <:option value="london" label="(GMT+0) London" group="Europe" />
+    </.combobox>
+  </div>
+  ```
+
+  ```heex title="Custom combobox items" align="full" vrt
+  <div class="pb-32">
+    <.combobox
+      id="framework"
+      placeholder="Select a framework"
+      open={true}
+    >
+      <:option value="next" label="Next.js">
+        <span class="flex flex-col">
+          <span class="font-medium">Next.js</span>
+          <span class="text-muted-foreground text-xs">React framework</span>
+        </span>
+      </:option>
+    </.combobox>
+  </div>
+  ```
   """)
 
   attr :id, :string, required: true
   attr :class, :string, default: nil
+  attr :content_class, :string, default: nil
   attr :placeholder, :string, default: "Select an option"
   attr :value, :string, default: nil
+  attr :open, :boolean, default: false
   attr :rest, :global
 
   slot :option, required: true do
     attr :value, :string, required: true
     attr :label, :string, required: true
+    attr :group, :string
   end
 
   def combobox(assigns) do
-    assigns = assign(assigns, :classes, ["relative w-full", assigns.class])
+    assigns =
+      assigns
+      |> assign(:classes, ["relative w-full", assigns.class])
+      |> assign(:content_classes, [
+        "bg-popover text-popover-foreground absolute z-50 mt-2 w-full rounded-md border p-1 shadow-md",
+        if(assigns.open, do: "block", else: "hidden"),
+        assigns.content_class
+      ])
 
     ~H"""
-    <div id={@id} data-slot="combobox" class={classes(@classes)} phx-hook="CuiCombobox" {@rest}>
+    <div
+      id={@id}
+      data-slot="combobox"
+      data-state={if @open, do: "open", else: "closed"}
+      class={classes(@classes)}
+      phx-hook="CuiCombobox"
+      {@rest}
+    >
       <input
         data-slot="combobox-input"
         data-combobox-input
@@ -181,7 +228,7 @@ defmodule CinderUI.Components.Advanced.Command do
         role="combobox"
         aria-autocomplete="list"
         aria-controls={"#{@id}-content"}
-        aria-expanded="false"
+        aria-expanded={@open}
         aria-activedescendant=""
         class="file:text-foreground placeholder:text-muted-foreground border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
       />
@@ -191,38 +238,105 @@ defmodule CinderUI.Components.Advanced.Command do
         data-combobox-content
         role="listbox"
         tabindex="-1"
-        class="bg-popover text-popover-foreground absolute z-50 mt-2 hidden w-full rounded-md border p-1 shadow-md"
+        class={classes(@content_classes)}
       >
-        <button
-          :for={{option, index} <- Enum.with_index(@option)}
-          id={"#{@id}-combobox-option-#{index}"}
-          type="button"
-          role="option"
-          data-slot="combobox-item"
-          data-value={option.value}
-          data-selected={@value == option.value}
-          aria-selected={@value == option.value}
-          class={
-            classes([
-              "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[highlighted=true]:bg-accent data-[highlighted=true]:text-accent-foreground"
-            ])
-          }
+        <div
+          :for={group <- grouped_options(@option)}
+          data-slot="combobox-group"
+          data-combobox-group
+          class="py-1"
         >
-          {option.label}
-          <span
-            data-slot="select-check"
+          <div
+            :if={group.label}
+            data-slot="combobox-group-label"
+            class="text-muted-foreground px-2 py-1 text-xs font-medium"
+          >
+            {group.label}
+          </div>
+
+          <button
+            :for={{option, index} <- group.options}
+            id={"#{@id}-combobox-option-#{index}"}
+            type="button"
+            role="option"
+            data-slot="combobox-item"
+            data-value={option.value}
+            data-label={option.label}
+            data-selected={
+              if @value == option.value || @value == option.label, do: "true", else: "false"
+            }
+            aria-selected={@value == option.value || @value == option.label}
             class={
               classes([
-                "absolute right-2 flex size-3.5 items-center justify-center",
-                @value != option.value && "hidden"
+                "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-left text-sm outline-hidden select-none data-[highlighted=true]:bg-accent data-[highlighted=true]:text-accent-foreground"
               ])
             }
           >
-            <Icons.icon name="check" class="size-4" aria-hidden="true" />
-          </span>
-        </button>
+            <%= if slot_has_content?(option) do %>
+              {render_slot(option)}
+            <% else %>
+              {option.label}
+            <% end %>
+            <span
+              data-slot="select-check"
+              class={
+                classes([
+                  "absolute right-2 flex size-3.5 items-center justify-center",
+                  !(@value == option.value || @value == option.label) && "hidden"
+                ])
+              }
+            >
+              <Icons.icon name="check" class="size-4" aria-hidden="true" />
+            </span>
+          </button>
+        </div>
       </div>
     </div>
     """
+  end
+
+  defp grouped_options(options) do
+    options
+    |> Enum.with_index()
+    |> Enum.chunk_by(fn {option, _index} -> Map.get(option, :group) end)
+    |> Enum.map(fn group_options ->
+      %{
+        label: group_options |> List.first() |> elem(0) |> Map.get(:group),
+        options: group_options
+      }
+    end)
+  end
+
+  defp slot_has_content?(%{inner_block: inner_block}) when is_function(inner_block, 2) do
+    slot_content_present?(inner_block.(nil, nil))
+  end
+
+  defp slot_has_content?(%{inner_block: inner_block}) when is_function(inner_block, 1) do
+    slot_content_present?(inner_block.(nil))
+  end
+
+  defp slot_has_content?(%{inner_block: inner_block}) when is_function(inner_block, 0) do
+    slot_content_present?(inner_block.())
+  end
+
+  defp slot_has_content?(%{inner_block: inner_block}) do
+    slot_content_present?(inner_block)
+  end
+
+  defp slot_has_content?(_slot), do: false
+
+  defp slot_content_present?(content) do
+    content
+    |> slot_content_to_string()
+    |> String.trim()
+    |> then(&(&1 != ""))
+  end
+
+  defp slot_content_to_string(nil), do: ""
+
+  defp slot_content_to_string(content) do
+    content
+    |> Phoenix.HTML.Safe.to_iodata()
+    |> IO.iodata_to_binary()
   end
 end

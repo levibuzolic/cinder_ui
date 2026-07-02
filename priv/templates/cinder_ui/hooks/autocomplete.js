@@ -24,13 +24,17 @@ export const CuiAutocomplete = {
   mounted() {
     this.selectedLabel = this.el.dataset.selectedLabel || ""
     this.selectedValue = ""
-    this.open = false
+    this.open = this.el.dataset.state === "open"
     this.skipFocusOpen = false
+    this.isPopup = this.el.dataset.variant === "popup"
     this.refreshElements = () => {
       this.input = this.el.querySelector("[data-autocomplete-input]")
+      this.trigger = this.el.querySelector("[data-autocomplete-trigger]")
+      this.triggerValue = this.el.querySelector("[data-slot='autocomplete-trigger-value']")
       this.content = this.el.querySelector("[data-autocomplete-content]")
       this.valueInput = this.el.querySelector("[data-slot='autocomplete-value']")
       this.items = Array.from(this.el.querySelectorAll("[data-autocomplete-item]"))
+      this.groups = Array.from(this.el.querySelectorAll("[data-autocomplete-group]"))
       this.empty = this.el.querySelector("[data-slot='autocomplete-empty']")
       this.loading = this.el.querySelector("[data-slot='autocomplete-loading']")
     }
@@ -66,20 +70,42 @@ export const CuiAutocomplete = {
     this.sync = () => {
       this.el.dataset.state = this.open ? "open" : "closed"
       if (this.input) this.input.setAttribute("aria-expanded", this.open ? "true" : "false")
+      if (this.trigger) this.trigger.setAttribute("aria-expanded", this.open ? "true" : "false")
       const activeItem = this.items.find((item) => item.dataset.highlighted === "true")
       if (this.input) this.input.setAttribute("aria-activedescendant", this.open && activeItem ? activeItem.id : "")
       toggleVisibility(this.content, this.open)
     }
 
+    /** Keep the default popup trigger display in sync with the committed value. */
+    this.syncTriggerValue = () => {
+      if (!this.triggerValue || "customTrigger" in this.triggerValue.dataset) return
+
+      const placeholder = this.input?.getAttribute("placeholder") || ""
+      const label = this.selectedLabel || placeholder
+      this.triggerValue.textContent = label
+      this.triggerValue.classList.toggle("text-muted-foreground", !this.selectedLabel)
+    }
+
     /** Show or hide the "no results" empty state based on visible items. */
     this.syncEmpty = () => {
       if (!this.empty) return
-      if (this.el.dataset.loading === "true") {
+      const isLoading = "loading" in this.el.dataset && this.el.dataset.loading !== "false"
+      if (isLoading) {
         this.empty.classList.add("hidden")
         return
       }
       const hasVisibleItems = this.items.some((item) => !item.classList.contains("hidden"))
       this.empty.classList.toggle("hidden", hasVisibleItems)
+    }
+
+    /** Hide group wrappers whose child items are all filtered out. */
+    this.syncGroups = () => {
+      this.groups.forEach((group) => {
+        const hasVisibleItems = Array.from(group.querySelectorAll("[data-autocomplete-item]")).some(
+          (item) => !item.classList.contains("hidden")
+        )
+        group.classList.toggle("hidden", !hasVisibleItems)
+      })
     }
 
     /**
@@ -93,8 +119,9 @@ export const CuiAutocomplete = {
       this.selectedLabel = label
       this.selectedValue = value
       this.el.dataset.selectedLabel = label
-      if (this.input) this.input.value = label
+      if (this.input) this.input.value = this.isPopup ? "" : label
       if (this.valueInput) this.valueInput.value = value
+      this.syncTriggerValue()
 
       this.items.forEach((entry) => {
         const selected = entry === item
@@ -125,10 +152,11 @@ export const CuiAutocomplete = {
         item.classList.toggle("hidden", !text.includes(query))
       })
 
-      if (this.valueInput && (this.input?.value || "") !== this.selectedLabel) {
+      if (!this.isPopup && this.valueInput && (this.input?.value || "") !== this.selectedLabel) {
         this.valueInput.value = ""
       }
 
+      this.syncGroups()
       this.syncEmpty()
       this.highlightVisibleDefault({ preferSelection })
       this.open = true
@@ -137,8 +165,9 @@ export const CuiAutocomplete = {
 
     /** Restore the last committed selection and close the list. */
     this.restoreSelection = () => {
-      if (this.input) this.input.value = this.selectedLabel
+      if (this.input) this.input.value = this.isPopup ? "" : this.selectedLabel
       if (this.valueInput) this.valueInput.value = this.selectedValue
+      this.syncTriggerValue()
       this.filterItems({ preferSelection: true })
       this.open = false
       this.sync()
@@ -179,6 +208,7 @@ export const CuiAutocomplete = {
         return
       }
       this.open = true
+      if (this.isPopup && this.input) this.input.value = ""
       this.highlightVisibleDefault({ preferSelection: true })
       this.sync()
     }
@@ -228,6 +258,7 @@ export const CuiAutocomplete = {
       if (event.key === "Escape") {
         event.preventDefault()
         this.restoreSelection()
+        if (this.isPopup) this.trigger?.focus()
       }
     }
 
@@ -259,15 +290,34 @@ export const CuiAutocomplete = {
         event.preventDefault()
         this.applySelection(item)
         this.skipFocusOpen = true
-        this.input?.focus()
+        if (this.isPopup) {
+          this.trigger?.focus()
+        } else {
+          this.input?.focus()
+        }
       }
 
       if (event.key === "Escape") {
         event.preventDefault()
         this.open = false
         this.sync()
-        this.input?.focus()
+        const focusTarget = this.isPopup ? this.trigger : this.input
+        focusTarget?.focus()
       }
+    }
+
+    this.onTriggerClick = () => {
+      if (this.open) {
+        this.open = false
+        this.sync()
+        return
+      }
+
+      if (this.input) this.input.value = ""
+      this.filterItems({ preferSelection: true })
+      this.open = true
+      this.sync()
+      window.requestAnimationFrame(() => this.input?.focus())
     }
 
     this.onItemClick = (event) => {
@@ -275,7 +325,11 @@ export const CuiAutocomplete = {
       if (item.dataset.disabled === "true" || item.disabled) return
       this.applySelection(item)
       this.skipFocusOpen = true
-      this.input?.focus()
+      if (this.isPopup) {
+        this.trigger?.focus()
+      } else {
+        this.input?.focus()
+      }
     }
 
     this.onDocumentClick = (event) => {
@@ -286,6 +340,7 @@ export const CuiAutocomplete = {
     // -- Lifecycle ------------------------------------------------------------
 
     this.bindEvents = () => {
+      this.trigger?.addEventListener("click", this.onTriggerClick)
       this.input?.addEventListener("focus", this.onFocus)
       this.input?.addEventListener("input", this.onInput)
       this.input?.addEventListener("keydown", this.onKeyDown)
@@ -296,6 +351,7 @@ export const CuiAutocomplete = {
     }
 
     this.unbindEvents = () => {
+      this.trigger?.removeEventListener("click", this.onTriggerClick)
       this.input?.removeEventListener("focus", this.onFocus)
       this.input?.removeEventListener("input", this.onInput)
       this.input?.removeEventListener("keydown", this.onKeyDown)
@@ -328,20 +384,24 @@ export const CuiAutocomplete = {
         this.selectedLabel = ""
         this.selectedValue = ""
         this.el.dataset.selectedLabel = ""
+        this.syncTriggerValue()
         this.filterItems()
       },
     })
     this.syncEmpty()
+    this.syncTriggerValue()
     this.sync()
   },
 
   updated() {
     this.unbindEvents()
     this.refreshElements()
+    this.isPopup = this.el.dataset.variant === "popup"
     this.selectedLabel = this.el.dataset.selectedLabel ?? this.selectedLabel
     this.selectedValue = this.valueInput?.value ?? this.selectedValue
     this.bindEvents()
     this.syncEmpty()
+    this.syncTriggerValue()
     this.sync()
   },
 

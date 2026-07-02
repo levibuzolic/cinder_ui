@@ -126,7 +126,7 @@ defmodule CinderUI.Components.Forms.Groups do
       assigns
       |> assign(:align_attr, if(assigns.align == :block_end, do: "block-end", else: "inline"))
       |> assign(:classes, [
-        "dark:bg-input/30 relative flex w-full min-w-0 overflow-hidden rounded-md border border-input bg-transparent shadow-xs transition-[color,box-shadow]",
+        "dark:bg-input/30 relative flex w-full min-w-0 rounded-md border border-input bg-transparent shadow-xs transition-[color,box-shadow]",
         assigns.align == :inline && "h-9 items-center",
         assigns.align == :block_end && "min-h-9 flex-col items-stretch",
         "has-[:focus-visible]:border-ring has-[:focus-visible]:ring-ring/50 has-[:focus-visible]:ring-[3px]",
@@ -141,6 +141,10 @@ defmodule CinderUI.Components.Forms.Groups do
         assigns.align == :block_end &&
           "[&>[data-slot=input-group-addon][data-align=block-end]]:w-full [&>[data-slot=input-group-addon][data-align=block-end]]:items-center [&>[data-slot=input-group-addon][data-align=block-end]]:justify-between [&>[data-slot=input-group-addon][data-align=block-end]]:border-t [&>[data-slot=input-group-addon][data-align=block-end]]:border-input [&>[data-slot=input-group-addon][data-align=block-end]]:bg-muted/20 [&>[data-slot=input-group-addon][data-align=block-end]]:px-3 [&>[data-slot=input-group-addon][data-align=block-end]]:py-2",
         "[&>[data-slot=input]]:h-full [&>[data-slot=input]]:flex-1 [&>[data-slot=input]]:rounded-none [&>[data-slot=input]]:border-0 [&>[data-slot=input]]:bg-transparent [&>[data-slot=input]]:px-3 [&>[data-slot=input]]:py-1 [&>[data-slot=input]]:shadow-none [&>[data-slot=input]]:focus-visible:ring-0",
+        "[&>[data-slot=autocomplete]]:h-full [&>[data-slot=autocomplete]]:flex-1 [&>[data-slot=autocomplete]]:min-w-0 [&>[data-slot=combobox]]:h-full [&>[data-slot=combobox]]:flex-1 [&>[data-slot=combobox]]:min-w-0",
+        "[&>[data-slot=autocomplete]>[data-slot=autocomplete-input]]:h-full [&>[data-slot=autocomplete]>[data-slot=autocomplete-input]]:rounded-none [&>[data-slot=autocomplete]>[data-slot=autocomplete-input]]:border-0 [&>[data-slot=autocomplete]>[data-slot=autocomplete-input]]:bg-transparent [&>[data-slot=autocomplete]>[data-slot=autocomplete-input]]:px-3 [&>[data-slot=autocomplete]>[data-slot=autocomplete-input]]:py-1 [&>[data-slot=autocomplete]>[data-slot=autocomplete-input]]:shadow-none [&>[data-slot=autocomplete]>[data-slot=autocomplete-input]]:focus-visible:ring-0",
+        "[&>[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:h-full [&>[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:rounded-none [&>[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:border-0 [&>[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:bg-transparent [&>[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:px-3 [&>[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:py-1 [&>[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:shadow-none [&>[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:focus-visible:ring-0",
+        "[&>[data-slot=combobox]>[data-slot=combobox-input]]:h-full [&>[data-slot=combobox]>[data-slot=combobox-input]]:rounded-none [&>[data-slot=combobox]>[data-slot=combobox-input]]:border-0 [&>[data-slot=combobox]>[data-slot=combobox-input]]:bg-transparent [&>[data-slot=combobox]>[data-slot=combobox-input]]:px-3 [&>[data-slot=combobox]>[data-slot=combobox-input]]:py-1 [&>[data-slot=combobox]>[data-slot=combobox-input]]:shadow-none [&>[data-slot=combobox]>[data-slot=combobox-input]]:focus-visible:ring-0",
         "[&>[data-slot=textarea]]:min-h-[5.5rem] [&>[data-slot=textarea]]:w-full [&>[data-slot=textarea]]:rounded-none [&>[data-slot=textarea]]:border-0 [&>[data-slot=textarea]]:bg-transparent [&>[data-slot=textarea]]:px-3 [&>[data-slot=textarea]]:py-3 [&>[data-slot=textarea]]:shadow-none [&>[data-slot=textarea]]:focus-visible:ring-0",
         "[&>[data-slot=select]]:min-w-0 [&>[data-slot=select]]:shrink-0 [&>[data-slot=select]_[data-slot=select-trigger]]:h-full [&>[data-slot=select]_[data-slot=select-trigger]]:rounded-none [&>[data-slot=select]_[data-slot=select-trigger]]:border-0 [&>[data-slot=select]_[data-slot=select-trigger]]:bg-transparent [&>[data-slot=select]_[data-slot=select-trigger]]:px-3 [&>[data-slot=select]_[data-slot=select-trigger]]:py-2 [&>[data-slot=select]_[data-slot=select-trigger]]:shadow-none [&>[data-slot=select]_[data-slot=select-trigger]]:focus-visible:ring-0",
         "[&>[data-slot=native-select-wrapper]]:min-w-0 [&>[data-slot=native-select-wrapper]]:shrink-0 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:h-full [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:rounded-none [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:border-0 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:bg-transparent [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:px-3 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:py-2 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:shadow-none [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:focus-visible:ring-0 [&>[data-slot=native-select-wrapper]_[data-slot=native-select]]:pr-8 [&>[data-slot=native-select-wrapper]_.lucide-chevron-down]:right-3",
@@ -151,7 +155,13 @@ defmodule CinderUI.Components.Forms.Groups do
       ])
 
     ~H"""
-    <div data-slot="input-group" data-align={@align_attr} class={classes(@classes)} {@rest}>
+    <div
+      data-slot="input-group"
+      data-align={@align_attr}
+      role="group"
+      class={classes(@classes)}
+      {@rest}
+    >
       {render_slot(@inner_block)}
     </div>
     """

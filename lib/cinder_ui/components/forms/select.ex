@@ -269,8 +269,8 @@ defmodule CinderUI.Components.Forms.Select do
             data-select-item
             data-value={option.value}
             data-label={option.label}
-            data-disabled={option[:disabled] || false}
-            data-selected={@value == option.value}
+            data-disabled={if option[:disabled], do: "true", else: "false"}
+            data-selected={if @value == option.value, do: "true", else: "false"}
             aria-selected={@value == option.value}
             disabled={option[:disabled] || false}
             class={
@@ -367,6 +367,55 @@ defmodule CinderUI.Components.Forms.Select do
   </.form>
   ```
 
+  ```heex title="Autocomplete popup" align="full" vrt
+  <div class="pb-48">
+    <.autocomplete
+      id="country-search"
+      name="country"
+      value="au"
+      variant={:popup}
+      placeholder="Search countries..."
+      open={true}
+    >
+      <:option value="au" label="Australia" />
+      <:option value="nz" label="New Zealand" />
+      <:option value="us" label="United States" />
+    </.autocomplete>
+  </div>
+  ```
+
+  ```heex title="Grouped autocomplete" align="full" vrt
+  <div class="pb-48">
+    <.autocomplete
+      id="timezone-search"
+      name="timezone"
+      placeholder="Search timezones..."
+      open={true}
+    >
+      <:option value="nyc" label="(GMT-5) New York" group="Americas" />
+      <:option value="lax" label="(GMT-8) Los Angeles" group="Americas" />
+      <:option value="lon" label="(GMT+0) London" group="Europe" />
+    </.autocomplete>
+  </div>
+  ```
+
+  ```heex title="Custom autocomplete items" align="full" vrt
+  <div class="pb-36">
+    <.autocomplete
+      id="framework-search"
+      name="framework"
+      open={true}
+    >
+      <:option value="next" label="Next.js">
+        <span class="flex flex-col">
+          <span class="font-medium">Next.js</span>
+          <span class="text-muted-foreground text-xs">React framework</span>
+        </span>
+      </:option>
+    </.autocomplete>
+  </div>
+  ```
+
   ### With FormField
 
       <.autocomplete field={@form[:owner]}>
@@ -404,6 +453,8 @@ defmodule CinderUI.Components.Forms.Select do
   attr :label, :string, default: nil
   attr :errors, :list, default: nil
   attr :placeholder, :string, default: "Search options..."
+  attr :variant, :atom, default: :input, values: [:input, :popup]
+  attr :open, :boolean, default: false
   attr :disabled, :boolean, default: false
   attr :loading, :boolean, default: false
   attr :loading_text, :string, default: "Loading..."
@@ -416,8 +467,10 @@ defmodule CinderUI.Components.Forms.Select do
     attr :label, :string, required: true
     attr :description, :string
     attr :disabled, :boolean
+    attr :group, :string
   end
 
+  slot :trigger
   slot :empty
 
   def autocomplete(assigns) do
@@ -439,8 +492,9 @@ defmodule CinderUI.Components.Forms.Select do
         "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
       ])
       |> assign(:content_classes, [
-        "bg-popover text-popover-foreground absolute top-full left-0 z-50 mt-2 hidden max-h-72 w-full overflow-y-auto rounded-md border p-1 shadow-md outline-none",
+        "bg-popover text-popover-foreground absolute top-full left-0 z-50 mt-2 max-h-72 w-full overflow-y-auto rounded-md border p-1 shadow-md outline-none",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        if(assigns.open, do: "block", else: "hidden"),
         assigns.content_class
       ])
 
@@ -451,12 +505,15 @@ defmodule CinderUI.Components.Forms.Select do
         id={@id}
         name={@name}
         value={@value}
+        variant={@variant}
+        open={@open}
         selected_label={@selected_label}
         placeholder={@placeholder}
         disabled={@disabled}
         loading={@loading}
         loading_text={@loading_text}
         option={@option}
+        trigger={@trigger}
         empty={@empty}
         root_classes={@root_classes}
         input_classes={@input_classes}
@@ -470,12 +527,15 @@ defmodule CinderUI.Components.Forms.Select do
       id={@id}
       name={@name}
       value={@value}
+      variant={@variant}
+      open={@open}
       selected_label={@selected_label}
       placeholder={@placeholder}
       disabled={@disabled}
       loading={@loading}
       loading_text={@loading_text}
       option={@option}
+      trigger={@trigger}
       empty={@empty}
       root_classes={@root_classes}
       input_classes={@input_classes}
@@ -488,6 +548,8 @@ defmodule CinderUI.Components.Forms.Select do
   attr :id, :string, required: true
   attr :name, :string, default: nil
   attr :value, :string, default: nil
+  attr :variant, :atom, required: true
+  attr :open, :boolean, required: true
   attr :selected_label, :string, required: true
   attr :placeholder, :string, required: true
   attr :disabled, :boolean, required: true
@@ -498,6 +560,7 @@ defmodule CinderUI.Components.Forms.Select do
   attr :content_classes, :list, required: true
   attr :rest, :map, required: true
   attr :option, :list, required: true
+  attr :trigger, :list, default: []
   attr :empty, :list, default: []
 
   defp autocomplete_control(assigns) do
@@ -505,7 +568,8 @@ defmodule CinderUI.Components.Forms.Select do
     <div
       id={@id}
       data-slot="autocomplete"
-      data-state="closed"
+      data-state={if @open, do: "open", else: "closed"}
+      data-variant={@variant}
       data-selected-label={@selected_label}
       data-loading={@loading}
       class={classes(@root_classes)}
@@ -520,7 +584,38 @@ defmodule CinderUI.Components.Forms.Select do
         disabled={@disabled}
       />
 
+      <button
+        :if={@variant == :popup}
+        type="button"
+        data-slot="autocomplete-trigger"
+        data-autocomplete-trigger
+        aria-haspopup="listbox"
+        aria-controls={"#{@id}-content"}
+        aria-expanded={@open}
+        disabled={@disabled}
+        class={
+          classes([
+            "border-input bg-background text-foreground flex h-9 w-full items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+            "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+          ])
+        }
+      >
+        <span
+          data-slot="autocomplete-trigger-value"
+          data-custom-trigger={@trigger != []}
+          class={classes(["truncate", @selected_label == "" && "text-muted-foreground"])}
+        >
+          <%= if @trigger != [] do %>
+            {render_slot(@trigger, @selected_label)}
+          <% else %>
+            {if @selected_label == "", do: @placeholder, else: @selected_label}
+          <% end %>
+        </span>
+        <Icons.icon name="chevron-down" class="size-4 opacity-50" aria-hidden="true" />
+      </button>
+
       <input
+        :if={@variant == :input}
         data-slot="autocomplete-input"
         data-autocomplete-input
         type="text"
@@ -530,7 +625,7 @@ defmodule CinderUI.Components.Forms.Select do
         role="combobox"
         aria-autocomplete="list"
         aria-controls={"#{@id}-content"}
-        aria-expanded="false"
+        aria-expanded={@open}
         aria-activedescendant=""
         disabled={@disabled}
         class={classes(@input_classes)}
@@ -545,6 +640,29 @@ defmodule CinderUI.Components.Forms.Select do
         tabindex="-1"
         class={classes(@content_classes)}
       >
+        <input
+          :if={@variant == :popup}
+          data-slot="autocomplete-input"
+          data-autocomplete-input
+          type="text"
+          value=""
+          placeholder={@placeholder}
+          autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls={"#{@id}-content"}
+          aria-expanded={@open}
+          aria-activedescendant=""
+          disabled={@disabled}
+          class={
+            classes([
+              @input_classes,
+              "mb-1 h-8 border-input/30 bg-input/30 shadow-none focus-visible:ring-0"
+            ])
+          }
+          {@rest}
+        />
+
         <div
           :if={@loading}
           data-slot="autocomplete-loading"
@@ -553,45 +671,65 @@ defmodule CinderUI.Components.Forms.Select do
           {@loading_text}
         </div>
 
-        <button
-          :for={{option, index} <- Enum.with_index(@option)}
-          id={"#{@id}-autocomplete-option-#{index}"}
-          type="button"
-          role="option"
-          data-slot="autocomplete-item"
-          data-autocomplete-item
-          data-value={option.value}
-          data-label={option.label}
-          data-disabled={option[:disabled] || false}
-          data-selected={@value == option.value}
-          aria-selected={@value == option.value}
-          disabled={option[:disabled] || false}
-          class={
-            classes([
-              "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-left text-sm outline-hidden select-none",
-              "data-[highlighted=true]:bg-accent data-[highlighted=true]:text-accent-foreground",
-              "data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50"
-            ])
-          }
+        <div
+          :for={group <- grouped_options(@option)}
+          :if={@option != []}
+          data-slot="autocomplete-group"
+          data-autocomplete-group
+          class="py-1"
         >
-          <span class="min-w-0 flex-1">
-            <span class="block truncate">{option.label}</span>
-            <span :if={option[:description]} class="text-muted-foreground block text-xs">
-              {option.description}
-            </span>
-          </span>
-          <span
-            data-slot="select-check"
+          <div
+            :if={group.label}
+            data-slot="autocomplete-group-label"
+            class="text-muted-foreground px-2 py-1 text-xs font-medium"
+          >
+            {group.label}
+          </div>
+
+          <button
+            :for={{option, index} <- group.options}
+            id={"#{@id}-autocomplete-option-#{index}"}
+            type="button"
+            role="option"
+            data-slot="autocomplete-item"
+            data-autocomplete-item
+            data-value={option.value}
+            data-label={option.label}
+            data-disabled={if option[:disabled], do: "true", else: "false"}
+            data-selected={if @value == option.value, do: "true", else: "false"}
+            aria-selected={@value == option.value}
+            disabled={option[:disabled] || false}
             class={
               classes([
-                "absolute right-2 flex size-3.5 items-center justify-center",
-                @value != option.value && "hidden"
+                "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-left text-sm outline-hidden select-none",
+                "data-[highlighted=true]:bg-accent data-[highlighted=true]:text-accent-foreground",
+                "data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50"
               ])
             }
           >
-            <Icons.icon name="check" class="size-4" aria-hidden="true" />
-          </span>
-        </button>
+            <%= if slot_has_content?(option) do %>
+              {render_slot(option)}
+            <% else %>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate">{option.label}</span>
+                <span :if={option[:description]} class="text-muted-foreground block text-xs">
+                  {option.description}
+                </span>
+              </span>
+            <% end %>
+            <span
+              data-slot="select-check"
+              class={
+                classes([
+                  "absolute right-2 flex size-3.5 items-center justify-center",
+                  @value != option.value && "hidden"
+                ])
+              }
+            >
+              <Icons.icon name="check" class="size-4" aria-hidden="true" />
+            </span>
+          </button>
+        </div>
 
         <div
           data-slot="autocomplete-empty"
@@ -614,5 +752,38 @@ defmodule CinderUI.Components.Forms.Select do
         options: group_options
       }
     end)
+  end
+
+  defp slot_has_content?(%{inner_block: inner_block}) when is_function(inner_block, 2) do
+    slot_content_present?(inner_block.(nil, nil))
+  end
+
+  defp slot_has_content?(%{inner_block: inner_block}) when is_function(inner_block, 1) do
+    slot_content_present?(inner_block.(nil))
+  end
+
+  defp slot_has_content?(%{inner_block: inner_block}) when is_function(inner_block, 0) do
+    slot_content_present?(inner_block.())
+  end
+
+  defp slot_has_content?(%{inner_block: inner_block}) do
+    slot_content_present?(inner_block)
+  end
+
+  defp slot_has_content?(_slot), do: false
+
+  defp slot_content_present?(content) do
+    content
+    |> slot_content_to_string()
+    |> String.trim()
+    |> then(&(&1 != ""))
+  end
+
+  defp slot_content_to_string(nil), do: ""
+
+  defp slot_content_to_string(content) do
+    content
+    |> Phoenix.HTML.Safe.to_iodata()
+    |> IO.iodata_to_binary()
   end
 end

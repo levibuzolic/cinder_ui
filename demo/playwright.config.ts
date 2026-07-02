@@ -20,6 +20,9 @@ const config = {
   reporter: [["list"]],
   use: {
     baseURL: "http://127.0.0.1:4000",
+    launchOptions: process.env.PLAYWRIGHT_CHROME_EXECUTABLE
+      ? { executablePath: process.env.PLAYWRIGHT_CHROME_EXECUTABLE }
+      : undefined,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "off",

@@ -1,9 +1,29 @@
+defmodule CinderUI.Components.AdvancedTest.ComboboxProbe do
+  use Phoenix.Component
+
+  import CinderUI.Components.Advanced.Command, only: [combobox: 1]
+
+  def render(assigns) do
+    ~H"""
+    <.combobox id="framework-combobox" open={true}>
+      <:option value="next" label="Next.js">
+        <span data-slot="probe-custom-framework">
+          <strong>Next.js</strong>
+          <span>React framework</span>
+        </span>
+      </:option>
+    </.combobox>
+    """
+  end
+end
+
 defmodule CinderUI.Components.AdvancedTest do
   use ExUnit.Case, async: true
 
   import Phoenix.LiveViewTest
 
   alias CinderUI.Components.Advanced
+  alias CinderUI.Components.AdvancedTest.ComboboxProbe
   alias CinderUI.TestHelpers
   alias Phoenix.HTML
 
@@ -94,6 +114,8 @@ defmodule CinderUI.Components.AdvancedTest do
       render_component(&Advanced.combobox/1, %{
         id: "plan-combobox",
         value: "Pro",
+        open: true,
+        content_class: "min-w-48",
         option: [
           %{value: "Free", label: "Free", inner_block: fn -> "" end},
           %{value: "Pro", label: "Pro", inner_block: fn -> "" end}
@@ -101,9 +123,63 @@ defmodule CinderUI.Components.AdvancedTest do
       })
 
     assert TestHelpers.attr(html, "[data-slot='combobox']", "phx-hook") == "CuiCombobox"
+    assert TestHelpers.attr(html, "[data-slot='combobox']", "data-state") == "open"
     assert TestHelpers.attr(html, "[data-slot='combobox-input']", "value") == "Pro"
+    assert TestHelpers.has_class?(html, "[data-slot='combobox-content']", "block")
+    refute TestHelpers.has_class?(html, "[data-slot='combobox-content']", "hidden")
+    assert TestHelpers.has_class?(html, "[data-slot='combobox-content']", "min-w-48")
     assert TestHelpers.find_all(html, "[data-slot='combobox-item']") |> length() == 2
     assert TestHelpers.find_all(html, "[data-slot='select-check']") |> length() == 2
+  end
+
+  test "combobox supports grouped and custom option content" do
+    html =
+      render_component(&Advanced.combobox/1, %{
+        id: "framework-combobox",
+        value: "Next.js",
+        option: [
+          %{
+            value: "next",
+            label: "Next.js",
+            group: "Frontend",
+            inner_block: fn _, _ ->
+              HTML.raw("""
+              <span data-slot="custom-framework">
+                <strong>Next.js</strong>
+                <span>React framework</span>
+              </span>
+              """)
+            end
+          },
+          %{
+            value: "phoenix",
+            label: "Phoenix",
+            group: "Backend",
+            inner_block: fn -> "" end
+          }
+        ]
+      })
+
+    assert TestHelpers.find_all(html, "[data-slot='combobox-group']") |> length() == 2
+    assert TestHelpers.text(html, "[data-slot='combobox-group-label']") == "Frontend"
+    assert TestHelpers.text(html, "[data-slot='custom-framework']") == "Next.js React framework"
+
+    assert TestHelpers.attr(html, "[data-slot='combobox-item'][data-value='next']", "data-label") ==
+             "Next.js"
+
+    assert TestHelpers.attr(
+             html,
+             "[data-slot='combobox-item'][data-value='next']",
+             "data-selected"
+           ) ==
+             "true"
+  end
+
+  test "combobox renders custom option bodies from HEEx slots" do
+    html = render_component(&ComboboxProbe.render/1, %{})
+
+    assert TestHelpers.text(html, "[data-slot='probe-custom-framework']") ==
+             "Next.js React framework"
   end
 
   test "chart renders title, description, and content shell" do
