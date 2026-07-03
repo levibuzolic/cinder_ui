@@ -114,15 +114,13 @@ Cinder UI includes a Mix task that sets up CSS, JavaScript hooks, and Tailwind p
 mix cinder_ui.install
 ```
 
-This will:
+By default this references Cinder UI's CSS and JS **directly from `deps/cinder_ui`** — nothing is copied into your project, so the assets stay in sync automatically when you upgrade the dependency. It will:
 
-- Copy `cinder_ui.css` into `assets/css/` (theme variables and dark mode)
-- Copy `cinder_ui.js` into `assets/js/` (LiveView hooks for interactive components)
 - Update `assets/css/app.css` with:
   - `@source "../../deps/cinder_ui";` — so Tailwind scans component classes
-  - `@import "./cinder_ui.css";` — loads theme tokens
-- Update `assets/js/app.js` to merge `CinderUIHooks` into your LiveView hooks
-- Install the `tailwindcss-animate` npm package
+  - `@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";` — loads theme tokens
+- Update `assets/js/app.js` to import `CinderUIHooks` from the `cinder_ui` package (resolved via Phoenix's default esbuild `NODE_PATH`) and merge them into your LiveView hooks
+- Install the `tailwindcss-animate` npm package (a required peer dependency, resolved from your project's `node_modules`)
 
 The installer auto-detects your package manager (npm, pnpm, yarn, or bun). To specify one explicitly:
 
@@ -130,17 +128,23 @@ The installer auto-detects your package manager (npm, pnpm, yarn, or bun). To sp
 mix cinder_ui.install --package-manager pnpm
 ```
 
-To re-run without overwriting customized files:
+#### Copy mode
+
+If you'd rather vendor the files into your repo — to customize them, or because your build can't resolve `deps/cinder_ui` (e.g. a monorepo with a relocated `node_modules`) — use `--copy`:
 
 ```bash
-mix cinder_ui.install --skip-existing
+mix cinder_ui.install --copy
 ```
 
-To only (re)copy `cinder_ui.css` and `cinder_ui.js` without patching `app.css`/`app.js`:
+This copies `cinder_ui.css` into `assets/css/` and `cinder_ui.js` into `assets/js/`, and patches `app.css`/`app.js` to import the local copies (`./cinder_ui.css` / `./cinder_ui`).
+
+Because copied files are a snapshot, **re-run the installer after upgrading Cinder UI** to refresh them. The patch step has already run, so skip it:
 
 ```bash
-mix cinder_ui.install --skip-patching
+mix cinder_ui.install --copy --skip-patching
 ```
+
+In copy mode, use `--skip-existing` to avoid overwriting files you've customized. `--skip-patching` also works in the default mode to leave `app.css`/`app.js` untouched.
 
 ### 4. Configure your app
 

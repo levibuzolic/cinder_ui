@@ -20,9 +20,8 @@ defmodule CinderUI.InstallTaskTest do
     %{tmp_dir: tmp_dir}
   end
 
-  test "installs into project root package manager when root package.json exists", %{
-    tmp_dir: tmp_dir
-  } do
+  test "default mode references deps without copying files and installs via root package manager",
+       %{tmp_dir: tmp_dir} do
     project = Path.join(tmp_dir, "project")
     assets = Path.join(project, "assets")
     bin_dir = Path.join(project, "bin")
@@ -44,14 +43,8 @@ defmodule CinderUI.InstallTaskTest do
       end)
     end)
 
-    assert File.exists?(Path.join(assets, "css/cinder_ui.css"))
-    assert File.exists?(Path.join(assets, "js/cinder_ui.js"))
-    assert File.read!(Path.join(assets, "css/cinder_ui.css")) == File.read!(@css_template_path)
-
-    installed_js = File.read!(Path.join(assets, "js/cinder_ui.js"))
-    assert installed_js =~ "export const CinderUIHooks"
-    assert installed_js =~ "export const CinderUI"
-    refute installed_js =~ ~r/^import \{/m
+    refute File.exists?(Path.join(assets, "css/cinder_ui.css"))
+    refute File.exists?(Path.join(assets, "js/cinder_ui.js"))
 
     npm_args = File.read!(Path.join(project, ".npm-args"))
     assert npm_args =~ "install"
@@ -61,7 +54,48 @@ defmodule CinderUI.InstallTaskTest do
 
     app_css = File.read!(Path.join(assets, "css/app.css"))
     assert app_css =~ "@source \"../../deps/cinder_ui\";"
+    assert app_css =~ "@import \"../../deps/cinder_ui/priv/templates/cinder_ui.css\";"
+
+    app_js = File.read!(Path.join(assets, "js/app.js"))
+    assert app_js =~ "import { CinderUIHooks } from \"cinder_ui\""
+    assert app_js =~ "Object.assign(Hooks, CinderUIHooks)"
+  end
+
+  test "copy mode copies generated files and references local copies", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+    bin_dir = Path.join(project, "bin")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.mkdir_p!(bin_dir)
+
+    File.write!(Path.join(project, "package.json"), "{\n  \"private\": true\n}\n")
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+    File.write!(Path.join(assets, "js/app.js"), "let Hooks = {}\n")
+
+    write_fake_npm!(bin_dir)
+
+    with_fake_path(bin_dir, fn ->
+      File.cd!(project, fn ->
+        Mix.Task.reenable(@task)
+        Mix.Task.run(@task, ["--assets-path", "assets", "--copy", "--package-manager", "npm"])
+      end)
+    end)
+
+    assert File.exists?(Path.join(assets, "css/cinder_ui.css"))
+    assert File.exists?(Path.join(assets, "js/cinder_ui.js"))
+    assert File.read!(Path.join(assets, "css/cinder_ui.css")) == File.read!(@css_template_path)
+
+    installed_js = File.read!(Path.join(assets, "js/cinder_ui.js"))
+    assert installed_js =~ "export const CinderUIHooks"
+    assert installed_js =~ "export const CinderUI"
+    refute installed_js =~ ~r/^import \{/m
+
+    app_css = File.read!(Path.join(assets, "css/app.css"))
+    assert app_css =~ "@source \"../../deps/cinder_ui\";"
     assert app_css =~ "@import \"./cinder_ui.css\";"
+    refute app_css =~ "deps/cinder_ui/priv/templates/cinder_ui.css"
 
     app_js = File.read!(Path.join(assets, "js/app.js"))
     assert app_js =~ "import { CinderUIHooks } from \"./cinder_ui\""
@@ -166,7 +200,7 @@ defmodule CinderUI.InstallTaskTest do
     end)
 
     app_js = File.read!(Path.join(assets, "js/app.js"))
-    assert app_js =~ "import { CinderUIHooks } from \"./cinder_ui\""
+    assert app_js =~ "import { CinderUIHooks } from \"cinder_ui\""
     assert app_js =~ "hooks: {...colocatedHooks, ...CinderUIHooks}"
   end
 
@@ -204,7 +238,7 @@ defmodule CinderUI.InstallTaskTest do
     end)
 
     app_js = File.read!(Path.join(assets, "js/app.js"))
-    assert app_js =~ "import { CinderUIHooks } from \"./cinder_ui\""
+    assert app_js =~ "import { CinderUIHooks } from \"cinder_ui\""
     assert app_js =~ "DemoHook"
     assert app_js =~ "...CinderUIHooks"
   end
@@ -275,6 +309,7 @@ defmodule CinderUI.InstallTaskTest do
         Mix.Task.run(@task, [
           "--assets-path",
           "assets",
+          "--copy",
           "--package-manager",
           "npm",
           "--skip-existing"
@@ -354,8 +389,8 @@ defmodule CinderUI.InstallTaskTest do
       end)
 
       assert_received {:mix_shell, :info, ["would create assets/package.json"]}
-      assert_received {:mix_shell, :info, ["would create assets/css/cinder_ui.css"]}
-      assert_received {:mix_shell, :info, ["would create assets/js/cinder_ui.js"]}
+      refute_received {:mix_shell, :info, ["would create assets/css/cinder_ui.css"]}
+      refute_received {:mix_shell, :info, ["would create assets/js/cinder_ui.js"]}
       assert_received {:mix_shell, :info, ["would update assets/css/app.css"]}
       assert_received {:mix_shell, :info, ["would update assets/js/app.js"]}
 

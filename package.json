@@ -1,0 +1,13 @@
+{
+  "name": "cinder_ui",
+  "version": "0.1.1",
+  "description": "Cinder UI LiveView hooks — imported directly from deps/cinder_ui by consuming Phoenix apps.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./priv/templates/cinder_ui/index.js"
+  },
+  "files": [
+    "priv/templates/cinder_ui"
+  ]
+}

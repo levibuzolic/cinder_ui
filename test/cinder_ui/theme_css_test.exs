@@ -39,7 +39,7 @@ defmodule CinderUI.ThemeCSSTest do
     demo_mix = File.read!(@demo_mix_path)
     demo_app_css = File.read!(@demo_app_css_path)
 
-    assert demo_mix =~ ~s("cinder_ui.install --assets-path assets --skip-patching")
+    assert demo_mix =~ ~s("cinder_ui.install --assets-path assets --copy --skip-patching")
     assert demo_app_css =~ ~s(@import "./cinder_ui.css";)
   end
 end
