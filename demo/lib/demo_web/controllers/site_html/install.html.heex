@@ -102,9 +102,12 @@ mix tailwind.install"
     <p>This will:</p>
     <ul>
       <li>
-        Update <code>assets/css/app.css</code> with:<br />
-        <code>@source "../../deps/cinder_ui";</code> — so Tailwind scans component classes<br />
-        <code>@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";</code> — loads theme tokens and animation utilities
+        Update <code>assets/css/app.css</code>
+        with:<br />
+        <code>@source "../../deps/cinder_ui";</code>
+        — so Tailwind scans component classes<br />
+        <code>@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";</code>
+        — loads theme tokens and animation utilities
       </li>
       <li>
         Update <code>assets/js/app.js</code>
@@ -119,8 +122,8 @@ mix tailwind.install"
       utilities are inlined into Cinder UI's CSS.
     </p>
     <p>
-      Prefer to wire it up by hand? Add those two lines to
-      <code>assets/css/app.css</code> yourself and skip the app patching:
+      Prefer to wire it up by hand? Add those two lines to <code>assets/css/app.css</code>
+      yourself and skip the app patching:
     </p>
     <Docs.docs_code_block
       source="mix cinder_ui.install --skip-patching"
