@@ -3,28 +3,53 @@ defmodule Mix.Tasks.CinderUi.Install do
   @moduledoc """
   Installs Cinder UI into a Phoenix project.
 
-  The task performs the following steps:
+  By default the task references Cinder UI's CSS and JavaScript directly from
+  `deps/cinder_ui` — nothing is copied into your project. It performs the
+  following steps:
 
-  1. Copies `cinder_ui.css` and `cinder_ui.js` into your `assets/` folder.
-  2. Updates `assets/css/app.css` with:
+  1. Updates `assets/css/app.css` with:
      - `@source "../../deps/cinder_ui";`
-     - `@import "./cinder_ui.css";`
-  3. Updates `assets/js/app.js` to merge Cinder UI LiveView hooks.
-  4. Installs `tailwindcss-animate` using your detected or selected package manager.
-     When no `package.json` exists in `assets/`, the installer will use the
-     project root `package.json` if present, or create a minimal one in `assets/`.
+     - `@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";`
+  2. Updates `assets/js/app.js` to import `CinderUIHooks` from the `cinder_ui`
+     package (resolved via Phoenix's default esbuild `NODE_PATH`) and merges
+     them into your LiveView hooks.
+  3. Installs `tailwindcss-animate` using your detected or selected package
+     manager. When no `package.json` exists in `assets/`, the installer will use
+     the project root `package.json` if present, or create a minimal one in
+     `assets/`.
+
+  Because the referenced files live in `deps/cinder_ui`, they update
+  automatically whenever you upgrade the dependency — no re-run required.
+
+  ## Copy mode
+
+  With `--copy`, the task instead copies `cinder_ui.css` and `cinder_ui.js` into
+  your `assets/` folder and patches `app.css`/`app.js` to reference the local
+  copies. Use this when you want to customize the shipped files, or when your
+  build can't resolve `deps/cinder_ui` (for example a monorepo with a relocated
+  `node_modules`).
+
+  In copy mode the files are a snapshot, so after upgrading Cinder UI re-run the
+  installer to refresh them. The patch step has already run, so pass
+  `--skip-patching` to only refresh the copies:
+
+      mix cinder_ui.install --copy --skip-patching
 
   ## Options
 
+    * `--copy` - copy `cinder_ui.css`/`cinder_ui.js` into `assets/` and reference
+      the local copies instead of `deps/cinder_ui`
     * `--assets-path` - path to the assets directory (default: `assets`)
     * `--package-manager` - `npm`, `pnpm`, `yarn`, or `bun`
-    * `--skip-existing` - do not overwrite Cinder UI generated files if they already exist
+    * `--skip-existing` - with `--copy`, do not overwrite copied files if they
+      already exist
     * `--skip-patching` - do not patch `assets/css/app.css` or `assets/js/app.js`
     * `--dry-run` - print planned changes without writing files or installing packages
 
   ## Example
 
-      mix cinder_ui.install --package-manager pnpm
+      mix cinder_ui.install
+      mix cinder_ui.install --copy --package-manager pnpm
   """
 
   use Mix.Task
@@ -38,6 +63,7 @@ defmodule Mix.Tasks.CinderUi.Install do
     {opts, _, _} =
       OptionParser.parse(argv,
         strict: [
+          copy: :boolean,
           assets_path: :string,
           package_manager: :string,
           skip_existing: :boolean,
@@ -50,35 +76,48 @@ defmodule Mix.Tasks.CinderUi.Install do
     if opts[:help] do
       Mix.shell().info(@moduledoc)
     else
-      assets_path = Path.expand(opts[:assets_path] || "assets", File.cwd!())
-      dry_run = opts[:dry_run] || false
-      package_install_path = resolve_package_install_path!(assets_path, dry_run)
-      package_manager = normalize_package_manager(opts[:package_manager], package_install_path)
-      skip_existing = opts[:skip_existing] || false
-      skip_patching = opts[:skip_patching] || false
-
-      ensure_assets_dir!(assets_path)
-
-      install_css!(assets_path, skip_existing, dry_run)
-      install_js!(assets_path, skip_existing, dry_run)
-
-      unless skip_patching do
-        patch_app_css!(assets_path, dry_run)
-        patch_app_js!(assets_path, dry_run)
-      end
-
-      maybe_install_package!(
-        package_install_path,
-        package_manager,
-        "tailwindcss-animate",
-        dry_run
-      )
-
-      Mix.shell().info(
-        if(dry_run, do: "Cinder UI dry run complete.", else: "Cinder UI install complete.")
-      )
+      install(opts)
     end
   end
+
+  defp install(opts) do
+    assets_path = Path.expand(opts[:assets_path] || "assets", File.cwd!())
+    dry_run = opts[:dry_run] || false
+    copy = opts[:copy] || false
+    package_install_path = resolve_package_install_path!(assets_path, dry_run)
+    package_manager = normalize_package_manager(opts[:package_manager], package_install_path)
+    skip_existing = opts[:skip_existing] || false
+    skip_patching = opts[:skip_patching] || false
+
+    ensure_assets_dir!(assets_path)
+
+    if copy do
+      install_css!(assets_path, skip_existing, dry_run)
+      install_js!(assets_path, skip_existing, dry_run)
+    end
+
+    unless skip_patching do
+      patch_app_css!(assets_path, copy, dry_run)
+      patch_app_js!(assets_path, copy, dry_run)
+    end
+
+    maybe_install_package!(package_install_path, package_manager, "tailwindcss-animate", dry_run)
+
+    maybe_print_copy_hint(copy, dry_run)
+    print_completion(dry_run)
+  end
+
+  defp maybe_print_copy_hint(true, false) do
+    Mix.shell().info(
+      "To refresh copied files after upgrading Cinder UI, re-run: " <>
+        "mix cinder_ui.install --copy --skip-patching"
+    )
+  end
+
+  defp maybe_print_copy_hint(_copy, _dry_run), do: :ok
+
+  defp print_completion(true), do: Mix.shell().info("Cinder UI dry run complete.")
+  defp print_completion(false), do: Mix.shell().info("Cinder UI install complete.")
 
   defp ensure_assets_dir!(assets_path) do
     unless File.dir?(assets_path) do
@@ -106,7 +145,12 @@ defmodule Mix.Tasks.CinderUi.Install do
     write_generated_file!(target, Assets.cinder_ui_js(), skip_existing, "created", dry_run)
   end
 
-  defp patch_app_css!(assets_path, dry_run) do
+  @copy_css_import "@import \"./cinder_ui.css\";"
+  @deps_css_import "@import \"../../deps/cinder_ui/priv/templates/cinder_ui.css\";"
+  @copy_js_import "import { CinderUIHooks } from \"./cinder_ui\""
+  @deps_js_import "import { CinderUIHooks } from \"cinder_ui\""
+
+  defp patch_app_css!(assets_path, copy, dry_run) do
     app_css_path = Path.join([assets_path, "css", "app.css"])
 
     base_content =
@@ -116,15 +160,17 @@ defmodule Mix.Tasks.CinderUi.Install do
         "@import \"tailwindcss\";\n"
       end
 
+    css_import = if copy, do: @copy_css_import, else: @deps_css_import
+
     updated_content =
       base_content
       |> ensure_line("@source \"../../deps/cinder_ui\";")
-      |> ensure_line("@import \"./cinder_ui.css\";")
+      |> ensure_line(css_import)
 
     write_if_changed!(app_css_path, base_content, updated_content, dry_run)
   end
 
-  defp patch_app_js!(assets_path, dry_run) do
+  defp patch_app_js!(assets_path, copy, dry_run) do
     app_js_path = Path.join([assets_path, "js", "app.js"])
 
     base_content =
@@ -134,9 +180,11 @@ defmodule Mix.Tasks.CinderUi.Install do
         "import { LiveSocket } from \"phoenix_live_view\"\nlet Hooks = {}\n"
       end
 
+    js_import = if copy, do: @copy_js_import, else: @deps_js_import
+
     updated_content =
       base_content
-      |> ensure_line("import { CinderUIHooks } from \"./cinder_ui\"")
+      |> ensure_line(js_import)
       |> inject_hooks_merge()
 
     write_if_changed!(app_js_path, base_content, updated_content, dry_run)

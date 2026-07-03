@@ -34,6 +34,8 @@ Stable releases publish both the Hex package and HexDocs. Beta/prerelease releas
    @version "0.1.0"
    ```
 
+   Keep the `version` field in [`package.json`](./package.json) in sync — it ships in the Hex package for consumers who import Cinder UI's JS from `deps/cinder_ui`.
+
 2. Update the changelog and any release notes.
 
 3. Verify the package locally:

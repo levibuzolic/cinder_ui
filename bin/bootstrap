@@ -69,8 +69,8 @@ run_demo_cinder_ui_install() {
   local dir="$1"
 
   if [[ -f "${dir}/mix.exs" ]]; then
-    echo "==> demo: mix cinder_ui.install --assets-path assets --skip-patching"
-    run_with_mise "$dir" mix cinder_ui.install --assets-path assets --skip-patching
+    echo "==> demo: mix cinder_ui.install --assets-path assets --copy --skip-patching"
+    run_with_mise "$dir" mix cinder_ui.install --assets-path assets --copy --skip-patching
   else
     echo "==> demo: no mix.exs found, skipping Cinder UI asset install"
   fi

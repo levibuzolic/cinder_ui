@@ -94,6 +94,7 @@ defmodule CinderUI.MixProject do
         "priv",
         "doc/screenshots",
         "mix.exs",
+        "package.json",
         "README.md",
         "LICENSE"
       ]
