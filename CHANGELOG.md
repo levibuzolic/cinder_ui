@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-03
+
 ### Changed
 
 - `mix cinder_ui.install` now references Cinder UI's CSS and JS directly from `deps/cinder_ui` by default instead of copying them into your project, so they stay in sync automatically on upgrade. It patches `app.css` to `@import` the library CSS from deps and `app.js` to import `CinderUIHooks` from the `cinder_ui` package (resolved via Phoenix's esbuild `NODE_PATH`).
