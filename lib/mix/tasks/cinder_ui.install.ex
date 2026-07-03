@@ -76,45 +76,48 @@ defmodule Mix.Tasks.CinderUi.Install do
     if opts[:help] do
       Mix.shell().info(@moduledoc)
     else
-      assets_path = Path.expand(opts[:assets_path] || "assets", File.cwd!())
-      dry_run = opts[:dry_run] || false
-      copy = opts[:copy] || false
-      package_install_path = resolve_package_install_path!(assets_path, dry_run)
-      package_manager = normalize_package_manager(opts[:package_manager], package_install_path)
-      skip_existing = opts[:skip_existing] || false
-      skip_patching = opts[:skip_patching] || false
-
-      ensure_assets_dir!(assets_path)
-
-      if copy do
-        install_css!(assets_path, skip_existing, dry_run)
-        install_js!(assets_path, skip_existing, dry_run)
-      end
-
-      unless skip_patching do
-        patch_app_css!(assets_path, copy, dry_run)
-        patch_app_js!(assets_path, copy, dry_run)
-      end
-
-      maybe_install_package!(
-        package_install_path,
-        package_manager,
-        "tailwindcss-animate",
-        dry_run
-      )
-
-      if copy and not dry_run do
-        Mix.shell().info(
-          "To refresh copied files after upgrading Cinder UI, re-run: " <>
-            "mix cinder_ui.install --copy --skip-patching"
-        )
-      end
-
-      Mix.shell().info(
-        if(dry_run, do: "Cinder UI dry run complete.", else: "Cinder UI install complete.")
-      )
+      install(opts)
     end
   end
+
+  defp install(opts) do
+    assets_path = Path.expand(opts[:assets_path] || "assets", File.cwd!())
+    dry_run = opts[:dry_run] || false
+    copy = opts[:copy] || false
+    package_install_path = resolve_package_install_path!(assets_path, dry_run)
+    package_manager = normalize_package_manager(opts[:package_manager], package_install_path)
+    skip_existing = opts[:skip_existing] || false
+    skip_patching = opts[:skip_patching] || false
+
+    ensure_assets_dir!(assets_path)
+
+    if copy do
+      install_css!(assets_path, skip_existing, dry_run)
+      install_js!(assets_path, skip_existing, dry_run)
+    end
+
+    unless skip_patching do
+      patch_app_css!(assets_path, copy, dry_run)
+      patch_app_js!(assets_path, copy, dry_run)
+    end
+
+    maybe_install_package!(package_install_path, package_manager, "tailwindcss-animate", dry_run)
+
+    maybe_print_copy_hint(copy, dry_run)
+    print_completion(dry_run)
+  end
+
+  defp maybe_print_copy_hint(true, false) do
+    Mix.shell().info(
+      "To refresh copied files after upgrading Cinder UI, re-run: " <>
+        "mix cinder_ui.install --copy --skip-patching"
+    )
+  end
+
+  defp maybe_print_copy_hint(_copy, _dry_run), do: :ok
+
+  defp print_completion(true), do: Mix.shell().info("Cinder UI dry run complete.")
+  defp print_completion(false), do: Mix.shell().info("Cinder UI install complete.")
 
   defp ensure_assets_dir!(assets_path) do
     unless File.dir?(assets_path) do

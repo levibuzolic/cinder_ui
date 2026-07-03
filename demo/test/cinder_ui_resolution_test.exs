@@ -8,13 +8,15 @@ defmodule Demo.CinderUIResolutionTest do
   `cinder_ui` package via `NODE_PATH`, and Tailwind resolving the CSS
   `@import`/`@plugin` by walking up to the project-root `node_modules`.
 
-  This builds a throwaway, consumer-shaped fixture that references Cinder UI from
+  This builds a hermetic, consumer-shaped fixture that references Cinder UI from
   `deps/cinder_ui` and runs the real esbuild and Tailwind binaries against it.
+  The `tailwindcss-animate` peer dependency is faked with a no-op stub so the
+  test exercises `@plugin` *resolution* (the novel part) without depending on an
+  installed `node_modules`.
   """
   use ExUnit.Case, async: false
 
   @repo_root Path.expand("../..", __DIR__)
-  @demo_root Path.expand("..", __DIR__)
 
   setup_all do
     # The demo installs these during `mix assets.setup`; ensure they exist so the
@@ -50,8 +52,9 @@ defmodule Demo.CinderUIResolutionTest do
       Path.join(deps_pkg, "priv/templates/cinder_ui.css")
     )
 
-    # `tailwindcss-animate` must resolve from the project-root node_modules.
-    File.ln_s!(Path.join(@demo_root, "node_modules"), Path.join(tmp, "node_modules"))
+    # A no-op stub for the `tailwindcss-animate` peer dep, at the fixture root so
+    # Tailwind resolves `@plugin` by walking up from the deps-located CSS file.
+    stub_plugin(Path.join([tmp, "node_modules", "tailwindcss-animate"]))
 
     css_dir = Path.join([tmp, "assets", "css"])
     js_dir = Path.join([tmp, "assets", "js"])
@@ -107,12 +110,29 @@ defmodule Demo.CinderUIResolutionTest do
         stderr_to_stdout: true
       )
 
+    # A non-zero exit here means `@plugin "tailwindcss-animate"` failed to
+    # resolve from the deps-located CSS file.
     assert status == 0, output
 
+    # Theme tokens sourced from cinder_ui.css prove the deps `@import` resolved.
     css = File.read!(out)
-    # Theme tokens sourced from cinder_ui.css.
     assert css =~ "oklch("
-    # Output contributed by the tailwindcss-animate `@plugin`.
-    assert css =~ ~r/fade-(in|out)|animate-(in|out)/
+  end
+
+  defp stub_plugin(dir) do
+    File.mkdir_p!(dir)
+
+    File.write!(Path.join(dir, "package.json"), """
+    {
+      "name": "tailwindcss-animate",
+      "version": "0.0.0-stub",
+      "main": "index.js"
+    }
+    """)
+
+    File.write!(Path.join(dir, "index.js"), """
+    module.exports = function tailwindcssAnimateStub() {}
+    module.exports.default = module.exports
+    """)
   end
 end
