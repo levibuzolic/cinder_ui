@@ -211,7 +211,7 @@ jobs:
 
       - name: Generate visual autofix artifacts
         if: failure()
-        run: npx playwright test tests/browser/visual.spec.ts --update-snapshots
+        run: npx playwright test tests/browser/visual.spec.ts tests/browser/example_visual.spec.ts --update-snapshots
 
       - name: Upload visual autofix artifacts
         if: failure()
@@ -220,6 +220,7 @@ jobs:
           name: playwright-visual-autofix
           path: |
             demo/tests/browser/visual.spec.ts-snapshots
+            demo/tests/browser/example_visual.spec.ts-snapshots
             doc/screenshots
           if-no-files-found: ignore
 
@@ -316,7 +317,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           created_commit=false
 
-          git add -A -- . ':(exclude)demo/tests/browser/visual.spec.ts-snapshots'
+          git add -A -- . ':(exclude)demo/tests/browser/visual.spec.ts-snapshots' ':(exclude)demo/tests/browser/example_visual.spec.ts-snapshots'
 
           if git diff --cached --quiet; then
             echo "No formatting changes to commit."
@@ -325,7 +326,7 @@ jobs:
             created_commit=true
           fi
 
-          git add -A demo/tests/browser/visual.spec.ts-snapshots
+          git add -A demo/tests/browser/visual.spec.ts-snapshots demo/tests/browser/example_visual.spec.ts-snapshots
 
           if git diff --cached --quiet; then
             echo "No snapshot updates to commit."
