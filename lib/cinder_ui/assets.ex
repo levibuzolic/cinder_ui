@@ -27,12 +27,6 @@ defmodule CinderUI.Assets do
     "index.js"
   ]
 
-  def cinder_ui_css do
-    @template_dir
-    |> Path.join("cinder_ui.css")
-    |> File.read!()
-  end
-
   def cinder_ui_js do
     body =
       @js_sources

@@ -108,43 +108,42 @@ mix deps.get
 
 ### 3. Run the installer
 
-Cinder UI includes a Mix task that sets up CSS, JavaScript hooks, and Tailwind plugins automatically:
+Cinder UI includes a Mix task that wires its CSS and JavaScript hooks into your Phoenix app:
 
 ```bash
 mix cinder_ui.install
 ```
 
-By default this references Cinder UI's CSS and JS **directly from `deps/cinder_ui`** — nothing is copied into your project, so the assets stay in sync automatically when you upgrade the dependency. It will:
+This references Cinder UI's CSS and JS **directly from `deps/cinder_ui`** — nothing is copied into your project, so the assets stay in sync automatically when you upgrade the dependency. It will:
 
 - Update `assets/css/app.css` with:
   - `@source "../../deps/cinder_ui";` — so Tailwind scans component classes
-  - `@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";` — loads theme tokens
+  - `@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";` — loads theme tokens and animation utilities
 - Update `assets/js/app.js` to import `CinderUIHooks` from the `cinder_ui` package (resolved via Phoenix's default esbuild `NODE_PATH`) and merge them into your LiveView hooks
-- Install the `tailwindcss-animate` npm package (a required peer dependency, resolved from your project's `node_modules`)
 
-The installer auto-detects your package manager (npm, pnpm, yarn, or bun). To specify one explicitly:
+There is **no npm package to install** — the [`tailwindcss-animate`](https://github.com/jamiebuilds/tailwindcss-animate) animation utilities are inlined directly into Cinder UI's CSS.
 
-```bash
-mix cinder_ui.install --package-manager pnpm
+#### Wiring it up by hand
+
+The CSS edit is just two lines. If you'd rather not run the task, add them to `assets/css/app.css` yourself (after `@import "tailwindcss";`):
+
+```css
+@source "../../deps/cinder_ui";
+@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";
 ```
 
-#### Copy mode
+Then import the hooks in `assets/js/app.js` and merge them into your LiveView hooks:
 
-If you'd rather vendor the files into your repo — to customize them, or because your build can't resolve `deps/cinder_ui` (e.g. a monorepo with a relocated `node_modules`) — use `--copy`:
-
-```bash
-mix cinder_ui.install --copy
+```js
+import { CinderUIHooks } from "cinder_ui"
+// ...
+let liveSocket = new LiveSocket("/live", Socket, {
+  hooks: { ...CinderUIHooks },
+  // ...
+})
 ```
 
-This copies `cinder_ui.css` into `assets/css/` and `cinder_ui.js` into `assets/js/`, and patches `app.css`/`app.js` to import the local copies (`./cinder_ui.css` / `./cinder_ui`).
-
-Because copied files are a snapshot, **re-run the installer after upgrading Cinder UI** to refresh them. The patch step has already run, so skip it:
-
-```bash
-mix cinder_ui.install --copy --skip-patching
-```
-
-In copy mode, use `--skip-existing` to avoid overwriting files you've customized. `--skip-patching` also works in the default mode to leave `app.css`/`app.js` untouched.
+Pass `--skip-patching` to run the task without touching `app.css`/`app.js`.
 
 ### 4. Configure your app
 
@@ -485,7 +484,7 @@ Cinder UI uses shadcn-style CSS variables (`--background`, `--foreground`, `--pr
 }
 ```
 
-Set your preferred corner scale by changing `--radius`; component classes (`rounded-md`, `rounded-lg`, etc.) derive from that value through the Tailwind token mapping in `assets/css/cinder_ui.css`.
+Set your preferred corner scale by changing `--radius`; component classes (`rounded-md`, `rounded-lg`, etc.) derive from that value through the Tailwind token mapping in Cinder UI's CSS (`deps/cinder_ui/priv/templates/cinder_ui.css`).
 
 ## API Docs
 

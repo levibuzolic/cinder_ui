@@ -1,11 +1,12 @@
 defmodule Mix.Tasks.CinderUi.Install do
-  @shortdoc "Installs Cinder UI assets and Tailwind dependencies"
+  @shortdoc "Wires Cinder UI's CSS and JavaScript into a Phoenix project"
   @moduledoc """
   Installs Cinder UI into a Phoenix project.
 
-  By default the task references Cinder UI's CSS and JavaScript directly from
-  `deps/cinder_ui` — nothing is copied into your project. It performs the
-  following steps:
+  Cinder UI's CSS and JavaScript are referenced directly from `deps/cinder_ui` —
+  nothing is copied into your project, and there is no npm package to install
+  (the `tailwindcss-animate` utilities are inlined into Cinder UI's CSS). The
+  task performs two edits:
 
   1. Updates `assets/css/app.css` with:
      - `@source "../../deps/cinder_ui";`
@@ -13,60 +14,48 @@ defmodule Mix.Tasks.CinderUi.Install do
   2. Updates `assets/js/app.js` to import `CinderUIHooks` from the `cinder_ui`
      package (resolved via Phoenix's default esbuild `NODE_PATH`) and merges
      them into your LiveView hooks.
-  3. Installs `tailwindcss-animate` using your detected or selected package
-     manager. When no `package.json` exists in `assets/`, the installer will use
-     the project root `package.json` if present, or create a minimal one in
-     `assets/`.
 
   Because the referenced files live in `deps/cinder_ui`, they update
   automatically whenever you upgrade the dependency — no re-run required.
 
-  ## Copy mode
+  ## Doing it by hand
 
-  With `--copy`, the task instead copies `cinder_ui.css` and `cinder_ui.js` into
-  your `assets/` folder and patches `app.css`/`app.js` to reference the local
-  copies. Use this when you want to customize the shipped files, or when your
-  build can't resolve `deps/cinder_ui` (for example a monorepo with a relocated
-  `node_modules`).
+  The CSS edit is just two lines. If you would rather not run the task, add them
+  to `assets/css/app.css` yourself (after `@import "tailwindcss";`):
 
-  In copy mode the files are a snapshot, so after upgrading Cinder UI re-run the
-  installer to refresh them. The patch step has already run, so pass
-  `--skip-patching` to only refresh the copies:
+      @source "../../deps/cinder_ui";
+      @import "../../deps/cinder_ui/priv/templates/cinder_ui.css";
 
-      mix cinder_ui.install --copy --skip-patching
+  Then import the hooks in `assets/js/app.js` and merge them into your LiveView
+  hooks:
+
+      import { CinderUIHooks } from "cinder_ui"
+      // ...
+      let liveSocket = new LiveSocket("/live", Socket, {
+        hooks: { ...CinderUIHooks },
+        // ...
+      })
 
   ## Options
 
-    * `--copy` - copy `cinder_ui.css`/`cinder_ui.js` into `assets/` and reference
-      the local copies instead of `deps/cinder_ui`
     * `--assets-path` - path to the assets directory (default: `assets`)
-    * `--package-manager` - `npm`, `pnpm`, `yarn`, or `bun`
-    * `--skip-existing` - with `--copy`, do not overwrite copied files if they
-      already exist
     * `--skip-patching` - do not patch `assets/css/app.css` or `assets/js/app.js`
-    * `--dry-run` - print planned changes without writing files or installing packages
+    * `--dry-run` - print planned changes without writing files
 
   ## Example
 
       mix cinder_ui.install
-      mix cinder_ui.install --copy --package-manager pnpm
+      mix cinder_ui.install --assets-path assets
   """
 
   use Mix.Task
-
-  alias CinderUI.Assets
-
-  @supported_pm ~w(npm pnpm yarn bun)
 
   @impl true
   def run(argv) do
     {opts, _, _} =
       OptionParser.parse(argv,
         strict: [
-          copy: :boolean,
           assets_path: :string,
-          package_manager: :string,
-          skip_existing: :boolean,
           skip_patching: :boolean,
           dry_run: :boolean,
           help: :boolean
@@ -83,38 +72,17 @@ defmodule Mix.Tasks.CinderUi.Install do
   defp install(opts) do
     assets_path = Path.expand(opts[:assets_path] || "assets", File.cwd!())
     dry_run = opts[:dry_run] || false
-    copy = opts[:copy] || false
-    package_install_path = resolve_package_install_path!(assets_path, dry_run)
-    package_manager = normalize_package_manager(opts[:package_manager], package_install_path)
-    skip_existing = opts[:skip_existing] || false
     skip_patching = opts[:skip_patching] || false
 
     ensure_assets_dir!(assets_path)
 
-    if copy do
-      install_css!(assets_path, skip_existing, dry_run)
-      install_js!(assets_path, skip_existing, dry_run)
-    end
-
     unless skip_patching do
-      patch_app_css!(assets_path, copy, dry_run)
-      patch_app_js!(assets_path, copy, dry_run)
+      patch_app_css!(assets_path, dry_run)
+      patch_app_js!(assets_path, dry_run)
     end
 
-    maybe_install_package!(package_install_path, package_manager, "tailwindcss-animate", dry_run)
-
-    maybe_print_copy_hint(copy, dry_run)
     print_completion(dry_run)
   end
-
-  defp maybe_print_copy_hint(true, false) do
-    Mix.shell().info(
-      "To refresh copied files after upgrading Cinder UI, re-run: " <>
-        "mix cinder_ui.install --copy --skip-patching"
-    )
-  end
-
-  defp maybe_print_copy_hint(_copy, _dry_run), do: :ok
 
   defp print_completion(true), do: Mix.shell().info("Cinder UI dry run complete.")
   defp print_completion(false), do: Mix.shell().info("Cinder UI install complete.")
@@ -125,32 +93,11 @@ defmodule Mix.Tasks.CinderUi.Install do
     end
   end
 
-  defp install_css!(assets_path, skip_existing, dry_run) do
-    target = Path.join([assets_path, "css", "cinder_ui.css"])
+  @css_source "@source \"../../deps/cinder_ui\";"
+  @css_import "@import \"../../deps/cinder_ui/priv/templates/cinder_ui.css\";"
+  @js_import "import { CinderUIHooks } from \"cinder_ui\""
 
-    unless dry_run do
-      File.mkdir_p!(Path.dirname(target))
-    end
-
-    write_generated_file!(target, Assets.cinder_ui_css(), skip_existing, "created", dry_run)
-  end
-
-  defp install_js!(assets_path, skip_existing, dry_run) do
-    target = Path.join([assets_path, "js", "cinder_ui.js"])
-
-    unless dry_run do
-      File.mkdir_p!(Path.dirname(target))
-    end
-
-    write_generated_file!(target, Assets.cinder_ui_js(), skip_existing, "created", dry_run)
-  end
-
-  @copy_css_import "@import \"./cinder_ui.css\";"
-  @deps_css_import "@import \"../../deps/cinder_ui/priv/templates/cinder_ui.css\";"
-  @copy_js_import "import { CinderUIHooks } from \"./cinder_ui\""
-  @deps_js_import "import { CinderUIHooks } from \"cinder_ui\""
-
-  defp patch_app_css!(assets_path, copy, dry_run) do
+  defp patch_app_css!(assets_path, dry_run) do
     app_css_path = Path.join([assets_path, "css", "app.css"])
 
     base_content =
@@ -160,17 +107,15 @@ defmodule Mix.Tasks.CinderUi.Install do
         "@import \"tailwindcss\";\n"
       end
 
-    css_import = if copy, do: @copy_css_import, else: @deps_css_import
-
     updated_content =
       base_content
-      |> ensure_line("@source \"../../deps/cinder_ui\";")
-      |> ensure_line(css_import)
+      |> ensure_line(@css_source)
+      |> ensure_line(@css_import)
 
     write_if_changed!(app_css_path, base_content, updated_content, dry_run)
   end
 
-  defp patch_app_js!(assets_path, copy, dry_run) do
+  defp patch_app_js!(assets_path, dry_run) do
     app_js_path = Path.join([assets_path, "js", "app.js"])
 
     base_content =
@@ -180,11 +125,9 @@ defmodule Mix.Tasks.CinderUi.Install do
         "import { LiveSocket } from \"phoenix_live_view\"\nlet Hooks = {}\n"
       end
 
-    js_import = if copy, do: @copy_js_import, else: @deps_js_import
-
     updated_content =
       base_content
-      |> ensure_line(js_import)
+      |> ensure_line(@js_import)
       |> inject_hooks_merge()
 
     write_if_changed!(app_js_path, base_content, updated_content, dry_run)
@@ -489,135 +432,6 @@ defmodule Mix.Tasks.CinderUi.Install do
   defp write_if_changed!(path, _old_content, new_content, false) do
     File.write!(path, new_content)
     Mix.shell().info("updated #{relative(path)}")
-  end
-
-  defp maybe_install_package!(install_path, package_manager, package, dry_run) do
-    cond do
-      package_installed?(install_path, package) ->
-        Mix.shell().info("already present #{package} (in #{relative(install_path)})")
-        :ok
-
-      dry_run ->
-        {cmd, args} = package_command(package_manager, package)
-
-        Mix.shell().info(
-          "would run #{cmd} #{Enum.join(args, " ")} (in #{relative(install_path)})"
-        )
-
-        :ok
-
-      true ->
-        install_package!(install_path, package_manager, package)
-    end
-  end
-
-  defp install_package!(install_path, package_manager, package) do
-    {cmd, args} = package_command(package_manager, package)
-    Mix.shell().info("running #{cmd} #{Enum.join(args, " ")} (in #{relative(install_path)})")
-
-    {output, status} = System.cmd(cmd, args, cd: install_path, stderr_to_stdout: true)
-
-    case status do
-      0 ->
-        Mix.shell().info(String.trim(output))
-
-      _ ->
-        Mix.shell().error(String.trim(output))
-        Mix.raise("failed to install #{package} using #{package_manager}")
-    end
-  end
-
-  defp package_installed?(install_path, package) do
-    package_json_path = Path.join(install_path, "package.json")
-
-    with true <- File.exists?(package_json_path),
-         {:ok, content} <- File.read(package_json_path),
-         {:ok, package_json} <- Jason.decode(content) do
-      declared_dependency?(package_json["dependencies"], package) ||
-        declared_dependency?(package_json["devDependencies"], package)
-    else
-      _ -> false
-    end
-  end
-
-  defp declared_dependency?(dependencies, package) when is_map(dependencies) do
-    Map.has_key?(dependencies, package)
-  end
-
-  defp declared_dependency?(_, _package), do: false
-
-  defp resolve_package_install_path!(assets_path, dry_run) do
-    assets_package_json = Path.join(assets_path, "package.json")
-    project_path = Path.dirname(assets_path)
-    project_package_json = Path.join(project_path, "package.json")
-
-    cond do
-      File.exists?(assets_package_json) ->
-        assets_path
-
-      File.exists?(project_package_json) ->
-        project_path
-
-      true ->
-        if dry_run do
-          Mix.shell().info("would create #{relative(assets_package_json)}")
-        else
-          File.write!(assets_package_json, "{\n  \"private\": true\n}\n")
-          Mix.shell().info("created #{relative(assets_package_json)}")
-        end
-
-        assets_path
-    end
-  end
-
-  defp package_command("npm", package), do: {"npm", ["install", "-D", package]}
-  defp package_command("pnpm", package), do: {"pnpm", ["add", "-D", package]}
-  defp package_command("yarn", package), do: {"yarn", ["add", "-D", package]}
-  defp package_command("bun", package), do: {"bun", ["add", "-d", package]}
-
-  defp write_generated_file!(path, _content, true, _verb, true) do
-    if File.exists?(path) do
-      Mix.shell().info("would skip existing #{relative(path)}")
-    else
-      Mix.shell().info("would create #{relative(path)}")
-    end
-  end
-
-  defp write_generated_file!(path, content, true, verb, false) do
-    if File.exists?(path) do
-      Mix.shell().info("skipped existing #{relative(path)}")
-    else
-      File.write!(path, content)
-      Mix.shell().info("#{verb} #{relative(path)}")
-    end
-  end
-
-  defp write_generated_file!(path, _content, false, _verb, true) do
-    action = if File.exists?(path), do: "would update", else: "would create"
-    Mix.shell().info("#{action} #{relative(path)}")
-  end
-
-  defp write_generated_file!(path, content, false, verb, false) do
-    File.write!(path, content)
-    Mix.shell().info("#{verb} #{relative(path)}")
-  end
-
-  defp normalize_package_manager(nil, assets_path) do
-    cond do
-      File.exists?(Path.join(assets_path, "pnpm-lock.yaml")) -> "pnpm"
-      File.exists?(Path.join(assets_path, "yarn.lock")) -> "yarn"
-      File.exists?(Path.join(assets_path, "bun.lock")) -> "bun"
-      File.exists?(Path.join(assets_path, "bun.lockb")) -> "bun"
-      true -> "npm"
-    end
-  end
-
-  defp normalize_package_manager(value, _assets_path) when value in @supported_pm, do: value
-
-  defp normalize_package_manager(value, _assets_path) do
-    Mix.raise(
-      "unsupported package manager: #{inspect(value)}. Expected one of #{Enum.join(@supported_pm, ", ")}"
-    )
   end
 
   defp relative(path), do: Path.relative_to(path, File.cwd!())

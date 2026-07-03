@@ -472,7 +472,7 @@ defmodule CinderUI.Site.Marketing do
 
     terminal_code = """
     mix deps.get
-    mix cinder_ui.install --skip-existing
+    mix cinder_ui.install
     """
 
     assigns = %{

@@ -26,7 +26,7 @@ Thanks for contributing. This guide is for humans first: the goal is to help you
 
 Notes:
 
-- `./bin/bootstrap` runs `mise trust`, `mise install`, dependency installation for both the repo root and `demo`, and `mix cinder_ui.install --assets-path assets --copy --skip-patching` in `demo`. The demo uses `--copy` because it depends on Cinder UI as a path dependency and has no `deps/cinder_ui` to reference.
+- `./bin/bootstrap` runs `mise trust`, `mise install`, and dependency installation for both the repo root and `demo`. The demo references Cinder UI's CSS and JS **directly from the library source** (`../../../priv/templates/...`) rather than from `deps/cinder_ui`, because it depends on Cinder UI as an in-repo path dependency and has no `deps/cinder_ui` to reference.
 - `./bin/bootstrap` also installs git hooks via `lefthook install`.
 - `./bin/demo` accepts `--port <port>` or `--port=<port>` to avoid conflicts with Playwright or another local server.
 - Root package includes `lucide_icons` as an optional dependency for `CinderUI.Icons.icon/1` and icon-backed component primitives.

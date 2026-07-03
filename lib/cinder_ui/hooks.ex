@@ -3,16 +3,11 @@ defmodule CinderUI.Hooks do
   JS hook integration helpers.
 
   The hooks ship in `deps/cinder_ui` and `mix cinder_ui.install` wires them into
-  your `assets/js/app.js` by importing them from the `cinder_ui` package. In
-  `--copy` mode they are copied to `assets/js/cinder_ui.js` and imported from
-  `./cinder_ui` instead.
+  your `assets/js/app.js` by importing them from the `cinder_ui` package.
   """
 
   @doc """
   Returns an import snippet for Phoenix `assets/js/app.js`.
-
-  Uses the default (non-copy) import path. In `--copy` mode, import from
-  `"./cinder_ui"` instead.
   """
   @spec app_js_snippet() :: String.t()
   def app_js_snippet do

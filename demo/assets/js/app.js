@@ -80,4 +80,4 @@ if (process.env.NODE_ENV === "development") {
     window.liveReloader = reloader
   })
 }
-import { CinderUIHooks } from "./cinder_ui"
+import { CinderUIHooks } from "../../../priv/templates/cinder_ui/index.js"
