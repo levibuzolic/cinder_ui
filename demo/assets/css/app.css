@@ -17,9 +17,8 @@
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
-/* This file is for your main application CSS */
-@source "../../deps/cinder_ui";
-@import "./cinder_ui.css";
+/* Cinder UI, referenced directly from the library source in this repo */
+@import "../../../priv/templates/cinder_ui.css";
 
 /* Only required because we're using a local version of CinderUI */
 @source "../../../lib/cinder_ui";

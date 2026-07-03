@@ -35,11 +35,19 @@ defmodule CinderUI.ThemeCSSTest do
     assert "priv" in package_files
   end
 
-  test "demo asset build regenerates its generated CSS copy" do
+  test "theme CSS inlines the tailwindcss-animate utilities instead of the plugin" do
+    css = File.read!(@css_path)
+
+    refute css =~ ~s(@plugin "tailwindcss-animate")
+    assert css =~ "@keyframes enter"
+    assert css =~ "@utility animate-in" or css =~ "--animate-in:"
+  end
+
+  test "demo references the library CSS source directly" do
     demo_mix = File.read!(@demo_mix_path)
     demo_app_css = File.read!(@demo_app_css_path)
 
-    assert demo_mix =~ ~s("cinder_ui.install --assets-path assets --copy --skip-patching")
-    assert demo_app_css =~ ~s(@import "./cinder_ui.css";)
+    refute demo_mix =~ "cinder_ui.install"
+    assert demo_app_css =~ ~s(@import "../../../priv/templates/cinder_ui.css";)
   end
 end

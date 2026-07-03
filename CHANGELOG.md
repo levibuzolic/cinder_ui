@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Cinder UI now inlines the `tailwindcss-animate` animation utilities directly into its CSS (via the Tailwind v4 `tw-animate-css` port). Consuming apps no longer need the `tailwindcss-animate` npm package — the animation classes resolve straight from `deps/cinder_ui` with no peer dependency or extra setup. This also fixes plugin resolution failures under the default (non-copy) install, where `@plugin "tailwindcss-animate"` could not be resolved from `deps/cinder_ui`.
+
+### Removed
+
+- Removed copy mode from `mix cinder_ui.install` (the `--copy`, `--skip-existing`, and `--package-manager` options) along with the npm install step. With the animation utilities inlined, the installer only patches `app.css` and `app.js` to reference `deps/cinder_ui`; `--assets-path`, `--skip-patching`, and `--dry-run` remain.
+
 ## [0.2.0] - 2026-07-03
 
 ### Changed

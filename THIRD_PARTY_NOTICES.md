@@ -26,7 +26,17 @@ Cinder UI styling and token conventions are built around Tailwind CSS.
 - License: MIT
 - License text: [tailwindcss-animate LICENSE](https://github.com/jamiebuilds/tailwindcss-animate/blob/main/LICENSE)
 
-The installer automatically adds this plugin to host projects.
+Cinder UI's animation utilities originate from `tailwindcss-animate`.
+
+## tw-animate-css
+
+- Repository: [github.com/Wombosvideo/tw-animate-css](https://github.com/Wombosvideo/tw-animate-css)
+- License: MIT
+- License text: [tw-animate-css LICENSE](https://github.com/Wombosvideo/tw-animate-css/blob/main/LICENSE)
+
+Cinder UI inlines this Tailwind CSS v4 port of `tailwindcss-animate` directly
+into its CSS (`priv/templates/cinder_ui.css`), so host projects need no npm
+peer dependency for animations.
 
 ## lucide_icons
 
@@ -48,4 +58,4 @@ Cinder UI uses `lucide_icons` as the optional icon-rendering backend for `Cinder
 
 ## Thank You
 
-Thank you to the shadcn/ui, Tailwind CSS, tailwindcss-animate, lucide_icons, and Lucide maintainers and contributors for making these projects available to the community.
+Thank you to the shadcn/ui, Tailwind CSS, tailwindcss-animate, tw-animate-css, lucide_icons, and Lucide maintainers and contributors for making these projects available to the community.

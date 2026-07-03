@@ -91,8 +91,8 @@ mix tailwind.install"
 
     <h2 id="run-installer">3. Run the installer</h2>
     <p>
-      Cinder UI includes a Mix task that sets up CSS, JavaScript hooks,
-      and Tailwind plugins automatically:
+      Cinder UI includes a Mix task that wires its CSS and JavaScript hooks
+      into your Phoenix app:
     </p>
     <Docs.docs_code_block
       source="mix cinder_ui.install"
@@ -102,42 +102,26 @@ mix tailwind.install"
     <p>This will:</p>
     <ul>
       <li>
-        Copy <code>cinder_ui.css</code>
-        into <code>assets/css/</code>
-        (theme variables and dark mode)
-      </li>
-      <li>
-        Copy <code>cinder_ui.js</code>
-        into <code>assets/js/</code>
-        (LiveView hooks for interactive components)
-      </li>
-      <li>
         Update <code>assets/css/app.css</code> with:<br />
         <code>@source "../../deps/cinder_ui";</code> — so Tailwind scans component classes<br />
-        <code>@import "./cinder_ui.css";</code> — loads theme tokens
+        <code>@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";</code> — loads theme tokens and animation utilities
       </li>
       <li>
         Update <code>assets/js/app.js</code>
         to merge <code>CinderUIHooks</code>
         into your LiveView hooks
       </li>
-      <li>Install the <code>tailwindcss-animate</code> npm package</li>
     </ul>
     <p>
-      The installer auto-detects your package manager (npm, pnpm, yarn, or bun). To specify one explicitly:
+      Everything is referenced straight from <code>deps/cinder_ui</code>, so it
+      stays in sync automatically whenever you upgrade the dependency. There is
+      no npm package to install — the <code>tailwindcss-animate</code> animation
+      utilities are inlined into Cinder UI's CSS.
     </p>
-    <Docs.docs_code_block
-      source="mix cinder_ui.install --package-manager pnpm"
-      language={:bash}
-      standalone={true}
-    />
-    <p>To re-run without overwriting customized files:</p>
-    <Docs.docs_code_block
-      source="mix cinder_ui.install --skip-existing"
-      language={:bash}
-      standalone={true}
-    />
-    <p>To only copy generated Cinder UI assets and skip patching app entry files:</p>
+    <p>
+      Prefer to wire it up by hand? Add those two lines to
+      <code>assets/css/app.css</code> yourself and skip the app patching:
+    </p>
     <Docs.docs_code_block
       source="mix cinder_ui.install --skip-patching"
       language={:bash}

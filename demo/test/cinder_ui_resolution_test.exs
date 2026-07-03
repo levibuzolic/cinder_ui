@@ -5,14 +5,14 @@ defmodule Demo.CinderUIResolutionTest do
   The library's own unit tests assert *what* `mix cinder_ui.install` writes into
   `app.js`/`app.css`. They cannot prove the patched output actually resolves,
   because that depends on external toolchain behavior — esbuild resolving the
-  `cinder_ui` package via `NODE_PATH`, and Tailwind resolving the CSS
-  `@import`/`@plugin` by walking up to the project-root `node_modules`.
+  `cinder_ui` package via `NODE_PATH`, and Tailwind resolving the CSS `@import`
+  by walking up to the project-root `node_modules`.
 
   This builds a hermetic, consumer-shaped fixture that references Cinder UI from
   `deps/cinder_ui` and runs the real esbuild and Tailwind binaries against it.
-  The `tailwindcss-animate` peer dependency is faked with a no-op stub so the
-  test exercises `@plugin` *resolution* (the novel part) without depending on an
-  installed `node_modules`.
+  Cinder UI's CSS inlines the `tailwindcss-animate` utilities, so no external
+  plugin or `node_modules` is required — the Tailwind test doubles as proof that
+  the animation utilities compile self-contained from `deps/cinder_ui`.
   """
   use ExUnit.Case, async: false
 
@@ -35,9 +35,9 @@ defmodule Demo.CinderUIResolutionTest do
 
     on_exit(fn -> File.rm_rf!(tmp) end)
 
-    # A physical copy of `deps/cinder_ui`, so Tailwind's upward `node_modules`
-    # lookup for `@plugin` resolves against the fixture root the way it would in
-    # a real consumer (a symlink would resolve to the source repo instead).
+    # A physical copy of `deps/cinder_ui`, so Tailwind resolves the deps-located
+    # CSS `@import` the way it would in a real consumer (a symlink would resolve
+    # to the source repo instead).
     deps_pkg = Path.join([tmp, "deps", "cinder_ui"])
     File.mkdir_p!(Path.join(deps_pkg, "priv/templates"))
     File.cp!(Path.join(@repo_root, "package.json"), Path.join(deps_pkg, "package.json"))
@@ -52,17 +52,20 @@ defmodule Demo.CinderUIResolutionTest do
       Path.join(deps_pkg, "priv/templates/cinder_ui.css")
     )
 
-    # A no-op stub for the `tailwindcss-animate` peer dep, at the fixture root so
-    # Tailwind resolves `@plugin` by walking up from the deps-located CSS file.
-    stub_plugin(Path.join([tmp, "node_modules", "tailwindcss-animate"]))
-
     css_dir = Path.join([tmp, "assets", "css"])
     js_dir = Path.join([tmp, "assets", "js"])
     File.mkdir_p!(css_dir)
     File.mkdir_p!(js_dir)
 
+    # A template that uses a couple of animation utilities, so Tailwind emits the
+    # `enter` keyframe and proves the inlined `tailwindcss-animate` utilities work.
+    File.write!(Path.join(css_dir, "content.html"), """
+    <div class="animate-in fade-in-0 zoom-in-95 slide-in-from-top"></div>
+    """)
+
     File.write!(Path.join(css_dir, "app.css"), """
     @import "tailwindcss" source(none);
+    @source "./content.html";
     @source "../../deps/cinder_ui";
     @import "../../deps/cinder_ui/priv/templates/cinder_ui.css";
     """)
@@ -99,7 +102,7 @@ defmodule Demo.CinderUIResolutionTest do
     assert bundle =~ "dispatchCommand"
   end
 
-  test "tailwind resolves the css @import and @plugin from deps", %{tmp: tmp} do
+  test "tailwind compiles the deps css and its inlined animation utilities", %{tmp: tmp} do
     out = Path.join(tmp, "out.css")
 
     {output, status} =
@@ -110,29 +113,15 @@ defmodule Demo.CinderUIResolutionTest do
         stderr_to_stdout: true
       )
 
-    # A non-zero exit here means `@plugin "tailwindcss-animate"` failed to
-    # resolve from the deps-located CSS file.
+    # A non-zero exit here means the deps-located `@import` (or its inlined
+    # `tailwindcss-animate` utilities) failed to compile self-contained.
     assert status == 0, output
 
-    # Theme tokens sourced from cinder_ui.css prove the deps `@import` resolved.
     css = File.read!(out)
+    # Theme tokens sourced from cinder_ui.css prove the deps `@import` resolved.
     assert css =~ "oklch("
-  end
-
-  defp stub_plugin(dir) do
-    File.mkdir_p!(dir)
-
-    File.write!(Path.join(dir, "package.json"), """
-    {
-      "name": "tailwindcss-animate",
-      "version": "0.0.0-stub",
-      "main": "index.js"
-    }
-    """)
-
-    File.write!(Path.join(dir, "index.js"), """
-    module.exports = function tailwindcssAnimateStub() {}
-    module.exports.default = module.exports
-    """)
+    # The `enter` keyframe proves the inlined animation utilities were emitted.
+    assert css =~ "@keyframes enter"
+    assert css =~ ".animate-in"
   end
 end
