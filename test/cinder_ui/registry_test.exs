@@ -7,7 +7,6 @@ defmodule CinderUI.RegistryTest do
   alias CinderUI.TestHelpers
 
   defmodule ImportProbe do
-    use Phoenix.Component
     use CinderUI
 
     def render(assigns) do
