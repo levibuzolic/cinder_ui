@@ -2,7 +2,7 @@ defmodule CinderUI.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/levibuzolic/cinder_ui"
-  @version "0.2.2"
+  @version "0.2.3"
 
   def project do
     [
@@ -54,7 +54,7 @@ defmodule CinderUI.MixProject do
     [
       {:phoenix, "~> 1.7 or ~> 1.8"},
       {:phoenix_live_view, "~> 1.0"},
-      {:tailwind_combine, "~> 0.1.0"},
+      {:tailwind_combine, "~> 0.4.0"},
       {:lucide_icons, "~> 2.0", optional: true},
       {:jason, "~> 1.4", optional: true},
       {:ex_doc, "~> 0.34", only: [:dev, :test, :docs], runtime: false},
