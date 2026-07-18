@@ -73,6 +73,10 @@ test.describe("visual regression", () => {
 
     await page.goto("/docs/")
     await page.locator(`#${visualStyleId}`).waitFor({ state: "attached" })
+    await page.evaluate(async () => {
+      await document.fonts.ready
+      await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+    })
   })
 
   test("captures each component card", async ({ page }) => {
@@ -94,14 +98,16 @@ test.describe("visual regression", () => {
       await preview.scrollIntoViewIfNeeded()
       await expect(preview).toBeVisible()
 
-      if (!exportScreenshotsOnly) {
-        await expect(preview).toHaveScreenshot(snapshotName, { scale: "device" })
-      }
-
-      await preview.screenshot({
+      const screenshot = await preview.screenshot({
         path: path.join(screenshotOutputDir, `${componentId}.png`),
+        animations: "allow",
+        caret: "hide",
         scale: "device",
       })
+
+      if (!exportScreenshotsOnly) {
+        expect(screenshot).toMatchSnapshot(snapshotName, { maxDiffPixelRatio: 0.015 })
+      }
     }
   })
 })

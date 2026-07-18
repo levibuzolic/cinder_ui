@@ -27,8 +27,12 @@ const screenshotCss = `
 const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
 
 const gotoWithStableStyles = async (page: Page, path: string) => {
-  await page.goto(path)
+  await page.goto(path, { waitUntil: "domcontentloaded" })
   await page.addStyleTag({ content: screenshotCss })
+  await page.evaluate(async () => {
+    await document.fonts.ready
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+  })
 }
 
 const pageContainsPromotedExamples = async (request: APIRequestContext, path: string) => {
@@ -93,6 +97,7 @@ test.describe("promoted example visual regression", () => {
         await preview.scrollIntoViewIfNeeded()
         await expect(preview).toBeVisible()
         await expect(preview).toHaveScreenshot(`examples/${componentId}-${slugify(exampleTitle)}.png`, {
+          animations: "allow",
           scale: "device",
         })
         promotedCount += 1

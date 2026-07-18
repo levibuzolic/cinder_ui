@@ -42,6 +42,36 @@ defmodule CinderUI.Components.NavigationTest do
     assert html =~ "Profile Content"
   end
 
+  test "tabs keeps DOM IDs unique when distinct values normalize to the same slug" do
+    html =
+      render_component(&Navigation.tabs/1, %{
+        id: "collision-tabs",
+        value: "a b",
+        trigger: [
+          %{value: "a b", inner_block: fn _, _ -> "Spaced" end},
+          %{value: "a-b", inner_block: fn _, _ -> "Dashed" end}
+        ],
+        content: [
+          %{value: "a b", inner_block: fn _, _ -> "Spaced content" end},
+          %{value: "a-b", inner_block: fn _, _ -> "Dashed content" end}
+        ]
+      })
+
+    trigger_targets =
+      html
+      |> TestHelpers.find_all("[data-slot='tabs-trigger']")
+      |> Enum.flat_map(&Floki.attribute(&1, "aria-controls"))
+
+    panel_ids =
+      html
+      |> TestHelpers.find_all("[data-slot='tabs-content']")
+      |> Enum.flat_map(&Floki.attribute(&1, "id"))
+
+    assert length(Enum.uniq(trigger_targets)) == 2
+    assert length(Enum.uniq(panel_ids)) == 2
+    assert Enum.sort(trigger_targets) == Enum.sort(panel_ids)
+  end
+
   test "menu renders active and disabled items" do
     html =
       render_component(&Navigation.menu/1, %{

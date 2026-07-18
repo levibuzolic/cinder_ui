@@ -52,7 +52,7 @@ defmodule Mix.Tasks.CinderUi.Install do
 
   @impl true
   def run(argv) do
-    {opts, _, _} =
+    {opts, args, invalid} =
       OptionParser.parse(argv,
         strict: [
           assets_path: :string,
@@ -62,10 +62,19 @@ defmodule Mix.Tasks.CinderUi.Install do
         ]
       )
 
-    if opts[:help] do
-      Mix.shell().info(@moduledoc)
-    else
-      install(opts)
+    cond do
+      invalid != [] ->
+        options = Enum.map_join(invalid, ", ", fn {option, _value} -> option end)
+        Mix.raise("unknown option or invalid value: #{options}")
+
+      args != [] ->
+        Mix.raise("unexpected argument(s): #{Enum.join(args, ", ")}")
+
+      opts[:help] ->
+        Mix.shell().info(@moduledoc)
+
+      true ->
+        install(opts)
     end
   end
 
@@ -127,7 +136,7 @@ defmodule Mix.Tasks.CinderUi.Install do
 
     updated_content =
       base_content
-      |> ensure_line(@js_import)
+      |> ensure_js_import()
       |> inject_hooks_merge()
 
     write_if_changed!(app_js_path, base_content, updated_content, dry_run)
@@ -153,11 +162,29 @@ defmodule Mix.Tasks.CinderUi.Install do
   end
 
   defp cinder_ui_hooks_integrated?(content) do
-    String.contains?(content, "...CinderUIHooks") or
+    code = strip_js_tokens(content)
+
+    String.contains?(code, "...CinderUIHooks") or
       Regex.match?(
         ~r/Object\.assign\(\s*[_$[:alpha:]][_$[:alnum:]]*\s*,\s*CinderUIHooks\s*\)/,
-        content
+        code
       )
+  end
+
+  defp ensure_js_import(content) do
+    import_pattern =
+      ~r/\bimport\s*\{\s*CinderUIHooks\s*\}\s*from\s*["']cinder_ui["']/
+
+    imported? =
+      import_pattern
+      |> Regex.scan(content, return: :index, capture: :first)
+      |> Enum.any?(fn [{index, _length}] -> js_code_index?(content, index) end)
+
+    if imported? do
+      content
+    else
+      String.trim_trailing(content) <> "\n" <> @js_import <> "\n"
+    end
   end
 
   defp patch_hooks_object_literal(content) do
@@ -177,26 +204,57 @@ defmodule Mix.Tasks.CinderUi.Install do
     end
   end
 
-  defp find_hooks_object_literal(content), do: find_hooks_object_literal(content, 0)
+  defp find_hooks_object_literal(content), do: find_live_socket_hooks_object_literal(content, 0)
 
-  defp find_hooks_object_literal(content, index) when index >= byte_size(content), do: :error
+  defp find_live_socket_hooks_object_literal(content, index) when index >= byte_size(content),
+    do: :error
 
-  defp find_hooks_object_literal(content, index) do
+  defp find_live_socket_hooks_object_literal(content, index) do
     case skip_js_token(content, index) do
       {:ok, next_index} ->
-        find_hooks_object_literal(content, next_index)
+        find_live_socket_hooks_object_literal(content, next_index)
 
       :cont ->
-        if hooks_property_at?(content, index) do
-          maybe_hooks_object_literal(content, index)
+        if live_socket_call_at?(content, index) do
+          find_hooks_in_live_socket_call(content, index)
         else
-          find_hooks_object_literal(content, index + 1)
+          find_live_socket_hooks_object_literal(content, index + 1)
         end
     end
   end
 
-  defp maybe_hooks_object_literal(content, index) do
-    property_end = skip_whitespace(content, index + byte_size("hooks"))
+  defp find_hooks_in_live_socket_call(content, index) do
+    open_index = skip_whitespace(content, index + byte_size("LiveSocket"))
+
+    with true <- byte_at?(content, open_index, ?(),
+         {:ok, close_index} <- find_matching_parenthesis(content, open_index),
+         {:ok, _, _} = result <- find_hooks_object_literal(content, open_index + 1, close_index) do
+      result
+    else
+      _ -> find_live_socket_hooks_object_literal(content, index + byte_size("LiveSocket"))
+    end
+  end
+
+  defp find_hooks_object_literal(_content, index, limit) when index >= limit, do: :error
+
+  defp find_hooks_object_literal(content, index, limit) do
+    case hooks_property_end(content, index) do
+      {:ok, property_end} ->
+        maybe_hooks_object_literal(content, property_end, limit)
+
+      :error ->
+        case skip_js_token(content, index) do
+          {:ok, next_index} ->
+            find_hooks_object_literal(content, next_index, limit)
+
+          :cont ->
+            find_hooks_object_literal(content, index + 1, limit)
+        end
+    end
+  end
+
+  defp maybe_hooks_object_literal(content, property_end, limit) do
+    property_end = skip_whitespace(content, property_end)
 
     value_index =
       case skip_colon(content, property_end) do
@@ -206,17 +264,33 @@ defmodule Mix.Tasks.CinderUi.Install do
 
     with object_index when is_integer(object_index) <- value_index,
          true <- byte_at?(content, object_index, ?{),
-         {:ok, close_index} <- find_matching_brace(content, object_index) do
+         {:ok, close_index} <- find_matching_brace(content, object_index),
+         true <- close_index < limit do
       {:ok, object_index, close_index}
     else
-      _ -> find_hooks_object_literal(content, index + byte_size("hooks"))
+      _ -> find_hooks_object_literal(content, property_end, limit)
     end
+  end
+
+  defp live_socket_call_at?(content, index) do
+    starts_with?(content, index, "LiveSocket") and
+      identifier_boundary_before?(content, index) and
+      identifier_boundary_after?(content, index + byte_size("LiveSocket"))
   end
 
   defp hooks_property_at?(content, index) do
     starts_with?(content, index, "hooks") and
       identifier_boundary_before?(content, index) and
       identifier_boundary_after?(content, index + byte_size("hooks"))
+  end
+
+  defp hooks_property_end(content, index) do
+    cond do
+      hooks_property_at?(content, index) -> {:ok, index + byte_size("hooks")}
+      starts_with?(content, index, ~s("hooks")) -> {:ok, index + byte_size(~s("hooks"))}
+      starts_with?(content, index, ~s('hooks')) -> {:ok, index + byte_size(~s('hooks'))}
+      true -> :error
+    end
   end
 
   defp merge_hooks_object_body(body) do
@@ -261,15 +335,24 @@ defmodule Mix.Tasks.CinderUi.Install do
 
   defp patch_empty_hooks_binding(content, hooks_name) do
     hooks_name = Regex.escape(hooks_name)
-    regex = ~r/\b(?:let|const|var)\s+#{hooks_name}\s*=\s*\{\s*\}\s*;?/
+    regex = ~r/\b(?:let|const|var)\s+#{hooks_name}\s*=\s*\{\s*\}[ \t]*;?/
 
-    if Regex.match?(regex, content) do
-      Regex.replace(
-        regex,
-        content,
-        fn declaration -> "#{declaration}\nObject.assign(#{hooks_name}, CinderUIHooks)" end,
-        global: false
-      )
+    match =
+      regex
+      |> Regex.scan(content, return: :index, capture: :first)
+      |> Enum.find(fn [{index, _length}] -> js_code_index?(content, index) end)
+
+    case match do
+      [{index, length}] ->
+        declaration = binary_part(content, index, length)
+        replacement = "#{declaration}\nObject.assign(#{hooks_name}, CinderUIHooks)"
+
+        binary_part(content, 0, index) <>
+          replacement <>
+          binary_part(content, index + length, byte_size(content) - index - length)
+
+      nil ->
+        nil
     end
   end
 
@@ -280,6 +363,39 @@ defmodule Mix.Tasks.CinderUi.Install do
 
   defp find_matching_brace(content, open_index) do
     find_matching_brace(content, open_index + 1, 1)
+  end
+
+  defp find_matching_parenthesis(content, open_index) do
+    find_matching_parenthesis(content, open_index + 1, 1)
+  end
+
+  defp find_matching_parenthesis(content, index, _depth) when index >= byte_size(content),
+    do: :error
+
+  defp find_matching_parenthesis(content, index, depth) do
+    case skip_js_token(content, index) do
+      {:ok, next_index} ->
+        find_matching_parenthesis(content, next_index, depth)
+
+      :cont ->
+        advance_matching_parenthesis(content, index, depth)
+    end
+  end
+
+  defp advance_matching_parenthesis(content, index, depth) do
+    cond do
+      byte_at?(content, index, ?() ->
+        find_matching_parenthesis(content, index + 1, depth + 1)
+
+      byte_at?(content, index, ?)) and depth == 1 ->
+        {:ok, index}
+
+      byte_at?(content, index, ?)) ->
+        find_matching_parenthesis(content, index + 1, depth - 1)
+
+      true ->
+        find_matching_parenthesis(content, index + 1, depth)
+    end
   end
 
   defp find_matching_brace(content, index, _depth) when index >= byte_size(content), do: :error
@@ -341,25 +457,72 @@ defmodule Mix.Tasks.CinderUi.Install do
   end
 
   defp skip_js_token(content, index) do
+    case js_token(content, index) do
+      {_kind, next_index} -> {:ok, next_index}
+      :cont -> :cont
+    end
+  end
+
+  defp js_token(content, index) do
     cond do
       starts_with?(content, index, "//") ->
-        {:ok, skip_line_comment(content, index + 2)}
+        {:comment, skip_line_comment(content, index + 2)}
 
       starts_with?(content, index, "/*") ->
-        {:ok, skip_block_comment(content, index + 2)}
+        {:comment, skip_block_comment(content, index + 2)}
 
       byte_at?(content, index, ?") ->
-        {:ok, skip_quoted(content, index + 1, ?")}
+        {:quoted, skip_quoted(content, index + 1, ?")}
 
       byte_at?(content, index, ?') ->
-        {:ok, skip_quoted(content, index + 1, ?')}
+        {:quoted, skip_quoted(content, index + 1, ?')}
 
       byte_at?(content, index, ?`) ->
-        {:ok, skip_quoted(content, index + 1, ?`)}
+        {:quoted, skip_quoted(content, index + 1, ?`)}
+
+      byte_at?(content, index, ?/) and regex_literal_start?(content, index) ->
+        {:regex, skip_regex(content, index + 1, false)}
 
       true ->
         :cont
     end
+  end
+
+  defp js_code_index?(content, target), do: js_code_index?(content, 0, target)
+
+  defp js_code_index?(_content, index, target) when index >= target, do: true
+
+  defp js_code_index?(content, index, target) do
+    case js_token(content, index) do
+      {_kind, next_index} when target < next_index -> false
+      {_kind, next_index} -> js_code_index?(content, next_index, target)
+      :cont -> js_code_index?(content, index + 1, target)
+    end
+  end
+
+  defp strip_js_tokens(content), do: strip_js_tokens(content, 0, 0, [])
+
+  defp strip_js_tokens(content, index, segment_start, parts) when index >= byte_size(content) do
+    tail = binary_part(content, segment_start, byte_size(content) - segment_start)
+
+    [tail | parts]
+    |> Enum.reverse()
+    |> IO.iodata_to_binary()
+  end
+
+  defp strip_js_tokens(content, index, segment_start, parts) do
+    case js_token(content, index) do
+      {_kind, next_index} ->
+        strip_js_segment(content, index, next_index, segment_start, parts)
+
+      :cont ->
+        strip_js_tokens(content, index + 1, segment_start, parts)
+    end
+  end
+
+  defp strip_js_segment(content, index, next_index, segment_start, parts) do
+    segment = binary_part(content, segment_start, index - segment_start)
+    strip_js_tokens(content, next_index, next_index, [" ", segment | parts])
   end
 
   defp skip_quoted(content, index, _quote) when index >= byte_size(content), do: index
@@ -375,6 +538,57 @@ defmodule Mix.Tasks.CinderUi.Install do
       true ->
         skip_quoted(content, index + 1, quote)
     end
+  end
+
+  defp regex_literal_start?(content, index) do
+    case previous_non_whitespace_byte(content, index - 1) do
+      nil -> true
+      byte -> byte in [?=, ?(, ?[, ?{, ?,, ?:, ?;, ?!, ??, ?&, ?|, ?>]
+    end
+  end
+
+  defp previous_non_whitespace_byte(_content, index) when index < 0, do: nil
+
+  defp previous_non_whitespace_byte(content, index) do
+    byte = byte_at(content, index)
+
+    if byte in [?\s, ?\n, ?\r, ?\t] do
+      previous_non_whitespace_byte(content, index - 1)
+    else
+      byte
+    end
+  end
+
+  defp skip_regex(content, index, _in_class) when index >= byte_size(content), do: index
+
+  defp skip_regex(content, index, in_class) do
+    cond do
+      byte_at?(content, index, ?\\) ->
+        skip_regex(content, min(index + 2, byte_size(content)), in_class)
+
+      byte_at?(content, index, ?[) ->
+        skip_regex(content, index + 1, true)
+
+      byte_at?(content, index, ?]) ->
+        skip_regex(content, index + 1, false)
+
+      byte_at?(content, index, ?/) and not in_class ->
+        skip_regex_flags(content, index + 1)
+
+      byte_at(content, index) in [?\n, ?\r] ->
+        index
+
+      true ->
+        skip_regex(content, index + 1, in_class)
+    end
+  end
+
+  defp skip_regex_flags(content, index) when index >= byte_size(content), do: index
+
+  defp skip_regex_flags(content, index) do
+    if byte_at(content, index) in ?a..?z,
+      do: skip_regex_flags(content, index + 1),
+      else: index
   end
 
   defp identifier_boundary_before?(_content, 0), do: true
@@ -416,7 +630,9 @@ defmodule Mix.Tasks.CinderUi.Install do
   end
 
   defp ensure_line(content, line) do
-    if String.contains?(content, line),
+    uncommented = Regex.replace(~r/\/\*.*?(?:\*\/|\z)/s, content, "")
+
+    if String.contains?(uncommented, line),
       do: content,
       else: String.trim_trailing(content) <> "\n" <> line <> "\n"
   end

@@ -80,6 +80,8 @@ export const CuiResizable = {
       if (!Array.isArray(parsed) || parsed.length !== this.panels.length) return null
       const values = parsed.map((value) => Number.parseFloat(value))
       if (values.some((value) => !Number.isFinite(value))) return null
+      const total = values.reduce((sum, value) => sum + value, 0)
+      if (values.some((value) => value < 0) || !Number.isFinite(total) || total <= 0) return null
       return normalizePercentages(values)
     } catch (_error) {
       return null
@@ -151,6 +153,7 @@ export const CuiResizable = {
     const pairTotal = leftSize + rightSize
     const leftMin = this.panelMinSize(leftIndex)
     const rightMin = this.panelMinSize(rightIndex)
+    if (leftMin + rightMin > pairTotal) return
 
     const nextLeft = clamp(leftSize + deltaPercent, leftMin, pairTotal - rightMin)
     const nextRight = pairTotal - nextLeft
@@ -170,6 +173,7 @@ export const CuiResizable = {
 
       const onPointerDown = (event) => {
         event.preventDefault()
+        this.activePointerCleanup && this.activePointerCleanup()
 
         const startCoord = this.axisCoordinate(event)
         const startSizes = [...this.sizes]
@@ -181,6 +185,7 @@ export const CuiResizable = {
         const pairTotal = startSizes[leftIndex] + startSizes[rightIndex]
         const leftMin = this.panelMinSize(leftIndex)
         const rightMin = this.panelMinSize(rightIndex)
+        if (leftMin + rightMin > pairTotal) return
 
         const onPointerMove = (moveEvent) => {
           const deltaPixels = this.axisCoordinate(moveEvent) - startCoord
@@ -193,13 +198,22 @@ export const CuiResizable = {
           this.applySizes(nextSizes)
         }
 
-        const onPointerUp = () => {
+        const removePointerListeners = () => {
           window.removeEventListener("pointermove", onPointerMove)
           window.removeEventListener("pointerup", onPointerUp)
           window.removeEventListener("pointercancel", onPointerUp)
+
+          if (this.activePointerCleanup === removePointerListeners) {
+            this.activePointerCleanup = null
+          }
+        }
+
+        const onPointerUp = () => {
+          removePointerListeners()
           this.saveSizes()
         }
 
+        this.activePointerCleanup = removePointerListeners
         window.addEventListener("pointermove", onPointerMove)
         window.addEventListener("pointerup", onPointerUp)
         window.addEventListener("pointercancel", onPointerUp)
@@ -242,6 +256,9 @@ export const CuiResizable = {
 
   /** Remove all handle event listeners. */
   teardown() {
+    this.activePointerCleanup && this.activePointerCleanup()
+    this.activePointerCleanup = null
+
     if (this.cleanups) {
       this.cleanups.forEach((cleanup) => cleanup())
     }

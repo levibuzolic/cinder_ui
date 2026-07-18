@@ -527,6 +527,7 @@ defmodule CinderUI.Components.Feedback do
     assigns =
       assigns
       |> assign(:max, max)
+      |> assign(:value, clamped)
       |> assign(:percentage, percentage)
       |> assign(:classes, [
         "bg-primary/20 relative h-2 w-full overflow-hidden rounded-full",

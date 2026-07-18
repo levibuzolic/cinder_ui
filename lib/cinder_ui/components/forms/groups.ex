@@ -360,6 +360,10 @@ defmodule CinderUI.Components.Forms.Groups do
         end
       end)
       |> assign(:id, assigns.id || "cinder-ui-input-otp-#{System.unique_integer([:positive])}")
+      |> assign(
+        :indexes,
+        if(assigns.length > 0, do: Enum.to_list(0..(assigns.length - 1)), else: [])
+      )
       |> assign(:separator_indexes, input_otp_separator_indexes(assigns.groups, assigns.length))
       |> assign(:classes, [
         "flex items-center gap-2",
@@ -371,7 +375,7 @@ defmodule CinderUI.Components.Forms.Groups do
       <.label :if={@label} for={@id}>{@label}</.label>
       <div id={@id} data-slot="input-otp" class={classes(@classes)} phx-hook="CuiInputOtp">
         <.input_otp_cell
-          :for={index <- Enum.to_list(0..(@length - 1))}
+          :for={index <- @indexes}
           index={index}
           name={@name}
           value={Enum.at(@values, index, "")}
@@ -390,7 +394,7 @@ defmodule CinderUI.Components.Forms.Groups do
       phx-hook="CuiInputOtp"
     >
       <.input_otp_cell
-        :for={index <- Enum.to_list(0..(@length - 1))}
+        :for={index <- @indexes}
         index={index}
         name={@name}
         value={Enum.at(@values, index, "")}

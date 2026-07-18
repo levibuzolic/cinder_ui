@@ -57,6 +57,7 @@ export const CuiCarousel = {
     }
 
     this.goTo = (index) => {
+      if (!Number.isInteger(index)) return
       this.index = index
       this.sync()
     }
@@ -91,7 +92,7 @@ export const CuiCarousel = {
     this.el.addEventListener("mouseenter", this.onMouseEnter)
     this.el.addEventListener("mouseleave", this.onMouseLeave)
     this.indicators.forEach((indicator) => {
-      const onClick = () => this.goTo(Number.parseInt(indicator.dataset.carouselIndicator || "0", 10))
+      const onClick = () => this.goTo(Number(indicator.dataset.carouselIndicator))
       indicator.addEventListener("click", onClick)
       this.cleanups.push(() => indicator.removeEventListener("click", onClick))
     })

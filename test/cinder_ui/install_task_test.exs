@@ -70,6 +70,31 @@ defmodule CinderUI.InstallTaskTest do
     assert app_js =~ "hooks: {...colocatedHooks, ...CinderUIHooks}"
   end
 
+  test "merges Cinder UI hooks when the live socket hooks key is quoted", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+
+    File.write!(
+      Path.join(assets, "js/app.js"),
+      """
+      const liveSocket = new LiveSocket("/live", Socket, {
+        "hooks": {DemoHook},
+      })
+      """
+    )
+
+    run_install(project, ["--assets-path", "assets"])
+
+    app_js = File.read!(Path.join(assets, "js/app.js"))
+
+    assert app_js =~ ~s("hooks": {DemoHook, ...CinderUIHooks})
+    refute app_js =~ "window.Hooks"
+  end
+
   test "merges Cinder UI hooks into inline live socket hooks config", %{tmp_dir: tmp_dir} do
     project = Path.join(tmp_dir, "project")
     assets = Path.join(project, "assets")
@@ -128,6 +153,39 @@ defmodule CinderUI.InstallTaskTest do
 
     app_js = File.read!(Path.join(assets, "js/app.js"))
     assert app_js =~ "this.payload = {nested: true}"
+    assert app_js =~ ~r/hooks:\s*\{.*DemoHook: \{.*\},\n\s+\.\.\.CinderUIHooks\n\s+\}/s
+  end
+
+  test "merges inline hooks without treating regex delimiters as JavaScript structure", %{
+    tmp_dir: tmp_dir
+  } do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+
+    File.write!(
+      Path.join(assets, "js/app.js"),
+      """
+      const liveSocket = new LiveSocket("/live", Socket, {
+        hooks: {
+          DemoHook: {
+            mounted() {
+              this.delimiterPattern = /[})]/
+            },
+          },
+        },
+      })
+      """
+    )
+
+    run_install(project, ["--assets-path", "assets"])
+
+    app_js = File.read!(Path.join(assets, "js/app.js"))
+
+    assert app_js =~ "this.delimiterPattern = /[})]/"
     assert app_js =~ ~r/hooks:\s*\{.*DemoHook: \{.*\},\n\s+\.\.\.CinderUIHooks\n\s+\}/s
   end
 
@@ -207,6 +265,25 @@ defmodule CinderUI.InstallTaskTest do
     end
   end
 
+  test "rejects unknown options before writing to the default assets path", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+    app_css = Path.join(assets, "css/app.css")
+    app_js = Path.join(assets, "js/app.js")
+
+    File.mkdir_p!(Path.dirname(app_css))
+    File.mkdir_p!(Path.dirname(app_js))
+    File.write!(app_css, "@import \"tailwindcss\";\n")
+    File.write!(app_js, "let Hooks = {}\n")
+
+    assert_raise Mix.Error, ~r/unknown option.*--asset-path/, fn ->
+      run_install(project, ["--asset-path", "elsewhere"])
+    end
+
+    assert File.read!(app_css) == "@import \"tailwindcss\";\n"
+    assert File.read!(app_js) == "let Hooks = {}\n"
+  end
+
   test "falls back to a global hooks merge when no hooks binding is found", %{tmp_dir: tmp_dir} do
     project = Path.join(tmp_dir, "project")
     assets = Path.join(project, "assets")
@@ -255,6 +332,139 @@ defmodule CinderUI.InstallTaskTest do
 
     app_js = File.read!(Path.join(assets, "js/app.js"))
     assert String.split(app_js, "...CinderUIHooks") |> length() == 2
+  end
+
+  test "commented hook integration does not count as installed", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+
+    File.write!(
+      Path.join(assets, "js/app.js"),
+      """
+      // import { CinderUIHooks } from "cinder_ui"
+      // hooks: {...CinderUIHooks}
+      let Hooks = {}
+      """
+    )
+
+    run_install(project, ["--assets-path", "assets"])
+
+    app_js = File.read!(Path.join(assets, "js/app.js"))
+
+    assert app_js =~ ~r/^import \{ CinderUIHooks \} from "cinder_ui"$/m
+
+    assert app_js =~ "Object.assign(Hooks, CinderUIHooks)"
+  end
+
+  test "commented empty hook bindings are not rewritten as executable code", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+    File.write!(Path.join(assets, "js/app.js"), "// let Hooks = {}\nconst socket = {}\n")
+
+    run_install(project, ["--assets-path", "assets"])
+
+    app_js = File.read!(Path.join(assets, "js/app.js"))
+
+    assert app_js =~ "// let Hooks = {}\nconst socket = {}"
+    assert app_js =~ "let Hooks = window.Hooks || {}"
+    assert app_js =~ "Object.assign(Hooks, CinderUIHooks)"
+  end
+
+  test "hook integration shown in a template string does not count as installed", %{
+    tmp_dir: tmp_dir
+  } do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+
+    File.write!(
+      Path.join(assets, "js/app.js"),
+      """
+      const instructions = `
+      import { CinderUIHooks } from "cinder_ui"
+      hooks: {...CinderUIHooks}
+      `
+      let Hooks = {}
+      """
+    )
+
+    run_install(project, ["--assets-path", "assets"])
+
+    app_js = File.read!(Path.join(assets, "js/app.js"))
+
+    assert length(Regex.scan(~r/^import \{ CinderUIHooks \} from "cinder_ui"$/m, app_js)) == 2
+    assert app_js =~ "Object.assign(Hooks, CinderUIHooks)"
+  end
+
+  test "unrelated hooks objects are not mutated", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+
+    File.write!(
+      Path.join(assets, "js/app.js"),
+      """
+      const analytics = {hooks: {beforeSend}}
+      let Hooks = {}
+      const liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks})
+      """
+    )
+
+    run_install(project, ["--assets-path", "assets"])
+
+    app_js = File.read!(Path.join(assets, "js/app.js"))
+
+    assert app_js =~ "const analytics = {hooks: {beforeSend}}"
+    refute app_js =~ "const analytics = {hooks: {beforeSend, ...CinderUIHooks}}"
+    assert app_js =~ "Object.assign(Hooks, CinderUIHooks)"
+  end
+
+  test "CSS directives shown in comments do not count as installed", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+
+    File.write!(
+      Path.join(assets, "css/app.css"),
+      """
+      @import "tailwindcss";
+      /*
+      @source "../../deps/cinder_ui";
+      @import "../../deps/cinder_ui/priv/templates/cinder_ui.css";
+      */
+      """
+    )
+
+    File.write!(Path.join(assets, "js/app.js"), "let Hooks = {}\n")
+
+    run_install(project, ["--assets-path", "assets"])
+
+    app_css = File.read!(Path.join(assets, "css/app.css"))
+
+    assert length(Regex.scan(~r/^@source "\.\.\/\.\.\/deps\/cinder_ui";$/m, app_css)) == 2
+
+    assert length(
+             Regex.scan(
+               ~r/^@import "\.\.\/\.\.\/deps\/cinder_ui\/priv\/templates\/cinder_ui\.css";$/m,
+               app_css
+             )
+           ) == 2
   end
 
   defp run_install(project, args) do

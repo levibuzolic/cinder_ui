@@ -620,9 +620,17 @@ defmodule CinderUI.Components.Navigation do
   defp tabs_content_id(root_id, value), do: "#{root_id}-panel-#{tabs_dom_id(value)}"
 
   defp tabs_dom_id(value) do
-    value
-    |> String.replace(~r/[^a-zA-Z0-9_-]+/u, "-")
-    |> String.trim("-")
+    slug =
+      value
+      |> String.replace(~r/[^a-zA-Z0-9_-]+/u, "-")
+      |> String.trim("-")
+
+    if slug == value and slug != "" do
+      slug
+    else
+      encoded = if value == "", do: "empty", else: Base.url_encode64(value, padding: false)
+      "#{if(slug == "", do: "value", else: slug)}-#{encoded}"
+    end
   end
 
   doc("""

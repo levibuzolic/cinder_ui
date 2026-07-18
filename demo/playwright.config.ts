@@ -33,7 +33,10 @@ const config = {
     cwd: __dirname,
     reuseExistingServer: true,
     timeout: 60_000,
-    env: { ...process.env, PHX_CODE_RELOADER: "false" },
+    // Asset compilation happens once in global setup. Running the server in
+    // test prevents dev watchers and live reload from replacing the page while
+    // visual assertions are capturing it.
+    env: { ...process.env, MIX_ENV: "test", PHX_SERVER: "true", PORT: "4000" },
   },
 } satisfies PlaywrightTestConfig
 

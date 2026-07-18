@@ -26,6 +26,14 @@ defmodule CinderUI.Components.FeedbackTest do
     assert html =~ "translateX(-50.0%)"
   end
 
+  test "progress clamps its visual and accessible values to the configured range" do
+    html = render_component(&Feedback.progress/1, %{value: 150, max: 80})
+
+    assert TestHelpers.attr(html, "[data-slot='progress']", "aria-valuemax") == "80"
+    assert TestHelpers.attr(html, "[data-slot='progress']", "aria-valuenow") == "80"
+    assert html =~ "translateX(-0.0%)"
+  end
+
   test "flash renders title when provided" do
     html =
       render_component(&Feedback.flash/1, %{

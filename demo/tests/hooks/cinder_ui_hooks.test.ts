@@ -502,6 +502,35 @@ describe("Cinder UI hook harness", () => {
     expect(indicators[2].getAttribute("aria-current")).toBe("true")
   })
 
+  it("carousel ignores malformed indicator indexes without corrupting active state", () => {
+    const { el } = mountHook(
+      "CuiCarousel",
+      `
+        <div data-slot="carousel">
+          <div data-carousel-track>
+            <div data-slot="carousel-item"></div>
+            <div data-slot="carousel-item"></div>
+          </div>
+          <button
+            type="button"
+            data-slot="carousel-indicator"
+            data-carousel-indicator="not-a-number"
+          ></button>
+        </div>
+      `,
+    )
+
+    const track = el.querySelector("[data-carousel-track]") as HTMLElement
+    const items = Array.from(el.querySelectorAll("[data-slot='carousel-item']")) as HTMLElement[]
+    const indicator = el.querySelector("[data-carousel-indicator]") as HTMLButtonElement
+
+    indicator.click()
+
+    expect(track.style.transform).toBe("translateX(-0%)")
+    expect(items[0].dataset.active).toBe("true")
+    expect(items[1].dataset.active).toBe("false")
+  })
+
   it("resizable restores saved sizes and persists keyboard adjustments", () => {
     window.localStorage.setItem("docs-layout", JSON.stringify([60, 40]))
 
@@ -527,5 +556,73 @@ describe("Cinder UI hook harness", () => {
     expect(panels[0].dataset.size).toBe("50")
     expect(panels[1].dataset.size).toBe("50")
     expect(window.localStorage.getItem("docs-layout")).toBe("[50,50]")
+  })
+
+  it("resizable rejects negative and overflowing persisted sizes", () => {
+    for (const persisted of [JSON.stringify([-20, 120]), JSON.stringify([1e308, 1e308])]) {
+      window.localStorage.setItem("docs-layout", persisted)
+
+      const { el } = mountHook(
+        "CuiResizable",
+        `
+          <div data-direction="horizontal" data-storage-key="docs-layout">
+            <div data-slot="resizable-panel" data-size="25"></div>
+            <div data-slot="resizable-handle" tabindex="0"></div>
+            <div data-slot="resizable-panel" data-size="75"></div>
+          </div>
+        `,
+      )
+
+      const panels = Array.from(el.querySelectorAll("[data-slot='resizable-panel']")) as HTMLElement[]
+
+      expect(panels[0].dataset.size).toBe("25")
+      expect(panels[1].dataset.size).toBe("75")
+    }
+  })
+
+  it("resizable keeps the layout stable when pair minimums are impossible", () => {
+    const { el } = mountHook(
+      "CuiResizable",
+      `
+        <div data-direction="horizontal">
+          <div data-slot="resizable-panel" data-size="50" data-min-size="60"></div>
+          <div data-slot="resizable-handle" tabindex="0"></div>
+          <div data-slot="resizable-panel" data-size="50" data-min-size="60"></div>
+        </div>
+      `,
+    )
+
+    const panels = Array.from(el.querySelectorAll("[data-slot='resizable-panel']")) as HTMLElement[]
+    const handle = el.querySelector("[data-slot='resizable-handle']") as HTMLElement
+
+    handle.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }))
+
+    expect(panels[0].dataset.size).toBe("50")
+    expect(panels[1].dataset.size).toBe("50")
+  })
+
+  it("resizable removes active drag listeners when destroyed", () => {
+    const { el, hook } = mountHook(
+      "CuiResizable",
+      `
+        <div data-direction="horizontal">
+          <div data-slot="resizable-panel" data-size="50"></div>
+          <div data-slot="resizable-handle"></div>
+          <div data-slot="resizable-panel" data-size="50"></div>
+        </div>
+      `,
+    )
+
+    el.getBoundingClientRect = () => ({ width: 100, height: 100 }) as DOMRect
+
+    const panels = Array.from(el.querySelectorAll("[data-slot='resizable-panel']")) as HTMLElement[]
+    const handle = el.querySelector("[data-slot='resizable-handle']") as HTMLElement
+
+    handle.dispatchEvent(new MouseEvent("pointerdown", { clientX: 0, bubbles: true }))
+    hook.destroyed?.()
+    window.dispatchEvent(new MouseEvent("pointermove", { clientX: 20 }))
+
+    expect(panels[0].dataset.size).toBe("50")
+    expect(panels[1].dataset.size).toBe("50")
   })
 })

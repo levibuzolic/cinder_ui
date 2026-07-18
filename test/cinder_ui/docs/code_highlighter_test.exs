@@ -14,4 +14,13 @@ defmodule CinderUI.Docs.CodeHighlighterTest do
     refute highlighted =~
              ~s(&quot;submit&quot;</span><span class="tok-operator">=</span><span class="tok-attr">type</span>)
   end
+
+  test "preserves valid UTF-8 outside quoted strings in every code tokenizer" do
+    for language <- [:elixir, :css, :bash] do
+      highlighted = CodeHighlighter.highlight("café ☕", language)
+
+      assert String.valid?(highlighted)
+      assert highlighted |> String.replace(~r/<[^>]+>/, "") == "café ☕"
+    end
+  end
 end

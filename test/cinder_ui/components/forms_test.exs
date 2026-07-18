@@ -852,6 +852,15 @@ defmodule CinderUI.Components.FormsTest do
            ) == "2"
   end
 
+  test "input_otp renders no phantom cells for non-positive lengths" do
+    for length <- [0, -1] do
+      html = render_component(&Forms.input_otp/1, %{length: length})
+
+      assert TestHelpers.find_all(html, "[data-input-otp-input]") == []
+      assert TestHelpers.find_all(html, "[data-slot='input-otp-separator']") == []
+    end
+  end
+
   test "input_group renders unified styles for inline and block-end layouts" do
     html =
       render_component(&Forms.input_group/1, %{
