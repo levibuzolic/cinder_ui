@@ -32,7 +32,9 @@ const config = {
     url: "http://127.0.0.1:4000",
     cwd: __dirname,
     reuseExistingServer: true,
-    timeout: 60_000,
+    // CI starts the watcher-free test server from a cold MIX_ENV=test build.
+    // Keep local feedback fast while allowing that one-time compile to finish.
+    timeout: process.env.CI ? 180_000 : 60_000,
     // Asset compilation happens once in global setup. Running the server in
     // test prevents dev watchers and live reload from replacing the page while
     // visual assertions are capturing it.
