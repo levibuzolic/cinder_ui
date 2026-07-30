@@ -71,7 +71,7 @@ defmodule CinderUI.Components.Forms.Groups do
   </.input_group>
   ```
 
-  ```heex title="Select + input" align="full"
+  ```heex title="Select + input" align="full" vrt
   <.input_group>
     <.native_select name="team-role" value="admin" class="w-32" aria-label="Team role">
       <:option value="admin" label="Admin" />
@@ -186,9 +186,11 @@ defmodule CinderUI.Components.Forms.Groups do
           "[&>[data-slot=input-group-addon]]:h-full [&>[data-slot=input-group-addon]]:px-3 [&>[data-slot=input-group-addon]]:leading-none",
         assigns.align == :block_end &&
           "[&>[data-slot=input-group-addon][data-align=block-end]]:w-full [&>[data-slot=input-group-addon][data-align=block-end]]:items-center [&>[data-slot=input-group-addon][data-align=block-end]]:justify-between [&>[data-slot=input-group-addon][data-align=block-end]]:border-t [&>[data-slot=input-group-addon][data-align=block-end]]:border-input [&>[data-slot=input-group-addon][data-align=block-end]]:bg-muted/20 [&>[data-slot=input-group-addon][data-align=block-end]]:px-3 [&>[data-slot=input-group-addon][data-align=block-end]]:py-2",
-        "[&>[data-input-group-root]]:h-full [&>[data-input-group-root]]:min-w-0 [&>[data-input-group-root]]:flex-1",
+        "[&>[data-input-group-root]]:h-full [&>[data-input-group-root]]:min-w-0",
+        "[&>[data-input-group-root]:not([data-slot=select]):not([data-slot=native-select-wrapper])]:flex-1",
+        "[&>[data-slot=select]]:shrink-0 [&>[data-slot=native-select-wrapper]]:w-auto [&>[data-slot=native-select-wrapper]]:shrink-0",
         "[&>[data-input-group-control]]:h-full [&>[data-input-group-control]]:w-full [&>[data-input-group-control]]:rounded-none [&>[data-input-group-control]]:border-0 [&>[data-input-group-control]]:bg-transparent [&>[data-input-group-control]]:px-3 [&>[data-input-group-control]]:py-1 [&>[data-input-group-control]]:shadow-none [&>[data-input-group-control]]:focus-visible:ring-0",
-        "[&>[data-input-group-root]>[data-input-group-control]]:h-full [&>[data-input-group-root]>[data-input-group-control]]:w-full [&>[data-input-group-root]>[data-input-group-control]]:rounded-none [&>[data-input-group-root]>[data-input-group-control]]:border-0 [&>[data-input-group-root]>[data-input-group-control]]:bg-transparent [&>[data-input-group-root]>[data-input-group-control]]:px-3 [&>[data-input-group-root]>[data-input-group-control]]:py-1 [&>[data-input-group-root]>[data-input-group-control]]:shadow-none [&>[data-input-group-root]>[data-input-group-control]]:focus-visible:ring-0",
+        "[&>[data-input-group-root]>[data-input-group-control]]:h-full [&>[data-input-group-root]>[data-input-group-control]]:rounded-none [&>[data-input-group-root]>[data-input-group-control]]:border-0 [&>[data-input-group-root]>[data-input-group-control]]:bg-transparent [&>[data-input-group-root]>[data-input-group-control]]:px-3 [&>[data-input-group-root]>[data-input-group-control]]:py-1 [&>[data-input-group-root]>[data-input-group-control]]:shadow-none [&>[data-input-group-root]>[data-input-group-control]]:focus-visible:ring-0",
         "[&>[data-input-group-root]>[data-slot=native-select]]:pr-8 [&>[data-input-group-root]_.lucide-chevron-down]:right-3",
         "[&>[data-slot=combobox]]:h-full [&>[data-slot=combobox]]:flex-1 [&>[data-slot=combobox]]:min-w-0",
         "[&>[data-slot=combobox]>[data-slot=combobox-input]]:h-full [&>[data-slot=combobox]>[data-slot=combobox-input]]:rounded-none [&>[data-slot=combobox]>[data-slot=combobox-input]]:border-0 [&>[data-slot=combobox]>[data-slot=combobox-input]]:bg-transparent [&>[data-slot=combobox]>[data-slot=combobox-input]]:px-3 [&>[data-slot=combobox]>[data-slot=combobox-input]]:py-1 [&>[data-slot=combobox]>[data-slot=combobox-input]]:shadow-none [&>[data-slot=combobox]>[data-slot=combobox-input]]:focus-visible:ring-0",

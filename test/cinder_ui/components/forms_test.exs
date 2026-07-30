@@ -949,12 +949,19 @@ defmodule CinderUI.Components.FormsTest do
     assert inline_class =~ "[data-slot=input-group-addon]]:inline-flex"
     assert TestHelpers.has_class?(html, "[data-slot='input-group']", "overflow-visible")
     refute inline_class =~ "overflow-hidden"
-    assert inline_class =~ "[data-input-group-root]]:flex-1"
+
+    assert inline_class =~
+             "[data-input-group-root]:not([data-slot=select]):not([data-slot=native-select-wrapper])]:flex-1"
+
+    assert inline_class =~ "[data-slot=select]]:shrink-0"
+    assert inline_class =~ "[data-slot=native-select-wrapper]]:w-auto"
+    assert inline_class =~ "[data-slot=native-select-wrapper]]:shrink-0"
     assert inline_class =~ "[data-input-group-control]]:border-0"
 
     assert inline_class =~
              "[data-input-group-root]>[data-input-group-control]]:focus-visible:ring-0"
 
+    refute inline_class =~ "[data-input-group-root]>[data-input-group-control]]:w-full"
     refute inline_class =~ "[data-slot=autocomplete-input]]:border-0"
     refute inline_class =~ "[data-slot=autocomplete-trigger]]:border-0"
     assert inline_class =~ "[data-slot=combobox]>[data-slot=combobox-input]]:border-0"

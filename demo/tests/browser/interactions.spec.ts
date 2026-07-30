@@ -396,6 +396,35 @@ test.describe("interactive previews", () => {
     expect(focusedTriggerShadow).not.toMatch(/[1-9]\d*px/)
   })
 
+  test("input group preserves a fixed-width native select beside a filling input", async ({ page }) => {
+    await page.goto("/docs/forms-input_group/")
+
+    const example = page.locator('[data-component-example][data-example-title="Select + input"]')
+    const group = example.locator('[data-slot="input-group"]')
+    const selectWrapper = group.locator('[data-slot="native-select-wrapper"]')
+    const select = selectWrapper.locator('[data-slot="native-select"]')
+    const input = group.locator('[data-slot="input"]')
+
+    await group.scrollIntoViewIfNeeded()
+
+    const [groupBox, selectWrapperBox, selectBox, inputBox] = await Promise.all([
+      group.boundingBox(),
+      selectWrapper.boundingBox(),
+      select.boundingBox(),
+      input.boundingBox(),
+    ])
+
+    expect(groupBox).not.toBeNull()
+    expect(selectWrapperBox).not.toBeNull()
+    expect(selectBox).not.toBeNull()
+    expect(inputBox).not.toBeNull()
+
+    expect(selectBox!.width).toBeCloseTo(128, 0)
+    expect(Math.abs(selectWrapperBox!.width - selectBox!.width)).toBeLessThanOrEqual(1)
+    expect(inputBox!.width).toBeGreaterThan(selectBox!.width)
+    expect(Math.abs(selectWrapperBox!.width + inputBox!.width - groupBox!.width)).toBeLessThanOrEqual(2)
+  })
+
   test("tabs switch active panel content", async ({ page }) => {
     await page.goto("/docs/navigation-tabs/")
 
