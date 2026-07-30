@@ -370,6 +370,32 @@ test.describe("interactive previews", () => {
     )
   })
 
+  test("input group owns the autocomplete popup focus ring", async ({ page }) => {
+    await page.goto("/docs/forms-input_group/")
+
+    const autocomplete = page.locator("#group-country-search")
+    const group = autocomplete.locator("xpath=..")
+    const trigger = autocomplete.locator("[data-autocomplete-trigger]")
+
+    await group.scrollIntoViewIfNeeded()
+    const restingGroupShadow = await group.evaluate((el) => getComputedStyle(el).boxShadow)
+
+    await trigger.focus()
+    await page.keyboard.press("Tab")
+    await page.keyboard.press("Shift+Tab")
+
+    await expect(trigger).toBeFocused()
+    expect(await trigger.evaluate((el) => el.matches(":focus-visible"))).toBe(true)
+
+    await expect.poll(() => group.evaluate((el) => getComputedStyle(el).boxShadow)).toContain("3px")
+
+    const focusedGroupShadow = await group.evaluate((el) => getComputedStyle(el).boxShadow)
+    const focusedTriggerShadow = await trigger.evaluate((el) => getComputedStyle(el).boxShadow)
+
+    expect(focusedGroupShadow).not.toBe(restingGroupShadow)
+    expect(focusedTriggerShadow).not.toMatch(/[1-9]\d*px/)
+  })
+
   test("tabs switch active panel content", async ({ page }) => {
     await page.goto("/docs/navigation-tabs/")
 

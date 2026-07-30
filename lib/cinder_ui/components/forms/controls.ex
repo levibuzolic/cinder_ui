@@ -76,6 +76,8 @@ defmodule CinderUI.Components.Forms.Controls do
         id={@id}
         type={@type}
         data-slot="input"
+        data-input-group-root
+        data-input-group-control
         name={@name}
         value={@value}
         placeholder={@placeholder}
@@ -89,6 +91,8 @@ defmodule CinderUI.Components.Forms.Controls do
       id={@id}
       type={@type}
       data-slot="input"
+      data-input-group-root
+      data-input-group-control
       name={@name}
       value={@value}
       placeholder={@placeholder}
@@ -691,9 +695,17 @@ defmodule CinderUI.Components.Forms.Controls do
       <.label :if={@label} for={@id}>{@label}</.label>
       <div
         data-slot="native-select-wrapper"
+        data-input-group-root
         class="group/native-select relative w-full has-[select:disabled]:opacity-50"
       >
-        <select id={@id} data-slot="native-select" name={@name} class={classes(@classes)} {@rest}>
+        <select
+          id={@id}
+          data-slot="native-select"
+          data-input-group-control
+          name={@name}
+          class={classes(@classes)}
+          {@rest}
+        >
           <option :if={is_nil(@value)} value="" disabled selected>{@placeholder}</option>
           <%= if @option != [] do %>
             <option :for={option <- @option} value={option.value} selected={@value == option.value}>
@@ -714,9 +726,17 @@ defmodule CinderUI.Components.Forms.Controls do
     <div
       :if={!@label && @errors == []}
       data-slot="native-select-wrapper"
+      data-input-group-root
       class="group/native-select relative w-full has-[select:disabled]:opacity-50"
     >
-      <select id={@id} data-slot="native-select" name={@name} class={classes(@classes)} {@rest}>
+      <select
+        id={@id}
+        data-slot="native-select"
+        data-input-group-control
+        name={@name}
+        class={classes(@classes)}
+        {@rest}
+      >
         <option :if={is_nil(@value)} value="" disabled selected>{@placeholder}</option>
         <%= if @option != [] do %>
           <option :for={option <- @option} value={option.value} selected={@value == option.value}>

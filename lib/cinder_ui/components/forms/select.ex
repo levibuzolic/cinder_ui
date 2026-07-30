@@ -189,6 +189,7 @@ defmodule CinderUI.Components.Forms.Select do
     <div
       id={@id}
       data-slot="select"
+      data-input-group-root
       data-state="closed"
       data-placeholder={@placeholder}
       class={classes(@root_classes)}
@@ -206,6 +207,7 @@ defmodule CinderUI.Components.Forms.Select do
       <button
         type="button"
         data-slot="select-trigger"
+        data-input-group-control
         data-select-trigger
         aria-haspopup="listbox"
         aria-expanded="false"
@@ -569,6 +571,7 @@ defmodule CinderUI.Components.Forms.Select do
     <div
       id={@id}
       data-slot="autocomplete"
+      data-input-group-root
       data-state={if @open, do: "open", else: "closed"}
       data-variant={@variant}
       data-selected-label={@selected_label}
@@ -589,6 +592,7 @@ defmodule CinderUI.Components.Forms.Select do
         :if={@variant == :popup}
         type="button"
         data-slot="autocomplete-trigger"
+        data-input-group-control
         data-autocomplete-trigger
         aria-haspopup="listbox"
         aria-controls={"#{@id}-content"}
@@ -618,6 +622,7 @@ defmodule CinderUI.Components.Forms.Select do
       <input
         :if={@variant == :input}
         data-slot="autocomplete-input"
+        data-input-group-control
         data-autocomplete-input
         type="text"
         value={@selected_label}
