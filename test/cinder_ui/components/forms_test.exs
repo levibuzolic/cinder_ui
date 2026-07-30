@@ -136,6 +136,12 @@ defmodule CinderUI.Components.FormsTest do
     assert TestHelpers.attr(html, "[data-slot='input']", "type") == "number"
     assert TestHelpers.attr(html, "[data-slot='input']", "min") == "1"
     assert TestHelpers.attr(html, "[data-slot='input']", "max") == "10"
+
+    assert TestHelpers.find_all(html, "[data-slot='input'][data-input-group-root]") |> length() ==
+             1
+
+    assert TestHelpers.find_all(html, "[data-slot='input'][data-input-group-control]")
+           |> length() == 1
   end
 
   describe "number_field with FormField" do
@@ -225,6 +231,16 @@ defmodule CinderUI.Components.FormsTest do
 
     assert TestHelpers.attr(html, "[data-slot='select']", "phx-hook") == "CuiSelect"
     assert TestHelpers.attr(html, "[data-slot='select-trigger']", "type") == "button"
+
+    assert TestHelpers.find_all(html, "[data-slot='select'][data-input-group-root]") |> length() ==
+             1
+
+    assert TestHelpers.find_all(
+             html,
+             "[data-slot='select-trigger'][data-input-group-control]"
+           )
+           |> length() == 1
+
     assert TestHelpers.attr(html, "[data-slot='select-input']", "name") == "role"
     assert TestHelpers.attr(html, "[data-slot='select-input']", "value") == "admin"
     assert TestHelpers.find_all(html, "[data-select-item]") |> length() == 2
@@ -324,6 +340,18 @@ defmodule CinderUI.Components.FormsTest do
     assert TestHelpers.attr(html, "[data-slot='native-select-wrapper']", "data-slot") ==
              "native-select-wrapper"
 
+    assert TestHelpers.find_all(
+             html,
+             "[data-slot='native-select-wrapper'][data-input-group-root]"
+           )
+           |> length() == 1
+
+    assert TestHelpers.find_all(
+             html,
+             "[data-slot='native-select'][data-input-group-control]"
+           )
+           |> length() == 1
+
     assert TestHelpers.attr(html, "[data-slot='native-select'] option[selected]", "value") ==
              "admin"
 
@@ -367,6 +395,16 @@ defmodule CinderUI.Components.FormsTest do
       })
 
     assert TestHelpers.attr(html, "[data-slot='autocomplete']", "phx-hook") == "CuiAutocomplete"
+
+    assert TestHelpers.find_all(html, "[data-slot='autocomplete'][data-input-group-root]")
+           |> length() == 1
+
+    assert TestHelpers.find_all(
+             html,
+             "[data-slot='autocomplete-input'][data-input-group-control]"
+           )
+           |> length() == 1
+
     assert TestHelpers.attr(html, "[data-slot='autocomplete-input']", "role") == "combobox"
     assert TestHelpers.attr(html, "[data-slot='autocomplete-value']", "value") == "levi"
     assert TestHelpers.find_all(html, "[data-slot='autocomplete-item']") |> length() == 2
@@ -393,6 +431,17 @@ defmodule CinderUI.Components.FormsTest do
 
     assert TestHelpers.attr(html, "[data-slot='autocomplete-trigger']", "aria-haspopup") ==
              "listbox"
+
+    assert TestHelpers.find_all(
+             html,
+             "[data-slot='autocomplete-trigger'][data-input-group-control]"
+           )
+           |> length() == 1
+
+    assert TestHelpers.find_all(
+             html,
+             "[data-slot='autocomplete-content'] [data-slot='autocomplete-input'][data-input-group-control]"
+           ) == []
 
     assert TestHelpers.text(html, "[data-slot='autocomplete-trigger-value']") == "Australia"
     assert TestHelpers.attr(html, "[data-slot='autocomplete-value']", "value") == "au"
@@ -898,14 +947,19 @@ defmodule CinderUI.Components.FormsTest do
 
     inline_class = TestHelpers.attr(html, "[data-slot='input-group']", "class")
     assert inline_class =~ "[data-slot=input-group-addon]]:inline-flex"
-    assert inline_class =~ "[data-slot=input]]:border-0"
+    assert TestHelpers.has_class?(html, "[data-slot='input-group']", "overflow-visible")
     refute inline_class =~ "overflow-hidden"
-    assert inline_class =~ "[data-slot=autocomplete]]:flex-1"
-    assert inline_class =~ "[data-slot=autocomplete]>[data-slot=autocomplete-input]]:border-0"
-    assert inline_class =~ "[data-slot=autocomplete]>[data-slot=autocomplete-trigger]]:border-0"
+    assert inline_class =~ "[data-input-group-root]]:flex-1"
+    assert inline_class =~ "[data-input-group-control]]:border-0"
+
+    assert inline_class =~
+             "[data-input-group-root]>[data-input-group-control]]:focus-visible:ring-0"
+
+    refute inline_class =~ "[data-slot=autocomplete-input]]:border-0"
+    refute inline_class =~ "[data-slot=autocomplete-trigger]]:border-0"
     assert inline_class =~ "[data-slot=combobox]>[data-slot=combobox-input]]:border-0"
     assert inline_class =~ "[data-slot=textarea]]:border-0"
-    assert inline_class =~ "[data-slot=select]_[data-slot=select-trigger]]:border-0"
+    assert inline_class =~ "[data-slot=native-select]]:pr-8"
     assert inline_class =~ "[data-slot=button]]:border-0"
     assert inline_class =~ "[data-slot=button]:last-child]:mr-1.5"
     assert inline_class =~ "[data-slot=input-group-addon]_[data-slot=button]]:h-6"
