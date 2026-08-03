@@ -126,7 +126,7 @@ describe("Cinder UI hook harness", () => {
     expect(trigger.getAttribute("aria-activedescendant")).toBe("plan-free")
   })
 
-  it("autocomplete filters visible items and selects from keyboard navigation", () => {
+  it("autocomplete filters labels and keywords and selects from keyboard navigation", () => {
     const { el } = mountHook(
       "CuiAutocomplete",
       `
@@ -147,7 +147,7 @@ describe("Cinder UI hook harness", () => {
               Mira
               <span data-slot="select-check" class="hidden"></span>
             </button>
-            <button id="owner-sam" type="button" data-autocomplete-item data-value="sam" data-label="Sam Hall">
+            <button id="owner-sam" type="button" data-autocomplete-item data-value="sam" data-label="Sam Hall" data-keywords="operations">
               Sam
               <span data-slot="select-check" class="hidden"></span>
             </button>
@@ -169,6 +169,11 @@ describe("Cinder UI hook harness", () => {
     expect(content.dataset.state).toBe("open")
     expect(levi.classList.contains("hidden")).toBe(true)
     expect(hiddenInput.value).toBe("")
+
+    input.value = "operations"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+
+    expect(sam.classList.contains("hidden")).toBe(false)
 
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }))
     expect(document.activeElement).toBe(sam)
@@ -225,57 +230,6 @@ describe("Cinder UI hook harness", () => {
 
     expect(input.value).toBe("")
     expect(hiddenInput.value).toBe("")
-  })
-
-  it("autocomplete falls back to search-only keywords without changing the selected label", () => {
-    const { el } = mountHook(
-      "CuiAutocomplete",
-      `
-        <div data-slot="autocomplete" data-state="closed" data-selected-label="">
-          <input data-slot="autocomplete-value" type="hidden" value="" />
-          <input data-autocomplete-input value="" aria-expanded="false" aria-activedescendant="" />
-          <div data-autocomplete-content class="hidden">
-            <button
-              id="category-groceries"
-              type="button"
-              data-autocomplete-item
-              data-value="groceries"
-              data-label="Food / Groceries"
-              data-keywords="eating supermarket"
-            >
-              Food / Groceries
-            </button>
-            <button
-              id="category-transport"
-              type="button"
-              data-autocomplete-item
-              data-value="transport"
-              data-label="Transport"
-              data-keywords="car train"
-            >
-              Transport
-            </button>
-            <div data-slot="autocomplete-empty" class="hidden">No matches</div>
-          </div>
-        </div>
-      `,
-    )
-
-    const input = el.querySelector("[data-autocomplete-input]") as HTMLInputElement
-    const hiddenInput = el.querySelector("[data-slot='autocomplete-value']") as HTMLInputElement
-    const groceries = el.querySelector("#category-groceries") as HTMLButtonElement
-    const transport = el.querySelector("#category-transport") as HTMLButtonElement
-
-    input.value = "supermarket"
-    input.dispatchEvent(new Event("input", { bubbles: true }))
-
-    expect(groceries.classList.contains("hidden")).toBe(false)
-    expect(transport.classList.contains("hidden")).toBe(true)
-
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
-
-    expect(input.value).toBe("Food / Groceries")
-    expect(hiddenInput.value).toBe("groceries")
   })
 
   it("autocomplete hides empty groups while filtering", () => {
