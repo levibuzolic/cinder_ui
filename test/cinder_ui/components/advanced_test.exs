@@ -109,6 +109,60 @@ defmodule CinderUI.Components.AdvancedTest do
     assert TestHelpers.has_class?(layout_html, "[data-slot='sidebar-main']", "px-8")
   end
 
+  test "sidebar groups and items render action, trailing, and LiveView link variants" do
+    group_html =
+      render_component(&Advanced.sidebar_group/1, %{
+        label: "Workspace",
+        action: TestHelpers.slot("Add"),
+        inner_block: TestHelpers.slot("Projects")
+      })
+
+    assert TestHelpers.text(group_html, "[data-slot='sidebar-group']") ==
+             "Workspace Add Projects"
+
+    navigate_html =
+      render_component(&Advanced.sidebar_item/1, %{
+        navigate: "/projects",
+        current: true,
+        trailing: TestHelpers.slot("⌘1"),
+        inner_block: TestHelpers.slot("Projects")
+      })
+
+    assert TestHelpers.attr(navigate_html, "a", "href") == "/projects"
+    assert TestHelpers.attr(navigate_html, "a", "data-phx-link") == "redirect"
+    assert TestHelpers.attr(navigate_html, "a", "aria-current") == "page"
+    assert TestHelpers.text(navigate_html, "a") == "Projects ⌘1"
+
+    patch_html =
+      render_component(&Advanced.sidebar_item/1, %{
+        patch: "/projects?page=2",
+        inner_block: TestHelpers.slot("Next page")
+      })
+
+    assert TestHelpers.attr(patch_html, "a", "href") == "/projects?page=2"
+    assert TestHelpers.attr(patch_html, "a", "data-phx-link") == "patch"
+  end
+
+  test "sidebar trigger preserves explicit button and non-button accessibility attrs" do
+    button_html =
+      render_component(&Advanced.sidebar_trigger/1, %{
+        rest: %{type: "submit"},
+        inner_block: TestHelpers.slot("Toggle")
+      })
+
+    assert TestHelpers.attr(button_html, "button", "type") == "submit"
+
+    div_html =
+      render_component(&Advanced.sidebar_trigger/1, %{
+        as: "div",
+        rest: %{role: "switch", tabindex: "1"},
+        inner_block: TestHelpers.slot("Toggle")
+      })
+
+    assert TestHelpers.attr(div_html, "div", "role") == "switch"
+    assert TestHelpers.attr(div_html, "div", "tabindex") == "1"
+  end
+
   test "combobox renders hook-backed input and items" do
     html =
       render_component(&Advanced.combobox/1, %{

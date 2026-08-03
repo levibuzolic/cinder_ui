@@ -67,6 +67,12 @@ defmodule CinderUI.RegistryTest do
     assert Registry.runtime(CinderUI.Components.Actions, :button).kind == :server
   end
 
+  test "component_functions rejects modules outside the registry" do
+    assert_raise ArgumentError, ~r/unknown CinderUI component module/, fn ->
+      Registry.component_functions(String)
+    end
+  end
+
   test "public facades render through registry-backed component ownership" do
     ui_html = render_component(&CinderUI.UI.button/1, %{inner_block: TestHelpers.slot("Save")})
     imported_html = render_component(&ImportProbe.render/1, %{})

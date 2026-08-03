@@ -36,4 +36,18 @@ defmodule CinderUI.HooksTest do
     assert command =~ "&quot;command&quot;:&quot;toggle&quot;"
     assert command =~ "&quot;source&quot;:&quot;test&quot;"
   end
+
+  test "remaining command helpers support existing JS commands and string commands" do
+    focus_command = JS.focus(to: "#search") |> render_js()
+    clear_command = JS.clear(to: "#owner") |> render_js()
+
+    refresh_command =
+      %Phoenix.LiveView.JS{}
+      |> JS.dispatch_command("refresh", to: "#results")
+      |> render_js()
+
+    assert focus_command =~ "&quot;command&quot;:&quot;focus&quot;"
+    assert clear_command =~ "&quot;command&quot;:&quot;clear&quot;"
+    assert refresh_command =~ "&quot;command&quot;:&quot;refresh&quot;"
+  end
 end

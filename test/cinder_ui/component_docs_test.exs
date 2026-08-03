@@ -42,6 +42,42 @@ defmodule CinderUI.ComponentDocsTest do
              "![input/1 screenshot](screenshots/forms-input.png)\n\n[View live examples and full component docs](https://levibuzolic.github.io/cinder_ui/docs/forms-input/)."
   end
 
+  test "doc/1 normalizes indented markdown and preserves generated sections" do
+    module = unique_module("IndentedProbe")
+    module_slug = module_slug(module)
+
+    file =
+      write_module_file(
+        module,
+        source_with_indented_and_generated_docs(module, module_slug)
+      )
+
+    [{^module, beam}] = compile_with_docs(file)
+    beam_file = Path.rootname(file) <> ".beam"
+    File.write!(beam_file, beam)
+
+    indented_doc = compiled_function_doc(beam_file, :indented)
+    assert indented_doc =~ "# Heading\n  Nested detail"
+    refute indented_doc =~ "  # Heading"
+
+    generated_doc = compiled_function_doc(beam_file, :generated)
+    assert length(:binary.matches(generated_doc, "screenshots/#{module_slug}-generated.png")) == 1
+
+    assert length(
+             :binary.matches(
+               generated_doc,
+               "https://levibuzolic.github.io/cinder_ui/docs/#{module_slug}-generated/"
+             )
+           ) == 1
+  end
+
+  test "doc/1 leaves orphaned documentation unchanged" do
+    module = unique_module("OrphanProbe")
+    file = write_module_file(module, source_with_orphan_doc(module))
+
+    [{^module, _beam}] = Code.compile_file(file)
+  end
+
   defp unique_module(suffix) do
     Module.concat([
       CinderUI,
@@ -103,8 +139,38 @@ defmodule CinderUI.ComponentDocsTest do
     """
   end
 
-  defp compiled_function_doc(module, function) do
-    {:docs_v1, _, _, _, _, _, docs} = Code.fetch_docs(module)
+  defp source_with_indented_and_generated_docs(module, module_slug) do
+    """
+    defmodule #{inspect(module)} do
+      require CinderUI.ComponentDocs
+
+      CinderUI.ComponentDocs.doc "  # Heading\n    Nested detail\n\n"
+      def indented(assigns), do: assigns
+
+      CinderUI.ComponentDocs.doc \"\"\"
+      Existing generated sections.
+
+      ![generated](screenshots/#{module_slug}-generated.png)
+
+      [View live examples and full component docs](https://levibuzolic.github.io/cinder_ui/docs/#{module_slug}-generated/).
+      \"\"\"
+      def generated(assigns), do: assigns
+    end
+    """
+  end
+
+  defp source_with_orphan_doc(module) do
+    """
+    defmodule #{inspect(module)} do
+      require CinderUI.ComponentDocs
+
+      CinderUI.ComponentDocs.doc "Orphaned docs"
+    end
+    """
+  end
+
+  defp compiled_function_doc(module_or_path, function) do
+    {:docs_v1, _, _, _, _, _, docs} = Code.fetch_docs(module_or_path)
 
     assert {{:function, ^function, 1}, _, _, %{"en" => doc}, _} =
              Enum.find(docs, fn
@@ -113,6 +179,17 @@ defmodule CinderUI.ComponentDocsTest do
              end)
 
     doc
+  end
+
+  defp compile_with_docs(file) do
+    compiler_options = Code.compiler_options()
+    Code.compiler_options(docs: true)
+
+    try do
+      Code.compile_file(file)
+    after
+      Code.compiler_options(compiler_options)
+    end
   end
 
   defp module_slug(module) do

@@ -3,6 +3,10 @@ defmodule CinderUI.ClassesTest do
 
   alias CinderUI.Classes
 
+  test "Tailwind config includes Cinder UI color tokens" do
+    assert %TailwindCombine.Config{} = CinderUI.TailwindConfig.config()
+  end
+
   test "classes/1 joins class lists and filters falsy values" do
     assert Classes.classes(["a", nil, false, "", ["b", "c"]]) == "a b c"
     assert Classes.classes("solo") == "solo"

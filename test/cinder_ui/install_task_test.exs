@@ -284,6 +284,86 @@ defmodule CinderUI.InstallTaskTest do
     assert File.read!(app_js) == "let Hooks = {}\n"
   end
 
+  test "rejects positional arguments", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    File.mkdir_p!(project)
+
+    assert_raise Mix.Error, ~r/unexpected argument.*extra/, fn ->
+      run_install(project, ["extra"])
+    end
+  end
+
+  test "creates missing app entrypoints inside an existing assets tree", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+
+    run_install(project, ["--assets-path", "assets"])
+
+    assert File.read!(Path.join(assets, "css/app.css")) =~
+             "@import \"../../deps/cinder_ui/priv/templates/cinder_ui.css\";"
+
+    assert File.read!(Path.join(assets, "js/app.js")) =~
+             "Object.assign(Hooks, CinderUIHooks)"
+  end
+
+  test "merges Cinder UI hooks into an empty inline hooks object", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+
+    File.write!(
+      Path.join(assets, "js/app.js"),
+      "const liveSocket = new LiveSocket(\"/live\", Socket, {hooks: {}})\n"
+    )
+
+    run_install(project, ["--assets-path", "assets"])
+
+    assert File.read!(Path.join(assets, "js/app.js")) =~ "hooks: {...CinderUIHooks}"
+  end
+
+  test "unterminated JavaScript tokens are ignored safely", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+    app_js = Path.join(assets, "js/app.js")
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+
+    for suffix <- ["// unfinished", "/* unfinished", "\"unfinished", "/unfinished"] do
+      File.write!(app_js, "import { CinderUIHooks } from \"cinder_ui\"\n" <> suffix)
+      run_install(project, ["--assets-path", "assets"])
+      assert File.read!(app_js) =~ "Object.assign(Hooks, CinderUIHooks)"
+    end
+
+    File.write!(app_js, " /unfinished\nimport { CinderUIHooks } from \"cinder_ui\"")
+    run_install(project, ["--assets-path", "assets"])
+    assert File.read!(app_js) =~ "Object.assign(Hooks, CinderUIHooks)"
+  end
+
+  test "malformed LiveSocket calls fall back to the global hooks binding", %{tmp_dir: tmp_dir} do
+    project = Path.join(tmp_dir, "project")
+    assets = Path.join(project, "assets")
+    app_js = Path.join(assets, "js/app.js")
+    import = "import { CinderUIHooks } from \"cinder_ui\"\n"
+
+    File.mkdir_p!(Path.join(assets, "css"))
+    File.mkdir_p!(Path.join(assets, "js"))
+    File.write!(Path.join(assets, "css/app.css"), "@import \"tailwindcss\";\n")
+
+    for source <- ["LiveSocket(", "LiveSocket({hooks: {)", "const value = LiveSocket"] do
+      File.write!(app_js, import <> source)
+      run_install(project, ["--assets-path", "assets"])
+      assert File.read!(app_js) =~ "Object.assign(Hooks, CinderUIHooks)"
+    end
+  end
+
   test "falls back to a global hooks merge when no hooks binding is found", %{tmp_dir: tmp_dir} do
     project = Path.join(tmp_dir, "project")
     assets = Path.join(project, "assets")
