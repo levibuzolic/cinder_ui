@@ -148,8 +148,10 @@ export const CuiAutocomplete = {
       const query = (this.input?.value || "").toLowerCase()
 
       this.items.forEach((item) => {
-        const text = (item.dataset.label || item.textContent || "").toLowerCase()
-        item.classList.toggle("hidden", !text.includes(query))
+        const label = (item.dataset.label || item.textContent || "").toLowerCase()
+        const keywords = (item.dataset.keywords || "").toLowerCase()
+        const matches = label.includes(query) || keywords.includes(query)
+        item.classList.toggle("hidden", !matches)
       })
 
       if (!this.isPopup && this.valueInput && (this.input?.value || "") !== this.selectedLabel) {
