@@ -327,6 +327,10 @@ defmodule CinderUI.Components.Forms.Select do
   Use `autocomplete/1` when the person typing should search by label, but the
   form needs to submit a separate stable value through the hidden input.
 
+  Add search-only terms with the option's `:keywords` attribute. Keywords are
+  not rendered or announced and are only considered when the visible label
+  does not match the current query.
+
   Prefer `combobox/1` for simpler label-in/label-out filtering where the typed
   text itself is the selected value and you do not need a separate hidden form
   field.
@@ -340,7 +344,12 @@ defmodule CinderUI.Components.Forms.Select do
 
   ```heex title="Autocomplete" align="full"
   <.autocomplete id="team-owner" name="owner" value="levi">
-    <:option value="levi" label="Levi Buzolic" description="Engineering" />
+    <:option
+      value="levi"
+      label="Levi Buzolic"
+      description="Engineering"
+      keywords={["backend", "Elixir"]}
+    />
     <:option value="mira" label="Mira Chen" description="Design" />
     <:option value="sam" label="Sam Hall" description="Operations" />
   </.autocomplete>
@@ -468,6 +477,7 @@ defmodule CinderUI.Components.Forms.Select do
   slot :option, required: true do
     attr :value, :string, required: true
     attr :label, :string, required: true
+    attr :keywords, :list
     attr :description, :string
     attr :disabled, :boolean
     attr :group, :string
@@ -701,6 +711,7 @@ defmodule CinderUI.Components.Forms.Select do
             data-autocomplete-item
             data-value={option.value}
             data-label={option.label}
+            data-keywords={Enum.join(option[:keywords] || [], " ")}
             data-disabled={if option[:disabled], do: "true", else: "false"}
             data-selected={if @value == option.value, do: "true", else: "false"}
             aria-selected={@value == option.value}

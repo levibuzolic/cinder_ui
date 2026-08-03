@@ -386,6 +386,7 @@ defmodule CinderUI.Components.FormsTest do
           %{
             value: "levi",
             label: "Levi Buzolic",
+            keywords: ["backend", "Elixir"],
             description: "Engineering",
             inner_block: fn -> "" end
           },
@@ -408,6 +409,16 @@ defmodule CinderUI.Components.FormsTest do
     assert TestHelpers.attr(html, "[data-slot='autocomplete-input']", "role") == "combobox"
     assert TestHelpers.attr(html, "[data-slot='autocomplete-value']", "value") == "levi"
     assert TestHelpers.find_all(html, "[data-slot='autocomplete-item']") |> length() == 2
+
+    assert TestHelpers.attr(
+             html,
+             "[data-slot='autocomplete-item'][data-value='levi']",
+             "data-keywords"
+           ) == "backend Elixir"
+
+    refute TestHelpers.text(html, "[data-slot='autocomplete-item'][data-value='levi']") =~
+             "backend"
+
     assert TestHelpers.text(html, "[data-slot='autocomplete-empty']") == "No match"
   end
 
