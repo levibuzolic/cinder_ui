@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-08-03
+
+### Added
+
+- Added seamless `input_group/1` composition for inputs, selects, native selects, and both autocomplete variants. Grouped controls now share the group's border, radius, shadow, and focus ring while autocomplete popup content remains visible.
+- Added a `:keywords` attribute to autocomplete options for search-only terms that do not change the visible or selected label.
+
+### Changed
+
+- Hardened `mix cinder_ui.install` JavaScript patching for quoted hook keys, comments, template strings, regular expressions, and unrelated hook objects, and made invalid options and unexpected arguments fail before files are changed.
+
+### Fixed
+
+- Fixed explicit select and native-select widths being overridden inside input groups.
+- Fixed progress components reporting an unclamped `aria-valuenow` when their value exceeded the configured range.
+- Fixed non-positive input OTP lengths rendering phantom cells.
+- Fixed tabs generating duplicate DOM IDs when distinct values normalized to the same slug.
+- Fixed carousel indicators with invalid indexes and strengthened resizable panels against invalid persisted sizes, impossible minimum-size constraints, and stale pointer listeners.
+
 ## [0.2.3] - 2026-07-04
 
 ### Fixed
