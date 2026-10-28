@@ -126,11 +126,11 @@ describe("Cinder UI hook harness", () => {
     expect(trigger.getAttribute("aria-activedescendant")).toBe("plan-free")
   })
 
-  it("autocomplete filters labels and keywords and selects from keyboard navigation", () => {
+  it.each([undefined, "true"])("autocomplete filters labels and keywords with filter=%s", (filter) => {
     const { el } = mountHook(
       "CuiAutocomplete",
       `
-        <div data-slot="autocomplete" data-state="closed" data-selected-label="Levi Buzolic">
+        <div data-slot="autocomplete" data-state="closed" data-selected-label="Levi Buzolic" ${filter ? `data-filter="${filter}"` : ""}>
           <input data-slot="autocomplete-value" type="hidden" value="levi" />
           <input
             data-autocomplete-input
@@ -184,6 +184,125 @@ describe("Cinder UI hook harness", () => {
     expect(input.value).toBe("Sam Hall")
     expect(hiddenInput.value).toBe("sam")
     expect(content.classList.contains("hidden")).toBe(true)
+  })
+
+  it.each(["input", "popup"])("autocomplete %s keeps server order and skips disabled options with filter=false", (variant) => {
+    const { el, hook } = mountHook(
+      "CuiAutocomplete",
+      `
+        <div data-slot="autocomplete" data-state="closed" data-variant="${variant}" data-filter="false">
+          <input data-slot="autocomplete-value" type="hidden" value="" />
+          ${variant === "popup" ? '<button data-autocomplete-trigger><span data-slot="autocomplete-trigger-value"></span></button>' : ""}
+          ${variant === "input" ? '<input data-autocomplete-input aria-activedescendant="" />' : ""}
+          <div data-autocomplete-content class="hidden">
+            ${variant === "popup" ? '<input data-autocomplete-input aria-activedescendant="" />' : ""}
+            <div data-autocomplete-group>
+              <button id="rank-first" data-autocomplete-item data-value="first" data-label="Zulu">Zulu</button>
+              <button id="rank-disabled" data-autocomplete-item data-value="disabled" data-label="Disabled" data-disabled="true" disabled>Disabled</button>
+            </div>
+            <div data-autocomplete-group>
+              <button id="rank-last" data-autocomplete-item data-value="last" data-label="Alpha" data-keywords="query">Alpha</button>
+            </div>
+            <div data-slot="autocomplete-empty" class="hidden">No matches</div>
+          </div>
+        </div>
+      `,
+    )
+    const input = el.querySelector("[data-autocomplete-input]") as HTMLInputElement
+    const hiddenInput = el.querySelector("[data-slot='autocomplete-value']") as HTMLInputElement
+    const items = Array.from(el.querySelectorAll<HTMLButtonElement>("[data-autocomplete-item]"))
+    const groups = Array.from(el.querySelectorAll<HTMLElement>("[data-autocomplete-group]"))
+
+    el.querySelector<HTMLButtonElement>("[data-autocomplete-trigger]")?.click()
+    input.value = "query"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+
+    expect(items.filter((item) => !item.classList.contains("hidden")).map((item) => item.dataset.value))
+      .toEqual(["first", "disabled", "last"])
+    expect(groups.every((group) => !group.classList.contains("hidden"))).toBe(true)
+    expect(input.getAttribute("aria-activedescendant")).toBe("rank-first")
+
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }))
+    expect(document.activeElement).toBe(items[0])
+    items[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }))
+    expect(document.activeElement).toBe(items[2])
+    items[2].dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+    expect(hiddenInput.value).toBe("last")
+    expect(el.dataset.state).toBe("closed")
+
+    input.value = "unmatched"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+    expect(hiddenInput.value).toBe("last")
+    expect(input.value).toBe(variant === "popup" ? "" : "Alpha")
+    if (variant === "popup") {
+      expect(el.querySelector("[data-slot='autocomplete-trigger-value']")?.textContent).toBe("Alpha")
+    }
+
+    input.value = "unmatched again"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    document.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    expect(hiddenInput.value).toBe("last")
+    expect(el.dataset.state).toBe("closed")
+
+    items[0].click()
+    expect(hiddenInput.value).toBe("first")
+    items[1].click()
+    expect(hiddenInput.value).toBe("first")
+    hook.destroyed?.()
+  })
+
+  it.each(["input", "popup"])("autocomplete %s handles server updates, loading, and empty results with filter=false", (variant) => {
+    const { el, hook } = mountHook(
+      "CuiAutocomplete",
+      `
+        <div data-slot="autocomplete" data-state="closed" data-variant="${variant}" data-filter="false" data-loading="true">
+          <input data-slot="autocomplete-value" type="hidden" value="" />
+          ${variant === "input" ? '<input data-autocomplete-input aria-activedescendant="" />' : ""}
+          <div data-autocomplete-content class="hidden">
+            ${variant === "popup" ? '<input data-autocomplete-input aria-activedescendant="" />' : ""}
+            <div data-slot="autocomplete-loading">Loading...</div>
+            <div data-slot="autocomplete-empty" class="hidden">No matches</div>
+          </div>
+        </div>
+      `,
+    )
+    const input = el.querySelector("[data-autocomplete-input]") as HTMLInputElement
+    const content = el.querySelector("[data-autocomplete-content]") as HTMLElement
+    const empty = el.querySelector("[data-slot='autocomplete-empty']") as HTMLElement
+    input.value = "unmatched query"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    expect(empty.classList.contains("hidden")).toBe(true)
+
+    el.dataset.loading = "false"
+    el.querySelector("[data-slot='autocomplete-loading']")?.remove()
+    const group = document.createElement("div")
+    group.dataset.autocompleteGroup = ""
+    group.innerHTML = '<button id="server-result" data-autocomplete-item data-value="result" data-label="Server result">Server result</button>'
+    content.prepend(group)
+    hook.updated?.()
+    expect(input.value).toBe("unmatched query")
+    expect(group.classList.contains("hidden")).toBe(false)
+    expect(empty.classList.contains("hidden")).toBe(true)
+    expect(group.querySelector("button")?.classList.contains("hidden")).toBe(false)
+    group.querySelector<HTMLButtonElement>("button")!.click()
+    expect((el.querySelector("[data-slot='autocomplete-value']") as HTMLInputElement).value).toBe("result")
+
+    group.innerHTML = '<button data-autocomplete-item data-disabled="true" disabled>Unavailable</button>'
+    hook.updated?.()
+    input.value = "another query"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    expect(empty.classList.contains("hidden")).toBe(true)
+    expect(input.getAttribute("aria-activedescendant")).toBe("")
+
+    group.replaceChildren()
+    hook.updated?.()
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    expect(group.classList.contains("hidden")).toBe(true)
+    expect(empty.classList.contains("hidden")).toBe(false)
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+    expect(input.getAttribute("aria-activedescendant")).toBe("")
+    hook.destroyed?.()
   })
 
   it("autocomplete respects LiveView updates that clear the committed selection", () => {

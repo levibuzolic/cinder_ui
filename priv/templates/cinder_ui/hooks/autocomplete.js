@@ -9,9 +9,9 @@ import { registerCommandListener } from "../commands.js"
  * Phoenix LiveView hook for the `autocomplete` component.
  *
  * Combines a text input with a filterable listbox. Typing filters options
- * client-side; selecting an option writes to a hidden input for form
- * submission. Supports keyboard navigation and server-driven option lists
- * via LiveView updates.
+ * client-side unless `data-filter="false"`. Selecting an option writes to a
+ * hidden input for form submission. Supports keyboard navigation and
+ * server-driven option lists via LiveView updates.
  *
  * **Data attributes:** `data-autocomplete-input`, `data-autocomplete-content`,
  * `data-autocomplete-item`.
@@ -150,7 +150,7 @@ export const CuiAutocomplete = {
       this.items.forEach((item) => {
         const label = (item.dataset.label || item.textContent || "").toLowerCase()
         const keywords = (item.dataset.keywords || "").toLowerCase()
-        const matches = label.includes(query) || keywords.includes(query)
+        const matches = this.el.dataset.filter === "false" || label.includes(query) || keywords.includes(query)
         item.classList.toggle("hidden", !matches)
       })
 

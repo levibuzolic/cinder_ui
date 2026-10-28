@@ -336,9 +336,13 @@ defmodule CinderUI.Components.Forms.Select do
   field.
 
   For server-backed search, keep the current query in LiveView assigns and
-  update the option list on `phx-change` or `phx-input`. The component keeps
-  its hidden value form-friendly while the visible input remains a normal text
-  field that can participate in debounced LiveView events.
+  update the option list on `phx-keyup`. The event includes the typed text as
+  `"value"`. The hidden input holds the selected value. The visible input
+  supports debounced LiveView events.
+
+  Set `filter={false}` to show all server results in their supplied order,
+  without matching the query against labels or keywords. This works with both
+  `:input` and `:popup` variants. Client-side filtering defaults to `true`.
 
   ## Examples
 
@@ -362,13 +366,15 @@ defmodule CinderUI.Components.Forms.Select do
   ```
 
   ```heex title="LiveView server search" align="full" vrt
-  <.form for={%{}} phx-change="search-owners">
+  <.form for={%{}}>
     <.autocomplete
       id="owner-search"
       name="owner"
       value="mira"
       placeholder="Search teammates..."
+      filter={false}
       loading={false}
+      phx-keyup="search-owners"
       phx-debounce="300"
       aria-label="Search owners"
     >
@@ -469,6 +475,7 @@ defmodule CinderUI.Components.Forms.Select do
   attr :open, :boolean, default: false
   attr :disabled, :boolean, default: false
   attr :loading, :boolean, default: false
+  attr :filter, :boolean, default: true, doc: "Filter options by label or keywords on the client."
   attr :loading_text, :string, default: "Loading..."
   attr :class, :string, default: nil
   attr :content_class, :string, default: nil
@@ -524,6 +531,7 @@ defmodule CinderUI.Components.Forms.Select do
         placeholder={@placeholder}
         disabled={@disabled}
         loading={@loading}
+        filter={@filter}
         loading_text={@loading_text}
         option={@option}
         trigger={@trigger}
@@ -546,6 +554,7 @@ defmodule CinderUI.Components.Forms.Select do
       placeholder={@placeholder}
       disabled={@disabled}
       loading={@loading}
+      filter={@filter}
       loading_text={@loading_text}
       option={@option}
       trigger={@trigger}
@@ -567,6 +576,7 @@ defmodule CinderUI.Components.Forms.Select do
   attr :placeholder, :string, required: true
   attr :disabled, :boolean, required: true
   attr :loading, :boolean, required: true
+  attr :filter, :boolean, required: true
   attr :loading_text, :string, required: true
   attr :root_classes, :list, required: true
   attr :input_classes, :list, required: true
@@ -586,6 +596,7 @@ defmodule CinderUI.Components.Forms.Select do
       data-variant={@variant}
       data-selected-label={@selected_label}
       data-loading={@loading}
+      data-filter={to_string(@filter)}
       class={classes(@root_classes)}
       phx-hook="CuiAutocomplete"
     >

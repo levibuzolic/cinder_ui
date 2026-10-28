@@ -343,6 +343,26 @@ test.describe("interactive previews", () => {
     await expect(hiddenInput).toHaveValue("levi")
   })
 
+  test("autocomplete server search keeps all supplied results and selects the first result", async ({ page }) => {
+    await page.goto("/docs/forms-autocomplete/")
+    const autocomplete = page.locator("#owner-search")
+    const input = autocomplete.locator("[data-autocomplete-input]")
+    const hiddenInput = autocomplete.locator("[data-slot='autocomplete-value']")
+
+    await expect(autocomplete).toHaveAttribute("data-filter", "false")
+    await input.fill("no label or keyword matches")
+    await expect(autocomplete.locator("[data-autocomplete-item]:visible")).toHaveText(["Levi Buzolic", "Mira Chen"])
+    await expect(autocomplete.locator("[data-slot='autocomplete-empty']")).toBeHidden()
+    await input.press("Enter")
+    await expect(hiddenInput).toHaveValue("levi")
+    await expect(input).toHaveValue("Levi Buzolic")
+
+    await input.fill("another query")
+    await input.press("Escape")
+    await expect(hiddenInput).toHaveValue("levi")
+    await expect(input).toHaveValue("Levi Buzolic")
+  })
+
   test("autocomplete popup trigger reopens the searchable list", async ({ page }) => {
     await page.goto("/docs/forms-autocomplete/")
 

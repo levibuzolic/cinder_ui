@@ -329,6 +329,21 @@ Explicit composition with validation messaging:
 new option. Typing implicitly highlights the first visible match so `Enter`
 accepts it, while `Escape` or clicking away restores the prior selection.
 
+For server search, set `filter={false}` to show all supplied options in the
+server's order. Both input and popup variants support this flag. The default,
+`filter={true}`, matches the query against option labels and keywords.
+
+```heex
+<.autocomplete id="place-search" name="place_id" filter={false}
+  phx-keyup="search-places" phx-debounce="300" aria-label="Search places">
+  <:option :for={place <- @places} value={place.id} label={place.label} />
+</.autocomplete>
+```
+
+Handle `"search-places"` in your LiveView and update `@places` with the results.
+The search event includes the typed text as `"value"`. The hidden `place_id`
+input submits the selected place ID.
+
 Custom label markup remains available when you need richer label content:
 
 ```heex
