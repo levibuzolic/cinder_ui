@@ -396,6 +396,7 @@ defmodule CinderUI.Components.FormsTest do
       })
 
     assert TestHelpers.attr(html, "[data-slot='autocomplete']", "phx-hook") == "CuiAutocomplete"
+    assert TestHelpers.attr(html, "[data-slot='autocomplete']", "data-filter") == "true"
 
     assert TestHelpers.find_all(html, "[data-slot='autocomplete'][data-input-group-root]")
            |> length() == 1
@@ -417,6 +418,21 @@ defmodule CinderUI.Components.FormsTest do
     refute TestHelpers.text(html, option_selector) =~ "backend"
 
     assert TestHelpers.text(html, "[data-slot='autocomplete-empty']") == "No match"
+  end
+
+  test "autocomplete can disable client filtering with and without field labels" do
+    for variant <- [:input, :popup], label <- [nil, "Place"] do
+      html =
+        render_component(&Forms.autocomplete/1, %{
+          id: "place-search",
+          variant: variant,
+          label: label,
+          filter: false,
+          option: []
+        })
+
+      assert TestHelpers.attr(html, "[data-slot='autocomplete']", "data-filter") == "false"
+    end
   end
 
   test "autocomplete popup renders trigger and search input inside content" do
