@@ -22,7 +22,7 @@ jobs:
     environment: hex-publish
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup toolchains
         uses: ./.github/actions/setup-toolchains
@@ -102,7 +102,7 @@ jobs:
           fi
 
       - name: Verify formatting
-        run: MIX_ENV=test mix format --check-formatted
+        run: env MIX_ENV=test mix format --check-formatted
 
       - name: Build demo browser environment
         uses: ./.github/actions/setup-demo-browser
@@ -116,10 +116,10 @@ jobs:
         run: cd demo && npm run test:hooks
 
       - name: Compile with warnings as errors
-        run: MIX_ENV=test mix compile --warnings-as-errors
+        run: env MIX_ENV=test mix compile --warnings-as-errors
 
       - name: Run test suite
-        run: MIX_ENV=test mix test
+        run: env MIX_ENV=test mix test
 
       - name: Install production dependencies
         run: MIX_ENV=prod mix deps.get

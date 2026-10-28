@@ -11,7 +11,7 @@ Cinder UI is a Hex-oriented component library that ports [shadcn/ui](https://ui.
 
 ### Prerequisites
 
-You need an existing Phoenix 1.7+ project. If you don't have one yet:
+You need an existing Phoenix 1.7.24+ or 1.8.9+ project. If you don't have one yet:
 
 ```bash
 mix phx.new my_app
@@ -27,7 +27,7 @@ Add the Tailwind plugin to your dependencies in `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
+    {:tailwind, "~> 0.5.2", runtime: Mix.env() == :dev},
     # ...
   ]
 end
@@ -37,7 +37,7 @@ Configure Tailwind in `config/config.exs`:
 
 ```elixir
 config :tailwind,
-  version: "4.1.12",
+  version: "4.3.3",
   my_app: [
     args: ~w(
       --input=assets/css/app.css
@@ -92,9 +92,9 @@ Add the dependency to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:cinder_ui, "~> 0.1.0"},
+    {:cinder_ui, "~> 0.2.4"},
     # Optional but recommended — required for the <.icon /> component
-    {:lucide_icons, "~> 2.0"},
+    {:lucide_icons, "~> 2.4"},
     # ...
   ]
 end
@@ -420,6 +420,8 @@ CinderUI.dispatchCommand(document.querySelector("[data-slot='select']"), "toggle
 ```
 
 ## Icons (Optional, Recommended)
+
+The optional icon integration requires Elixir 1.18+.
 
 `CinderUI.Icons.icon/1` dispatches to [`lucide_icons`](https://hex.pm/packages/lucide_icons).
 

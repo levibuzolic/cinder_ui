@@ -183,7 +183,7 @@ defmodule CinderUI.Docs.StaticRenderer do
       </p>
 
       <h2 id="prerequisites">Prerequisites</h2>
-      <p>You need an existing Phoenix 1.7+ project. If you don't have one yet:</p>
+      <p>You need an existing Phoenix 1.7.24+ or 1.8.9+ project. If you don't have one yet:</p>
       <UIComponents.docs_code_block
         source="mix phx.new my_app
     cd my_app"
@@ -199,12 +199,12 @@ defmodule CinderUI.Docs.StaticRenderer do
       </p>
       <p>Add the Tailwind plugin to your dependencies in <code>mix.exs</code>:</p>
       <UIComponents.docs_code_block
-        source={"defp deps do\n  [\n    {:tailwind, \"~> 0.3\", runtime: Mix.env() == :dev},\n    # ...\n  ]\nend"}
+        source={"defp deps do\n  [\n    {:tailwind, \"~> 0.5.2\", runtime: Mix.env() == :dev},\n    # ...\n  ]\nend"}
         language={:elixir}
       />
       <p>Configure Tailwind in <code>config/config.exs</code>:</p>
       <UIComponents.docs_code_block
-        source={"config :tailwind,\n  version: \"4.1.12\",\n  my_app: [\n    args: ~w(\n      --input=assets/css/app.css\n      --output=priv/static/assets/app.css\n    ),\n    cd: Path.expand(\"..\", __DIR__)\n  ]"}
+        source={"config :tailwind,\n  version: \"4.3.3\",\n  my_app: [\n    args: ~w(\n      --input=assets/css/app.css\n      --output=priv/static/assets/app.css\n    ),\n    cd: Path.expand(\"..\", __DIR__)\n  ]"}
         language={:elixir}
       />
       <p>Add the Tailwind watcher in <code>config/dev.exs</code>:</p>
@@ -239,8 +239,9 @@ defmodule CinderUI.Docs.StaticRenderer do
 
       <h2 id="add-cinder-ui">2. Add Cinder UI</h2>
       <p>Add the dependency to your <code>mix.exs</code>:</p>
+      <p>The optional Lucide icon integration requires Elixir 1.18+.</p>
       <UIComponents.docs_code_block
-        source={"defp deps do\n  [\n    {:cinder_ui, \"~> 0.1.0\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.0\"},\n    # ...\n  ]\nend"}
+        source={"defp deps do\n  [\n    {:cinder_ui, \"~> 0.2.4\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.4\"},\n    # ...\n  ]\nend"}
         language={:elixir}
       />
       <p>Fetch dependencies:</p>
@@ -261,9 +262,12 @@ defmodule CinderUI.Docs.StaticRenderer do
       <p>This will:</p>
       <ul>
         <li>
-          Update <code>assets/css/app.css</code> with:<br />
-          <code>@source "../../deps/cinder_ui";</code> — so Tailwind scans component classes<br />
-          <code>@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";</code> — loads theme tokens and animation utilities
+          Update <code>assets/css/app.css</code>
+          with:<br />
+          <code>@source "../../deps/cinder_ui";</code>
+          — so Tailwind scans component classes<br />
+          <code>@import "../../deps/cinder_ui/priv/templates/cinder_ui.css";</code>
+          — loads theme tokens and animation utilities
         </li>
         <li>
           Update <code>assets/js/app.js</code>
@@ -278,8 +282,8 @@ defmodule CinderUI.Docs.StaticRenderer do
         utilities are inlined into Cinder UI's CSS.
       </p>
       <p>
-        Prefer to wire it up by hand? Add those two lines to
-        <code>assets/css/app.css</code> yourself and skip the app patching:
+        Prefer to wire it up by hand? Add those two lines to <code>assets/css/app.css</code>
+        yourself and skip the app patching:
       </p>
       <UIComponents.docs_code_block
         source="mix cinder_ui.install --skip-patching"

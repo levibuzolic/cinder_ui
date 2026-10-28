@@ -1,5 +1,5 @@
 [tools]
-node = "latest"
-erlang = "latest"
-elixir = "latest"
-lefthook = "latest"
+node = "26.12.1"
+erlang = "29.1.2"
+elixir = "1.20.4-otp-29"
+lefthook = "2.2.2"

@@ -12,8 +12,8 @@ Thanks for contributing. This guide is for humans first: the goal is to help you
 
 ## Prerequisites
 
-- Elixir (via `mise` is recommended in this repo)
-- Node.js + npm (for demo asset and browser tests)
+- Elixir 1.20.4 / Erlang/OTP 29.1.2 and Node.js 26.12.1 + npm via `mise` (pinned in `.mise.toml` and shared with CI)
+- The demo and optional Lucide icon integration require Elixir 1.18+; the core library retains its Elixir 1.16 requirement.
 - Chromium for Playwright (`npx playwright install --with-deps chromium`)
 
 ## Local Setup
@@ -102,7 +102,7 @@ Generate HexDocs with refreshed component screenshots:
 mix docs.with_screenshots
 ```
 
-Note: docs CSS is compiled with Tailwind CLI from `dev/assets/docs/package.json`. The build task auto-installs those npm dependencies on first run.
+Note: docs CSS is compiled with Tailwind CLI from `dev/assets/docs/package.json`. The build task installs those npm dependencies from the lockfile with `npm ci` on first run. After changing the docs lockfile, run `npm ci --prefix dev/assets/docs` to refresh an existing installation. The demo standalone Tailwind version in `demo/config/config.exs` and the docs npm packages must stay aligned.
 
 ### Demo unit tests
 
@@ -190,7 +190,7 @@ Use concise, scoped commit messages. Existing style examples:
 
 ## Release Process
 
-Follow [RELEASING.md](/Users/levi/src/levibuzolic/cinder_ui/RELEASING.md).
+Follow [RELEASING.md](RELEASING.md).
 
 In short:
 
@@ -210,3 +210,21 @@ If you are unsure where to implement a change:
 - browser behavior regressions: `demo/tests/browser/**`
 
 Open a draft PR early for architecture feedback.
+
+## Dependency Maintenance
+
+Audit both Mix projects and both npm lockfiles when upgrading dependencies:
+
+```bash
+mix hex.outdated --all
+mix hex.audit
+(cd demo && mix hex.outdated --all && mix hex.audit)
+npm outdated --prefix demo
+npm audit --prefix demo
+npm outdated --prefix dev/assets/docs
+npm audit --prefix dev/assets/docs
+```
+
+Update compatible stable releases, inspect changelogs before widening version requirements, and run the quality gates above, including TypeScript (`cd demo && npm run typecheck`), hook tests, and the full Playwright suite. The demo imports Phoenix and LiveView JavaScript from its Hex dependencies, so rebuild assets after Mix updates. Refresh the vendored Topbar in `demo/assets/vendor/topbar.js` from its upstream release when applicable.
+
+Keep `.mise.toml` and `.github/actions/setup-toolchains/action.yml` in sync when changing runtimes. Run `mise trust && mise install` after changing `.mise.toml`. Consumer dependency requirements should exclude known vulnerable releases without dropping supported Phoenix release lines unnecessarily.

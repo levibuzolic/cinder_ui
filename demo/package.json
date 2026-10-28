@@ -11,10 +11,10 @@
     "test:browser:visual:update": "playwright test tests/browser/visual.spec.ts --update-snapshots"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
-    "@types/node": "^26.1.0",
-    "jsdom": "^29.1.1",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.9"
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "jsdom": "^30.1.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
   }
 }

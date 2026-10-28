@@ -221,8 +221,7 @@ defmodule CinderUI.Site.Marketing do
             :for={ember <- @embers}
             class="hero-ember"
             style={hero_ember_style(ember)}
-          >
-          </span>
+          ></span>
         </div>
         <div class="hero-falloff"></div>
         <div class="hero-beam hero-beam-left"></div>
@@ -465,7 +464,7 @@ defmodule CinderUI.Site.Marketing do
     def deps do
       [
         {:cinder_ui, "~> #{version}"},
-        {:lucide_icons, "~> 2.0"} # optional, recommended for <.icon />
+        {:lucide_icons, "~> 2.4"} # optional, recommended for <.icon />
       ]
     end
     """
