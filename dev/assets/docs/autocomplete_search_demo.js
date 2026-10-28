@@ -30,8 +30,7 @@ export const withAutocompleteSearchDemo = (definition) => ({
       })
       this.syncGroups()
       this.syncEmpty()
-      if (this.isManualSearch()) this.highlightItem(null)
-      else this.highlightVisibleDefault(options)
+      this.highlightVisibleDefault(options)
     }
 
     const search = (query, delay = 500) => {

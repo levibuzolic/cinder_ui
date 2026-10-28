@@ -408,12 +408,18 @@ test.describe("interactive previews", () => {
 
     test(`${mode} autocomplete simulates debounced server search`, async ({ page }) => {
       await page.goto(url)
+      await page.clock.install()
       const autocomplete = page.locator("#owner-search")
       const input = autocomplete.locator("[data-autocomplete-input]")
       const items = autocomplete.locator("[data-autocomplete-item]:visible")
       await input.fill("designer")
       await expect(autocomplete.getByRole("status")).toBeVisible()
+      await page.clock.fastForward(400)
       await input.fill("ops")
+      await page.clock.fastForward(400)
+      await expect(autocomplete.getByRole("status")).toBeVisible()
+      await expect(items).toHaveCount(0)
+      await page.clock.fastForward(400)
       await expect(items).toHaveCount(1)
       await expect(items).toHaveText("Sam Hall")
       await items.click()

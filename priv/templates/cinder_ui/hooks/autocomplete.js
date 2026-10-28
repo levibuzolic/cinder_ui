@@ -50,13 +50,13 @@ export const CuiAutocomplete = {
     this.highlightItem = this._hl.highlight
 
     /**
-     * Highlight the selected visible item or first visible item.
+     * Highlight the selected or first visible item unless search is on-demand.
      * @param {{ preferSelection?: boolean }} [options]
      * @returns {HTMLElement | null}
      */
     this.highlightVisibleDefault = ({ preferSelection = false } = {}) => {
       const visibleItems = this.visibleItems()
-      if (!visibleItems.length) {
+      if (this.isManualSearch() || !visibleItems.length) {
         this.highlightItem(null)
         return null
       }
@@ -163,8 +163,7 @@ export const CuiAutocomplete = {
 
       this.syncGroups()
       this.syncEmpty()
-      if (this.isManualSearch()) this.highlightItem(null)
-      else this.highlightVisibleDefault({ preferSelection })
+      this.highlightVisibleDefault({ preferSelection })
       this.open = true
       this.sync()
     }
