@@ -18,6 +18,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  CINDER_UI_SITE_URL: ${{ vars.CINDER_UI_SITE_URL }}
 
 jobs:
   deploy:

@@ -3,6 +3,7 @@ defmodule CinderUI.Docs.StaticRenderer do
 
   use Phoenix.Component
 
+  alias CinderUI.Docs.SocialPreview
   alias CinderUI.Docs.ThemeModel
   alias CinderUI.Docs.UIComponents
   alias Phoenix.HTML.Safe
@@ -37,6 +38,7 @@ defmodule CinderUI.Docs.StaticRenderer do
       title: Keyword.fetch!(opts, :title),
       description: Keyword.fetch!(opts, :description),
       body_content: docs_component_body(entry, sections, root_prefix),
+      social_entry: entry,
       sections: sections,
       active_entry_id: entry.id,
       active_page: nil,
@@ -87,6 +89,7 @@ defmodule CinderUI.Docs.StaticRenderer do
     assigns = %{
       title: opts[:title],
       description: opts[:description],
+      social_entry: opts[:social_entry],
       body_content: opts[:body_content],
       sections: opts[:sections],
       active_entry_id: opts[:active_entry_id],
@@ -107,6 +110,7 @@ defmodule CinderUI.Docs.StaticRenderer do
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{@title}</title>
         <meta name="description" content={@description} />
+        <SocialPreview.meta :if={@social_entry} entry={@social_entry} />
         {rendered(theme_bootstrap_script())}
         <link rel="stylesheet" href={"#{@asset_prefix}/assets/theme.css"} />
         <link rel="stylesheet" href={"#{@asset_prefix}/assets/site.css"} />

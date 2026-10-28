@@ -5,12 +5,15 @@ defmodule Mix.Tasks.Demo.Site.Export do
   and writes a static site bundle to `../dist/site`.
 
   The exported site is suitable for static hosting.
+  Component preview images are copied from the committed Playwright snapshots.
+  Set `CINDER_UI_SITE_URL` to the public root used for link metadata.
 
       cd demo && mix demo.site.export
   """
 
   use Mix.Task
 
+  alias CinderUI.Docs.SocialPreview
   alias Demo.SiteRuntime
 
   @impl true
@@ -32,6 +35,8 @@ defmodule Mix.Tasks.Demo.Site.Export do
 
     write_pages!(output_dir, base_url)
     write_assets!(output_dir)
+    entries = SiteRuntime.catalog_sections() |> Enum.flat_map(& &1.entries)
+    SocialPreview.export_images!(entries, output_dir)
 
     File.write!(Path.join(output_dir, ".nojekyll"), "")
 

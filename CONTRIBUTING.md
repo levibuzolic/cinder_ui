@@ -96,6 +96,16 @@ cd demo
 mix site.export
 ```
 
+Both exporters add Open Graph and Twitter Card metadata and copy component PNGs
+from `demo/tests/browser/visual.spec.ts-snapshots/` to `dist/site/assets/social/`.
+Refresh snapshots with `./bin/update-snapshots` when visuals change; every component
+needs one. Exporting does not require a browser.
+
+Metadata URLs default to `https://levibuzolic.github.io/cinder_ui`. Set
+`CINDER_UI_SITE_URL` to another public root, including any subpath, before exporting.
+Pages and Netlify accept it as a repository variable; preview deployments use the
+same canonical production root.
+
 Generate HexDocs with refreshed component screenshots:
 
 ```bash

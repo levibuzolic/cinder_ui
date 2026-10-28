@@ -1,6 +1,7 @@
 defmodule DemoWeb.SiteController do
   use DemoWeb, :controller
 
+  alias CinderUI.Docs.SocialPreview
   alias Demo.SiteRenderer
   alias Demo.SiteRuntime
 
@@ -61,6 +62,20 @@ defmodule DemoWeb.SiteController do
             hex_package_url: SiteRuntime.hex_package_url()
           )
         end
+    end
+  end
+
+  def asset(conn, %{"path" => ["social", filename]}) do
+    id = String.replace_suffix(filename, ".png", "")
+
+    case SiteRuntime.find_entry(id) do
+      nil ->
+        send_resp(conn, 404, "Not found")
+
+      entry ->
+        conn
+        |> put_resp_content_type("image/png", nil)
+        |> send_file(200, SocialPreview.image_path(entry))
     end
   end
 
