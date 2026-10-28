@@ -57,6 +57,24 @@ defmodule DemoWeb.SiteControllerTest do
     assert body =~ "tok-keyword"
   end
 
+  test "component pages expose the same preview metadata in live and static HTML", %{conn: conn} do
+    for path <- ["/docs/layout-card_title", "/docs/layout-card_title?static=1"] do
+      body = conn |> get(path) |> html_response(200)
+      assert body =~ ~s(property="og:title" content="Layout.card_title · Cinder UI")
+      assert body =~ ~s(property="og:image" content=")
+      assert body =~ "/assets/social/layout-card_title.png"
+      assert body =~ ~s(name="twitter:card" content="summary_large_image")
+      refute body =~ "127.0.0.1:4011"
+    end
+  end
+
+  test "serves preview PNGs and returns 404 for unknown components", %{conn: conn} do
+    image_conn = get(conn, "/assets/social/layout-card_title.png")
+    assert get_resp_header(image_conn, "content-type") == ["image/png"]
+    assert response(image_conn, 200) =~ <<137, "PNG\r\n", 26, "\n">>
+    assert conn |> get("/assets/social/not-a-component.png") |> response(404)
+  end
+
   test "GET /docs/recipes renders composed recipe examples", %{conn: conn} do
     conn = get(conn, ~p"/docs/recipes")
     body = html_response(conn, 200)

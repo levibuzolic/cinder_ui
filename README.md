@@ -7,6 +7,9 @@
 
 Cinder UI is a Hex-oriented component library that ports [shadcn/ui](https://ui.shadcn.com/docs) design patterns, classes, tokens, and compositional structure into Elixir function components.
 
+Component documentation links include screenshot previews when shared. See
+[static exports](CONTRIBUTING.md#static-exports) for hosting configuration.
+
 ## Installation
 
 ### Prerequisites

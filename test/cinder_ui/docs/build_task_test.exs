@@ -1,10 +1,23 @@
 defmodule CinderUI.Docs.BuildTaskTest do
   use ExUnit.Case, async: false
 
+  import CinderUI.TestHelpers, only: [attr: 3]
+
+  alias CinderUI.Docs.SocialPreview
+
   @output "dist/site"
 
   setup do
     File.rm_rf!(@output)
+    previous_url = System.get_env("CINDER_UI_SITE_URL")
+    System.put_env("CINDER_UI_SITE_URL", "https://docs.example.com/library/")
+
+    on_exit(fn ->
+      if previous_url,
+        do: System.put_env("CINDER_UI_SITE_URL", previous_url),
+        else: System.delete_env("CINDER_UI_SITE_URL")
+    end)
+
     :ok
   end
 
@@ -63,7 +76,7 @@ defmodule CinderUI.Docs.BuildTaskTest do
     assert component_page =~ "Slots"
     assert component_page =~ "https://ui.shadcn.com/docs/components/button"
     refute component_page =~ "View live examples and full component docs"
-    refute component_page =~ "https://levibuzolic.github.io/cinder_ui/docs/actions-button/"
+    assert component_page =~ "https://docs.example.com/library/docs/actions-button/"
     assert component_page =~ ~s(data-slot="preview")
     assert component_page =~ ~s(class="code-highlight block min-w-max whitespace-pre")
     assert component_page =~ ~s(<span class="tok-tag">.button</span>)
@@ -78,6 +91,31 @@ defmodule CinderUI.Docs.BuildTaskTest do
     refute site_js =~ "CinderUISiteShared"
     assert site_css =~ ".docs-markdown"
     assert site_css =~ ".docs-k-panel"
+
+    component_ids =
+      Floki.attribute(Floki.parse_document!(docs_index), "[data-component-card]", "id")
+
+    assert component_ids != []
+
+    for id <- component_ids do
+      document =
+        @output
+        |> Path.join("docs/#{id}/index.html")
+        |> File.read!()
+        |> Floki.parse_document!()
+
+      image_url = attr(document, "head meta[property='og:image']", "content")
+      assert image_url == "https://docs.example.com/library/assets/social/#{id}.png"
+
+      exported_image = File.read!(Path.join(@output, "assets/social/#{id}.png"))
+      assert exported_image == File.read!(SocialPreview.image_path(%{id: id}))
+
+      <<_::binary-size(16), width::32, height::32, _::binary>> = exported_image
+
+      assert attr(document, "meta[property='og:image:width']", "content") == to_string(width)
+      assert attr(document, "meta[property='og:image:height']", "content") == to_string(height)
+      assert attr(document, "meta[name='twitter:image']", "content") == image_url
+    end
   end
 
   test "build task rejects flags and options" do

@@ -7,6 +7,9 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
 
   - `index.html` marketing/developer landing page
   - static component docs under `docs/`
+  - component link preview PNGs under `assets/social/`
+
+  Set `CINDER_UI_SITE_URL` to override the public root used for link metadata.
 
   Output can be deployed to any static host (GitHub Pages, Netlify, S3, etc)
   without running Phoenix/Elixir on the server.
@@ -19,6 +22,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
   use Mix.Task
 
   alias CinderUI.Docs.Catalog
+  alias CinderUI.Docs.SocialPreview
   alias CinderUI.Docs.StaticRenderer
   alias CinderUI.Assets
   alias CinderUI.Docs.ThemeModel
@@ -46,6 +50,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
 
     sections = Catalog.sections()
     entries = Enum.flat_map(sections, & &1.entries)
+    SocialPreview.export_images!(entries, output_dir)
 
     File.write!(
       Path.join(docs_output_dir, "index.html"),
