@@ -329,6 +329,32 @@ defmodule CinderUI.Docs.CatalogTest do
     assert table.template_heex =~ "@characters"
   end
 
+  test "server search examples show LiveView results and initialization while previews use fixtures" do
+    sections = Catalog.sections()
+
+    entry =
+      find_entry(Enum.flat_map(sections, & &1.entries), CinderUI.Components.Forms, :autocomplete)
+
+    for title <- ["LiveView server search", "On-demand server search"] do
+      example = Enum.find(entry.examples, &(&1.title == title))
+      assert example.template_heex =~ "@search_results.result"
+      refute example.template_heex =~ "@characters"
+
+      assert length(TestHelpers.find_all(example.preview_html, "[data-autocomplete-item]")) ==
+               length(SampleData.characters())
+    end
+
+    html =
+      render_component(&CatalogComponents.docs_component_detail/1, %{
+        sections: sections,
+        entry: entry
+      })
+
+    code = html |> TestHelpers.find_all("pre") |> Floki.text()
+    assert code =~ "AsyncResult.ok([])"
+    assert code =~ "Accounts.search_owners(query)"
+  end
+
   test "icons section includes lucide wrapper entry" do
     icon_entry =
       Catalog.sections()

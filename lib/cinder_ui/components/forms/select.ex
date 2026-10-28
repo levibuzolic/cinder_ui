@@ -361,6 +361,37 @@ defmodule CinderUI.Components.Forms.Select do
   results are visible. Searches are ignored while disabled or loading. Escape
   and clicking outside restore the committed selection without searching.
 
+  ## Server search
+
+  Keep search results in a LiveView assign and render the returned records as
+  option slots. Initialize the results empty; `Accounts.search_owners/1` is your
+  application’s database or API search, returning maps with the character keys
+  shown in these examples (`id`, `label`, `description`, and `keywords`).
+
+  `assign_async/3` runs the search without blocking the LiveView and tracks its
+  loading state. Debounced `phx-keyup` sends the text as `"value"`; on-demand
+  `search_event` sends it as `"query"`. This handler supports both examples:
+
+  ```elixir
+  alias Phoenix.LiveView.AsyncResult
+
+  def mount(_params, _session, socket) do
+    {:ok, assign(socket, owner_id: nil, search_results: AsyncResult.ok([]))}
+  end
+
+  def handle_event("search-owners", params, socket) do
+    query = params["query"] || params["value"]
+
+    {:noreply,
+     assign_async(socket, :search_results, fn ->
+       {:ok, %{search_results: Accounts.search_owners(query)}}
+     end)}
+  end
+  ```
+
+  The previews below seed sample results and simulate latency. In your app,
+  the options come from `@search_results.result` after the search completes.
+
   ## Examples
 
   ```heex title="Autocomplete" align="full"
@@ -389,20 +420,20 @@ defmodule CinderUI.Components.Forms.Select do
     <.autocomplete
       id="owner-search"
       name="owner"
-      value="leela"
+      value={@owner_id}
       placeholder="Search characters..."
       filter={false}
-      loading={false}
+      loading={@search_results.loading != nil}
       phx-keyup="search-owners"
       phx-debounce="300"
       aria-label="Search owners"
     >
       <:option
-        :for={character <- @characters}
-        value={character.id}
-        label={character.label}
-        description={character.description}
-        keywords={character.keywords}
+        :for={owner <- @search_results.result || []}
+        value={owner.id}
+        label={owner.label}
+        description={owner.description}
+        keywords={owner.keywords}
       />
       <:empty>No characters match the current query.</:empty>
     </.autocomplete>
@@ -415,28 +446,19 @@ defmodule CinderUI.Components.Forms.Select do
     name="owner"
     search_event="search-owners"
     filter={false}
+    loading={@search_results.loading != nil}
     placeholder="Search characters..."
     aria-label="Search characters on demand"
   >
     <:option
-      :for={character <- @characters}
-      value={character.id}
-      label={character.label}
-      description={character.description}
-      keywords={character.keywords}
+      :for={owner <- @search_results.result || []}
+      value={owner.id}
+      label={owner.label}
+      description={owner.description}
+      keywords={owner.keywords}
     />
   </.autocomplete>
   ```
-
-  Replace the example options with slots generated from your search results:
-
-      <:option :for={owner <- @owners} value={owner.id} label={owner.name} />
-
-  Handle the search event in your LiveView or targeted LiveComponent:
-
-      def handle_event("search-owners", %{"query" => query}, socket) do
-        {:noreply, assign(socket, :owners, Accounts.search_owners(query))}
-      end
 
   ```heex title="Autocomplete popup" align="full" vrt
   <div class="pb-80">
