@@ -5,7 +5,7 @@ defmodule Demo.MixProject do
     [
       app: :demo,
       version: "0.1.0",
-      elixir: "~> 1.15",
+      elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -40,20 +40,20 @@ defmodule Demo.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.8.8"},
-      {:phoenix_html, "~> 4.1"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 1.2"},
-      {:lazy_html, ">= 0.1.0"},
-      {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
-      {:tailwind, "~> 0.5", runtime: Mix.env() == :dev},
-      {:req, "~> 0.6"},
-      {:gettext, "~> 1.0"},
-      {:jason, "~> 1.2"},
-      {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"},
+      {:phoenix, "~> 1.8.16"},
+      {:phoenix_html, "~> 4.3"},
+      {:phoenix_live_reload, "~> 1.7", only: :dev},
+      {:phoenix_live_view, "~> 1.2.13"},
+      {:lazy_html, "~> 0.1.13", only: :test},
+      {:esbuild, "~> 0.10.1", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.5.2", runtime: Mix.env() == :dev},
+      {:req, "~> 0.7.5"},
+      {:gettext, "~> 1.0.2"},
+      {:jason, "~> 1.4"},
+      {:dns_cluster, "~> 0.3.1"},
+      {:bandit, "~> 1.14"},
       {:cinder_ui, path: "..", env: :dev},
-      {:lucide_icons, "~> 2.0"},
+      {:lucide_icons, "~> 2.4"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

@@ -13,15 +13,15 @@ inputs:
   elixir-version:
     description: Elixir version to install.
     required: false
-    default: "1.20.2"
+    default: "1.20.4"
   otp-version:
     description: Erlang/OTP version to install.
     required: false
-    default: "29.0.2"
+    default: "29.1.2"
   node-version:
     description: Node.js version to install.
     required: false
-    default: "26"
+    default: "26.12.1"
 
 runs:
   using: composite
@@ -34,13 +34,13 @@ runs:
 
     - name: Setup Node
       if: ${{ inputs.node-cache == '' }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ inputs.node-version }}
 
     - name: Setup Node with cache
       if: ${{ inputs.node-cache != '' }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ inputs.node-version }}
         cache: ${{ inputs.node-cache }}

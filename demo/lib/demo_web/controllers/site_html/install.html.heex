@@ -14,7 +14,7 @@
     </p>
 
     <h2 id="prerequisites">Prerequisites</h2>
-    <p>You need an existing Phoenix 1.7+ project. If you don't have one yet:</p>
+    <p>You need an existing Phoenix 1.7.24+ or 1.8.9+ project. If you don't have one yet:</p>
     <Docs.docs_code_block
       source="mix phx.new my_app
 cd my_app"
@@ -31,13 +31,13 @@ cd my_app"
     </p>
     <p>Add the Tailwind plugin to your dependencies in <code>mix.exs</code>:</p>
     <Docs.docs_code_block
-      source={"defp deps do\n  [\n    {:tailwind, \"~> 0.3\", runtime: Mix.env() == :dev},\n    # ...\n  ]\nend"}
+      source={"defp deps do\n  [\n    {:tailwind, \"~> 0.5.2\", runtime: Mix.env() == :dev},\n    # ...\n  ]\nend"}
       language={:elixir}
       standalone={true}
     />
     <p>Configure Tailwind in <code>config/config.exs</code>:</p>
     <Docs.docs_code_block
-      source={"config :tailwind,\n  version: \"4.1.12\",\n  my_app: [\n    args: ~w(\n      --input=assets/css/app.css\n      --output=priv/static/assets/app.css\n    ),\n    cd: Path.expand(\"..\", __DIR__)\n  ]"}
+      source={"config :tailwind,\n  version: \"4.3.3\",\n  my_app: [\n    args: ~w(\n      --input=assets/css/app.css\n      --output=priv/static/assets/app.css\n    ),\n    cd: Path.expand(\"..\", __DIR__)\n  ]"}
       language={:elixir}
       standalone={true}
     />
@@ -77,8 +77,9 @@ mix tailwind.install"
 
     <h2 id="add-cinder-ui">2. Add Cinder UI</h2>
     <p>Add the dependency to your <code>mix.exs</code>:</p>
+    <p>The optional Lucide icon integration requires Elixir 1.18+.</p>
     <Docs.docs_code_block
-      source={"defp deps do\n  [\n    {:cinder_ui, \"~> 0.1.0\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.0\"},\n    # ...\n  ]\nend"}
+      source={"defp deps do\n  [\n    {:cinder_ui, \"~> 0.2.4\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.4\"},\n    # ...\n  ]\nend"}
       language={:elixir}
       standalone={true}
     />

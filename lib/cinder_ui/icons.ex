@@ -8,9 +8,11 @@ defmodule CinderUI.Icons do
   No sync task is required. Available icon names are read from
   `lucide_icons.icon_names/0` and cached automatically.
 
+  The optional Lucide integration requires Elixir 1.18+.
+
   Add `lucide_icons` to your application dependencies to enable icon rendering:
 
-      {:lucide_icons, "~> 2.0"}
+      {:lucide_icons, "~> 2.4"}
 
   If the dependency is missing, `icon/1` raises a descriptive error.
 
@@ -144,7 +146,7 @@ defmodule CinderUI.Icons do
 
     Add this to your application `deps/0` and run `mix deps.get`:
 
-        {:lucide_icons, "~> 2.0"}
+        {:lucide_icons, "~> 2.4"}
 
     If you do not want icon support, remove usages of `<.icon ... />`.
     """

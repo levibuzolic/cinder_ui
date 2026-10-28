@@ -177,7 +177,7 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
     else
       Mix.shell().info("installing docs CSS dependencies (dev/assets/docs)")
 
-      run_cmd!("npm", ["install", "--no-audit", "--no-fund"], cd: docs_assets_dir)
+      run_cmd!("npm", ["ci", "--no-audit", "--no-fund"], cd: docs_assets_dir)
     end
   end
 

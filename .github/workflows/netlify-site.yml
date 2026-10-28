@@ -40,7 +40,7 @@ jobs:
 
       - name: Checkout
         if: steps.netlify.outputs.configured == 'true'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup toolchains
         if: steps.netlify.outputs.configured == 'true'
@@ -92,7 +92,7 @@ jobs:
             deploy_args+=(--prod)
           fi
 
-          npx --yes netlify-cli@latest deploy "${deploy_args[@]}" > netlify-deploy.json
+          npx --yes netlify-cli@27.15.0 deploy "${deploy_args[@]}" > netlify-deploy.json
           node .github/scripts/netlify_deploy_outputs.mjs netlify-deploy.json >> "$GITHUB_OUTPUT"
 
       - name: Publish deployment summary
@@ -109,7 +109,7 @@ jobs:
       - name: Comment preview URL
         if: steps.netlify.outputs.configured == 'true' && github.event_name == 'pull_request'
         continue-on-error: true
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
         with:
