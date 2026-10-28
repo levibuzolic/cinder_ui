@@ -629,7 +629,7 @@ defmodule CinderUI.Components.Forms.Select do
   attr :loading, :boolean, required: true
   attr :filter, :boolean, required: true
   attr :loading_text, :string, required: true
-  attr :search_event, :string, default: nil
+  attr :search_event, :string, required: true
   attr :search_label, :string, required: true
   attr :root_classes, :list, required: true
   attr :input_classes, :list, required: true

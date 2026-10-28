@@ -24,7 +24,7 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/demo"
 import topbar from "../vendor/topbar"
-import { withAutocompleteSearchDemo } from "../../../dev/assets/docs/autocomplete_search_demo.js"
+import {withAutocompleteSearchDemo} from "../../../dev/assets/docs/autocomplete_search_demo.js"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {

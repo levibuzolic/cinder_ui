@@ -71,9 +71,6 @@ Default hooks:
    `Enter`, `Escape`, and outside-click behavior where applicable.
    Autocomplete tests must cover default client filtering and `filter={false}`
    server results in both input and popup variants.
-
-   On-demand search tests should distinguish submitting a query from selecting
-   a result and verify that typing alone does not submit.
 5. For hook JavaScript changes, edit `priv/templates/cinder_ui/**`; the install task, docs build, and tests assemble the single install artifact on demand.
 6. If the change relates to strategic component coverage or interaction quality, update `docs/competitive-audit-roadmap.md`.
 7. Run quality gates.

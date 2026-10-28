@@ -45,7 +45,9 @@ export const mountStaticHook = (el) => {
   const definition = CinderUIHooks[hookName]
   if (!definition) return false
 
-  const instance = Object.create(hookName === "CuiAutocomplete" ? withAutocompleteSearchDemo(definition) : definition)
+  const instance = Object.create(
+    hookName === "CuiAutocomplete" ? withAutocompleteSearchDemo(definition) : definition
+  )
   instance.el = el
   instance.pushEvent = () => Promise.resolve()
   instance.pushEventTo = () => Promise.resolve()

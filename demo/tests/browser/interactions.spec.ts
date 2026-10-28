@@ -346,7 +346,7 @@ test.describe("interactive previews", () => {
   test("autocomplete server search keeps all supplied results and selects the first result", async ({ page }) => {
     await page.goto("/docs/forms-autocomplete/")
     const autocomplete = page.locator("#team-owner")
-    await autocomplete.evaluate((el) => { (el as HTMLElement).dataset.filter = "false" })
+    await autocomplete.evaluate((el) => el.setAttribute("data-filter", "false"))
     const input = autocomplete.locator("[data-autocomplete-input]")
     const hiddenInput = autocomplete.locator("[data-slot='autocomplete-value']")
 

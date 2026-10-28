@@ -4,7 +4,6 @@ const roles = {
   sam: "operations ops support",
 }
 
-// Reuse the rendered options; this fixture only simulates which results a server returns.
 export const withAutocompleteSearchDemo = (definition) => ({
   ...definition,
   mounted() {
