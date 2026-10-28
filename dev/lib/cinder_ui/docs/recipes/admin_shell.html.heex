@@ -1,7 +1,7 @@
 <.sidebar_layout collapsible={:none} class="min-h-[32rem] rounded-xl border">
   <:sidebar content_class="px-3 py-4">
     <.sidebar_group label="Admin">
-      <.sidebar_item icon="layout-dashboard" current>Customers</.sidebar_item>
+      <.sidebar_item icon="layout-dashboard" current>Crew</.sidebar_item>
       <.sidebar_item icon="receipt-text">Invoices</.sidebar_item>
       <.sidebar_item icon="settings">Settings</.sidebar_item>
     </.sidebar_group>
@@ -11,33 +11,36 @@
     <div class="grid gap-6 xl:grid-cols-[1fr_20rem]">
       <.card>
         <.card_header>
-          <.card_title>Customers</.card_title>
-          <.card_action><.button size={:sm}>Add customer</.button></.card_action>
-          <.card_description>Recent customer activity and account health.</.card_description>
+          <.card_title>Crew</.card_title>
+          <.card_action><.button size={:sm}>Add crew member</.button></.card_action>
+          <.card_description>The Planet Express delivery crew.</.card_description>
         </.card_header>
-        <.card_content>
+        <.card_content class="max-h-96 overflow-y-auto">
           <.table>
             <.table_header>
               <.table_row>
-                <.table_head>Customer</.table_head>
+                <.table_head>Character</.table_head>
+                <.table_head>Role</.table_head>
                 <.table_head>Status</.table_head>
-                <.table_head class="text-right">Spend</.table_head>
               </.table_row>
             </.table_header>
             <.table_body>
-              <.table_row>
-                <.table_cell>Northstar Studio</.table_cell>
+              <.table_row :for={character <- @crew}>
                 <.table_cell>
-                  <.badge color={:success} variant={:outline}>Active</.badge>
+                  <span class="flex items-center gap-2 font-medium">
+                    <.avatar size={:sm} src={character.avatar} alt={character.label} />
+                    {character.label}
+                  </span>
                 </.table_cell>
-                <.table_cell class="text-right">$12,400</.table_cell>
-              </.table_row>
-              <.table_row>
-                <.table_cell>Atlas Labs</.table_cell>
+                <.table_cell>{character.description}</.table_cell>
                 <.table_cell>
-                  <.badge color={:warning} variant={:outline}>Review</.badge>
+                  <.badge
+                    color={if character.status == :active, do: :success, else: :secondary}
+                    variant={:outline}
+                  >
+                    {Phoenix.Naming.humanize(character.status)}
+                  </.badge>
                 </.table_cell>
-                <.table_cell class="text-right">$8,920</.table_cell>
               </.table_row>
             </.table_body>
           </.table>
@@ -46,12 +49,12 @@
 
       <.card>
         <.card_header>
-          <.card_title>Northstar Studio</.card_title>
-          <.card_description>Primary account owner and next steps.</.card_description>
+          <.card_title>Turanga Leela</.card_title>
+          <.card_description>Ship captain · Planet Express</.card_description>
         </.card_header>
         <.card_content class="grid gap-4">
-          <.avatar fallback="NS" />
-          <p class="text-sm text-muted-foreground">Renewal review due in 14 days.</p>
+          <.avatar src={Enum.find(@crew, &(&1.id == "leela")).avatar} alt="Turanga Leela" />
+          <p class="text-sm text-muted-foreground">Ready for the next interplanetary delivery.</p>
           <.button variant={:outline} class="w-full">Open profile</.button>
         </.card_content>
       </.card>

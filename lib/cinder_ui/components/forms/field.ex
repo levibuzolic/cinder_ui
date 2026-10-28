@@ -90,12 +90,17 @@ defmodule CinderUI.Components.Forms.Field do
       <.autocomplete
         id="owner"
         name="owner"
-        value="levi"
+        value="fry"
         aria-label="Owner"
       >
-        <:option value="levi" label="Levi Buzolic" description="Engineering" />
-        <:option value="mira" label="Mira Chen" description="Design" />
-        <:empty>No matching teammates.</:empty>
+        <:option
+          :for={character <- @characters}
+          value={character.id}
+          label={character.label}
+          description={character.description}
+          keywords={character.keywords}
+        />
+        <:empty>No matching characters.</:empty>
       </.autocomplete>
 
       <:description>Choose the teammate responsible for this workspace.</:description>
@@ -269,7 +274,7 @@ defmodule CinderUI.Components.Forms.Field do
   ```heex title="Field control with helper text" align="full"
   <.field>
     <:label for="billing_email">Billing email</:label>
-    <.input id="billing_email" name="billing[email]" type="email" placeholder="billing@team.com" />
+    <.input id="billing_email" name="billing[email]" type="email" placeholder="hermes@planetexpress.example" />
     <:description>Invoices and payment reminders go here.</:description>
   </.field>
   ```
@@ -375,7 +380,7 @@ defmodule CinderUI.Components.Forms.Field do
   ```heex title="Field error in context" align="full"
   <.field invalid={true}>
     <:label for="work_email">Work email</:label>
-    <.input id="work_email" name="work_email" type="email" value="hello@gmail.com" />
+    <.input id="work_email" name="work_email" type="email" value="fry@earth.example" />
     <:error>Please use your company domain.</:error>
   </.field>
   ```

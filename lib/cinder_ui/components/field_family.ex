@@ -30,7 +30,7 @@ defmodule CinderUI.Components.FieldFamily do
   ```heex title="Field family" align="full" vrt
   <.field_set>
     <.field_legend>Notification preferences</.field_legend>
-    <.field_description>Choose how Cinder UI should notify your team.</.field_description>
+    <.field_description>Choose how Planet Express should notify the crew.</.field_description>
 
     <.field_group>
       <.field>

@@ -26,29 +26,29 @@ defmodule CinderUI.Components.DataDisplay do
   ## Examples
 
   ```heex title="Image with fallback"
-  <.avatar src="example.png" alt="Levi" fallback="LV" />
+  <.avatar src="example.png" alt="Philip J. Fry" fallback="PF" />
   ```
 
   ```heex title="Fallback initials only"
-  <.avatar alt="Mira Chen" />
+  <.avatar alt="Turanga Leela" />
   ```
 
   ```heex title="Sizes"
   <div class="flex items-center gap-3">
-    <.avatar size={:sm} alt="Small User" />
-    <.avatar alt="Default User" />
-    <.avatar size={:lg} alt="Large User" />
+    <.avatar size={:sm} alt="Philip J. Fry" />
+    <.avatar alt="Turanga Leela" />
+    <.avatar size={:lg} alt="Bender Rodríguez" />
   </div>
   ```
 
   ```heex title="Badge"
-  <.avatar src="example.png" alt="Online User">
+  <.avatar src="example.png" alt="Amy Wong">
     <:badge class="bg-green-600 dark:bg-green-800"><span class="sr-only">Online</span></:badge>
   </.avatar>
   ```
 
   ```heex title="Badge with icon"
-  <.avatar class="grayscale" src="example.png" alt="Add User">
+  <.avatar class="grayscale" src="example.png" alt="Hermes Conrad">
     <:badge><.icon name="plus" class="size-2" /></:badge>
   </.avatar>
   ```
@@ -56,7 +56,7 @@ defmodule CinderUI.Components.DataDisplay do
   ```heex title="Dropdown"
   <.dropdown_menu id="avatar-dropdown">
     <:trigger>
-      <.avatar src="example.png" alt="Levi" />
+      <.avatar src="example.png" alt="Philip J. Fry" />
     </:trigger>
     <:item>Profile</:item>
     <:item>Billing</:item>
@@ -117,7 +117,7 @@ defmodule CinderUI.Components.DataDisplay do
         data-slot="avatar-image"
         src={@src}
         alt={@alt}
-        class="aspect-square size-full rounded-full"
+        class="aspect-square size-full rounded-full object-cover object-top"
         loading="lazy"
         onerror="this.classList.add('hidden'); this.nextElementSibling?.classList.remove('hidden')"
       />
@@ -159,18 +159,17 @@ defmodule CinderUI.Components.DataDisplay do
 
   ```heex title="Team avatars"
   <.avatar_group>
-    <.avatar src="example.png" alt="Levi" />
-    <.avatar src="example.png" alt="Mira" />
-    <.avatar src="example.png" alt="Shadcn" />
-    <.avatar_group_count>+2</.avatar_group_count>
+    <.avatar src="example.png" alt="Philip J. Fry" />
+    <.avatar src="example.png" alt="Turanga Leela" />
+    <.avatar src="example.png" alt="Amy Wong" />
+    <.avatar_group_count>+{length(@characters) - 3}</.avatar_group_count>
   </.avatar_group>
   ```
 
   ```heex title="Fallback-only group"
   <.avatar_group>
-    <.avatar alt="Levi Buzolic" />
-    <.avatar alt="Mira Jones" />
-    <.avatar alt="Sam Patel" />
+    <.avatar :for={character <- Enum.take(@crew, 5)} alt={character.label} />
+    <.avatar_group_count>+{length(@crew) - 5}</.avatar_group_count>
   </.avatar_group>
   ```
   """)
@@ -200,8 +199,8 @@ defmodule CinderUI.Components.DataDisplay do
 
   ```heex title="Avatar overflow count"
   <.avatar_group>
-    <.avatar alt="Levi Buzolic" />
-    <.avatar alt="Mira Jones" />
+    <.avatar alt="Philip J. Fry" />
+    <.avatar alt="Turanga Leela" />
     <.avatar_group_count size={:sm}>+3</.avatar_group_count>
   </.avatar_group>
   ```
@@ -239,29 +238,37 @@ defmodule CinderUI.Components.DataDisplay do
 
   ## Examples
 
-  ```heex title="Service status table" align="full"
-  <.table>
-    <.table_caption>Active deployments across environments.</.table_caption>
-    <.table_header>
-      <.table_row>
-        <.table_head>Service</.table_head>
-        <.table_head>Status</.table_head>
-        <.table_head class="text-right">Latency</.table_head>
-      </.table_row>
-    </.table_header>
-    <.table_body>
-      <.table_row>
-        <.table_cell>API</.table_cell>
-        <.table_cell>Healthy</.table_cell>
-        <.table_cell class="text-right">82ms</.table_cell>
-      </.table_row>
-      <.table_row>
-        <.table_cell>Worker</.table_cell>
-        <.table_cell>Degraded</.table_cell>
-        <.table_cell class="text-right">164ms</.table_cell>
-      </.table_row>
-    </.table_body>
-  </.table>
+  ```heex title="Character directory" align="full"
+  <div class="max-h-96 overflow-y-auto">
+    <.table>
+      <.table_caption>{length(@characters)} crew members and contacts.</.table_caption>
+      <.table_header>
+        <.table_row>
+          <.table_head>Character</.table_head>
+          <.table_head>Role</.table_head>
+          <.table_head>Organization</.table_head>
+          <.table_head>Status</.table_head>
+        </.table_row>
+      </.table_header>
+      <.table_body>
+        <.table_row :for={character <- @characters}>
+          <.table_cell>
+            <div class="flex items-center gap-2">
+              <.avatar size={:sm} src={character.avatar} alt={character.label} />
+              <span class="font-medium">{character.label}</span>
+            </div>
+          </.table_cell>
+          <.table_cell>{character.description}</.table_cell>
+          <.table_cell>{character.group}</.table_cell>
+          <.table_cell>
+            <.badge variant={:outline} color={if character.status == :active, do: :success, else: :secondary}>
+              {Phoenix.Naming.humanize(character.status)}
+            </.badge>
+          </.table_cell>
+        </.table_row>
+      </.table_body>
+    </.table>
+  </div>
   ```
 
   ```heex title="Invoice summary table" align="full" vrt

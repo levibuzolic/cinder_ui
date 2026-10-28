@@ -28,9 +28,9 @@ defmodule CinderUI.Components.Navigation do
   ```heex title="Breadcrumb" align="full"
   <.breadcrumb>
     <.breadcrumb_list>
-      <.breadcrumb_item><.breadcrumb_link href="/">Home</.breadcrumb_link></.breadcrumb_item>
+      <.breadcrumb_item><.breadcrumb_link href="/">Planet Express</.breadcrumb_link></.breadcrumb_item>
       <.breadcrumb_separator />
-      <.breadcrumb_item><.breadcrumb_page>Settings</.breadcrumb_page></.breadcrumb_item>
+      <.breadcrumb_item><.breadcrumb_page>Crew directory</.breadcrumb_page></.breadcrumb_item>
     </.breadcrumb_list>
   </.breadcrumb>
   ```
@@ -57,7 +57,7 @@ defmodule CinderUI.Components.Navigation do
 
   ```heex title="Breadcrumb list" align="full"
   <.breadcrumb_list>
-    <.breadcrumb_item><.breadcrumb_link href="/">Home</.breadcrumb_link></.breadcrumb_item>
+    <.breadcrumb_item><.breadcrumb_link href="/">Planet Express</.breadcrumb_link></.breadcrumb_item>
     <.breadcrumb_separator />
     <.breadcrumb_item><.breadcrumb_page>Billing</.breadcrumb_page></.breadcrumb_item>
   </.breadcrumb_list>

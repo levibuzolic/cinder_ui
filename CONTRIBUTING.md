@@ -56,6 +56,7 @@ Default hooks:
 - Public install task: `lib/mix/tasks/cinder_ui.install.ex`
 - Internal docs/site tasks: `dev/lib/mix/tasks/**`
 - Static docs catalog definitions: `dev/lib/cinder_ui/docs/catalog.ex`
+- Shared Futurama example records: `dev/lib/cinder_ui/docs/sample_data.ex`
 - Simulated autocomplete search for demo/static previews: `dev/assets/docs/autocomplete_search_demo.js`
 - Demo integration app: `demo`
 - Browser tests: `demo/tests/browser/**`
@@ -65,6 +66,8 @@ Default hooks:
 
 1. Implement the component/task change in library code.
 2. Update docs/examples if API or behavior changed.
+   Use the shared `@characters`, `@crew`, and `@orders` assigns for people and
+   record lists; keep preview data and copyable snippets aligned.
 3. Update static docs catalog sample(s) in `dev/lib/cinder_ui/docs/catalog.ex`.
 4. Add or adjust unit/browser tests.
    Interaction changes should cover both confirm and cancel paths such as

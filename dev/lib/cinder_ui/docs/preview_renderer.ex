@@ -2,6 +2,7 @@ defmodule CinderUI.Docs.PreviewRenderer do
   @moduledoc false
 
   alias CinderUI.Docs.SampleAssets
+  alias CinderUI.Docs.SampleData
   alias Phoenix.HTML.Safe
 
   def render(module, function, code) when is_binary(code) do
@@ -79,19 +80,23 @@ defmodule CinderUI.Docs.PreviewRenderer do
   end
 
   defp default_snippet_assign_value("form"), do: example_form_assign()
+  defp default_snippet_assign_value("characters"), do: SampleData.characters()
+  defp default_snippet_assign_value("crew"), do: SampleData.crew()
+  defp default_snippet_assign_value("orders"), do: SampleData.orders()
+  defp default_snippet_assign_value("countries"), do: SampleData.countries()
   defp default_snippet_assign_value(_key), do: nil
 
   defp example_form_assign do
     Phoenix.Component.to_form(
       %{
-        "email" => "levi@example.com",
+        "email" => "fry@planetexpress.example",
         "quantity" => "3",
         "bio" => "Docs preview copy",
         "active" => "true",
         "terms" => "true",
         "notifications" => "true",
         "role" => "member",
-        "owner" => "mira",
+        "owner" => "leela",
         "plan" => "pro",
         "volume" => "42",
         "code" => "482951"

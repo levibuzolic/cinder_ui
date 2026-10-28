@@ -1,9 +1,3 @@
-const roles = {
-  levi: "engineering engineer backend elixir",
-  mira: "design designer product ux",
-  sam: "operations ops support",
-}
-
 export const withAutocompleteSearchDemo = (definition) => ({
   ...definition,
   mounted() {
@@ -17,7 +11,7 @@ export const withAutocompleteSearchDemo = (definition) => ({
     const loading = document.createElement("div")
     loading.setAttribute("role", "status")
     loading.className = "text-muted-foreground hidden px-2 py-1.5 text-sm"
-    loading.textContent = "Searching teammates…"
+    loading.textContent = "Searching characters…"
     this.content.insertBefore(loading, this.empty)
 
     const renderResults = (options) => {
@@ -25,7 +19,7 @@ export const withAutocompleteSearchDemo = (definition) => ({
       loading.classList.toggle("hidden", !busy)
       if (this.searchButton) this.searchButton.disabled = busy || this.input.disabled
       this.items.forEach((item) => {
-        const text = `${item.dataset.label} ${roles[item.dataset.value]}`.toLowerCase()
+        const text = `${item.dataset.label} ${item.dataset.keywords}`.toLowerCase()
         item.classList.toggle("hidden", busy || !terms.every((term) => text.includes(term)))
       })
       this.syncGroups()

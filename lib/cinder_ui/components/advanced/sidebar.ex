@@ -40,7 +40,7 @@ defmodule CinderUI.Components.Advanced.Sidebar do
             <.icon name="briefcase-business" class="size-4" />
           </div>
           <div data-sidebar-label class="min-w-0 flex-1">
-            <p class="truncate text-sm font-medium">Acme Inc</p>
+            <p class="truncate text-sm font-medium">Planet Express</p>
             <p class="text-sidebar-foreground/70 truncate text-xs">Enterprise</p>
           </div>
           <div data-sidebar-label class="text-sidebar-foreground/70 flex flex-col">
@@ -71,10 +71,10 @@ defmodule CinderUI.Components.Advanced.Sidebar do
       <.sidebar_footer>
         <.sidebar_profile_menu
           id="workspace-shell-profile-menu"
-          name="shadcn"
-          subtitle="m@example.com"
+          name="Turanga Leela"
+          subtitle="leela@planetexpress.example"
           avatar_src="example.png"
-          avatar_alt="shadcn"
+          avatar_alt="Turanga Leela"
         >
           <:item icon="badge-check">Account</:item>
           <:item icon="credit-card">Billing</:item>
@@ -523,10 +523,10 @@ defmodule CinderUI.Components.Advanced.Sidebar do
       <.sidebar_footer>
         <.sidebar_profile_menu
           id="sidebar-footer-profile"
-          name="Levi Buzolic"
-          subtitle="levi@example.com"
+          name="Philip J. Fry"
+          subtitle="fry@planetexpress.example"
           avatar_src="example.png"
-          avatar_alt="Levi Buzolic"
+          avatar_alt="Philip J. Fry"
         >
           <:item icon="user">Account</:item>
           <:item icon="settings">Preferences</:item>
@@ -588,10 +588,10 @@ defmodule CinderUI.Components.Advanced.Sidebar do
       <.sidebar_footer>
         <.sidebar_profile_menu
           id="sidebar-profile-menu-example"
-          name="shadcn"
-          subtitle="m@example.com"
+          name="Turanga Leela"
+          subtitle="leela@planetexpress.example"
           avatar_src="example.png"
-          avatar_alt="shadcn"
+          avatar_alt="Turanga Leela"
         >
           <:item icon="badge-check">Account</:item>
           <:item icon="credit-card">Billing</:item>
@@ -616,10 +616,10 @@ defmodule CinderUI.Components.Advanced.Sidebar do
       <.sidebar_footer>
         <.sidebar_profile_menu
           id="sidebar-profile-menu-collapsed-example"
-          name="Mira Chen"
-          subtitle="mira@example.com"
+          name="Turanga Leela"
+          subtitle="leela@planetexpress.example"
           avatar_src="example.png"
-          avatar_alt="Mira Chen"
+          avatar_alt="Turanga Leela"
         >
           <:item icon="user">Profile</:item>
           <:item icon="settings">Settings</:item>

@@ -4,8 +4,10 @@ defmodule CinderUI.Docs.CatalogTest do
   import Phoenix.LiveViewTest
 
   alias CinderUI.Docs.Catalog
+  alias CinderUI.Docs.SampleData
   alias CinderUI.Docs.UIComponents.Catalog, as: CatalogComponents
   alias CinderUI.Registry
+  alias CinderUI.TestHelpers
 
   test "catalog includes all public component functions" do
     expected_count =
@@ -299,13 +301,32 @@ defmodule CinderUI.Docs.CatalogTest do
 
     assert avatar_entry.template_heex =~ "<.avatar"
     assert avatar_entry.template_heex =~ "example.png"
-    assert avatar_entry.template_heex =~ "alt=\"Levi\""
+    assert avatar_entry.template_heex =~ "alt=\"Philip J. Fry\""
     refute avatar_entry.template_heex =~ "data:image/"
     assert avatar_entry.preview_html =~ "data:image/"
     assert avatar_group_entry.template_heex =~ "<.avatar_group"
     assert avatar_group_entry.template_heex =~ "example.png"
     refute avatar_group_entry.template_heex =~ "data:image/"
     assert avatar_group_entry.preview_html =~ "data:image/"
+  end
+
+  test "record examples use the shared Futurama roster" do
+    characters = SampleData.characters()
+    assert length(characters) >= 20
+    assert Enum.uniq_by(characters, & &1.id) == characters
+
+    entries = Catalog.sections() |> Enum.flat_map(& &1.entries)
+    autocomplete = Enum.find(entries, &(&1.function == :autocomplete))
+    table = Enum.find(entries, &(&1.function == :table))
+
+    assert length(TestHelpers.find_all(autocomplete.preview_html, "[data-autocomplete-item]")) ==
+             length(characters)
+
+    assert length(TestHelpers.find_all(table.preview_html, "tbody [data-slot='table-row']")) ==
+             length(characters)
+
+    assert autocomplete.template_heex =~ "@characters"
+    assert table.template_heex =~ "@characters"
   end
 
   test "icons section includes lucide wrapper entry" do

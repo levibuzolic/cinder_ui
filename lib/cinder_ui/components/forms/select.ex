@@ -28,8 +28,13 @@ defmodule CinderUI.Components.Forms.Select do
 
   ```heex title="Grouped labels" align="full" vrt
   <.select id="assignee" name="assignee" placeholder="Assign a teammate">
-    <:option value="levi" label="Levi" description="Platform" group="Engineering" />
-    <:option value="mira" label="Mira" description="Product Design" group="Design" />
+    <:option
+      :for={character <- Enum.sort_by(@characters, & &1.group)}
+      value={character.id}
+      label={character.label}
+      description={character.description}
+      group={character.group}
+    />
   </.select>
   ```
 
@@ -359,15 +364,14 @@ defmodule CinderUI.Components.Forms.Select do
   ## Examples
 
   ```heex title="Autocomplete" align="full"
-  <.autocomplete id="team-owner" name="owner" value="levi">
+  <.autocomplete id="team-owner" name="owner" value="fry">
     <:option
-      value="levi"
-      label="Levi Buzolic"
-      description="Engineering"
-      keywords={["backend", "Elixir"]}
+      :for={character <- @characters}
+      value={character.id}
+      label={character.label}
+      description={character.description}
+      keywords={character.keywords}
     />
-    <:option value="mira" label="Mira Chen" description="Design" />
-    <:option value="sam" label="Sam Hall" description="Operations" />
   </.autocomplete>
   ```
 
@@ -378,25 +382,29 @@ defmodule CinderUI.Components.Forms.Select do
   ```
 
   The demo previews simulate server latency and search across names and roles.
-  Try `designer`, `engineer`, or `ops`; an unmatched query shows the empty state.
+  Try `robot`, `captain`, or `doctor`; an unmatched query shows the empty state.
 
   ```heex title="LiveView server search" align="full" vrt
   <.form for={%{}}>
     <.autocomplete
       id="owner-search"
       name="owner"
-      value="mira"
-      placeholder="Search teammates..."
+      value="leela"
+      placeholder="Search characters..."
       filter={false}
       loading={false}
       phx-keyup="search-owners"
       phx-debounce="300"
       aria-label="Search owners"
     >
-      <:option value="levi" label="Levi Buzolic" />
-      <:option value="mira" label="Mira Chen" />
-      <:option value="sam" label="Sam Hall" />
-      <:empty>No teammates match the current query.</:empty>
+      <:option
+        :for={character <- @characters}
+        value={character.id}
+        label={character.label}
+        description={character.description}
+        keywords={character.keywords}
+      />
+      <:empty>No characters match the current query.</:empty>
     </.autocomplete>
   </.form>
   ```
@@ -407,12 +415,16 @@ defmodule CinderUI.Components.Forms.Select do
     name="owner"
     search_event="search-owners"
     filter={false}
-    placeholder="Search teammates..."
-    aria-label="Search teammates on demand"
+    placeholder="Search characters..."
+    aria-label="Search characters on demand"
   >
-    <:option value="levi" label="Levi Buzolic" />
-    <:option value="mira" label="Mira Chen" />
-    <:option value="sam" label="Sam Hall" />
+    <:option
+      :for={character <- @characters}
+      value={character.id}
+      label={character.label}
+      description={character.description}
+      keywords={character.keywords}
+    />
   </.autocomplete>
   ```
 
@@ -427,7 +439,7 @@ defmodule CinderUI.Components.Forms.Select do
       end
 
   ```heex title="Autocomplete popup" align="full" vrt
-  <div class="pb-48">
+  <div class="pb-80">
     <.autocomplete
       id="country-search"
       name="country"
@@ -436,39 +448,43 @@ defmodule CinderUI.Components.Forms.Select do
       placeholder="Search countries..."
       open={true}
     >
-      <:option value="au" label="Australia" />
-      <:option value="nz" label="New Zealand" />
-      <:option value="us" label="United States" />
+      <:option :for={country <- @countries} value={country.id} label={country.label} />
     </.autocomplete>
   </div>
   ```
 
   ```heex title="Grouped autocomplete" align="full" vrt
-  <div class="pb-48">
+  <div class="pb-80">
     <.autocomplete
-      id="timezone-search"
-      name="timezone"
-      placeholder="Search timezones..."
+      id="crew-directory-search"
+      name="character"
+      placeholder="Search characters..."
       open={true}
     >
-      <:option value="nyc" label="(GMT-5) New York" group="Americas" />
-      <:option value="lax" label="(GMT-8) Los Angeles" group="Americas" />
-      <:option value="lon" label="(GMT+0) London" group="Europe" />
+      <:option
+        :for={character <- Enum.sort_by(@characters, & &1.group)}
+        value={character.id}
+        label={character.label}
+        description={character.description}
+        group={character.group}
+        keywords={character.keywords}
+      />
     </.autocomplete>
   </div>
   ```
 
   ```heex title="Custom autocomplete items" align="full" vrt
-  <div class="pb-36">
+  <div class="pb-80">
     <.autocomplete
-      id="framework-search"
-      name="framework"
+      id="character-search"
+      name="character"
       open={true}
     >
-      <:option value="next" label="Next.js">
+      <:option :for={character <- @characters} value={character.id} label={character.label} keywords={character.keywords}>
+        <.avatar size={:sm} src={character.avatar} alt={character.label} />
         <span class="flex flex-col">
-          <span class="font-medium">Next.js</span>
-          <span class="text-muted-foreground text-xs">React framework</span>
+          <span class="font-medium">{character.label}</span>
+          <span class="text-muted-foreground text-xs">{character.description}</span>
         </span>
       </:option>
     </.autocomplete>
@@ -478,20 +494,37 @@ defmodule CinderUI.Components.Forms.Select do
   ### With FormField
 
       <.autocomplete field={@form[:owner]}>
-        <:option value="levi" label="Levi Buzolic" />
-        <:option value="mira" label="Mira Chen" />
+        <:option
+          :for={character <- @characters}
+          value={character.id}
+          label={character.label}
+          description={character.description}
+          keywords={character.keywords}
+        />
       </.autocomplete>
 
   ### With label
 
       <.autocomplete field={@form[:owner]} label="Owner">
-        <:option value="levi" label="Levi Buzolic" />
+        <:option
+          :for={character <- @characters}
+          value={character.id}
+          label={character.label}
+          description={character.description}
+          keywords={character.keywords}
+        />
       </.autocomplete>
 
   ### With explicit errors
 
       <.autocomplete field={@form[:owner]} label="Owner" errors={["is required"]}>
-        <:option value="levi" label="Levi Buzolic" />
+        <:option
+          :for={character <- @characters}
+          value={character.id}
+          label={character.label}
+          description={character.description}
+          keywords={character.keywords}
+        />
       </.autocomplete>
 
   ### Inside field composition
@@ -499,7 +532,13 @@ defmodule CinderUI.Components.Forms.Select do
       <.field>
         <:label for={@form[:owner].id}>Owner</:label>
         <.autocomplete field={@form[:owner]}>
-          <:option value="levi" label="Levi Buzolic" />
+          <:option
+            :for={character <- @characters}
+            value={character.id}
+            label={character.label}
+            description={character.description}
+            keywords={character.keywords}
+          />
         </.autocomplete>
         <:description>Assign a teammate to this project.</:description>
       </.field>

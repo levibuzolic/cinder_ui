@@ -30,11 +30,11 @@ defmodule CinderUI.Components.Layout do
   ```heex title="Project status"
   <.card>
     <.card_header>
-      <.card_title>Project status</.card_title>
-      <.card_description>Active deployments across environments.</.card_description>
+      <.card_title>Delivery status</.card_title>
+      <.card_description>Planet Express deliveries across the galaxy.</.card_description>
     </.card_header>
     <.card_content>
-      <p class="text-sm">Production healthy, staging pending one migration.</p>
+      <p class="text-sm">Crew assembled. Two packages are ready for departure.</p>
     </.card_content>
   </.card>
   ```
@@ -51,7 +51,7 @@ defmodule CinderUI.Components.Layout do
     <.card_content class="space-y-3">
       <.field>
         <:label for="invite_email">Email</:label>
-        <.input id="invite_email" type="email" placeholder="dev@company.com" />
+        <.input id="invite_email" type="email" placeholder="amy@planetexpress.example" />
       </.field>
     </.card_content>
     <.card_footer class="justify-end gap-2 border-t">
