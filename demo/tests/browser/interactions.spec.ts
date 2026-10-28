@@ -345,13 +345,14 @@ test.describe("interactive previews", () => {
 
   test("autocomplete server search keeps all supplied results and selects the first result", async ({ page }) => {
     await page.goto("/docs/forms-autocomplete/")
-    const autocomplete = page.locator("#owner-search")
+    const autocomplete = page.locator("#team-owner")
+    await autocomplete.evaluate((el) => { (el as HTMLElement).dataset.filter = "false" })
     const input = autocomplete.locator("[data-autocomplete-input]")
     const hiddenInput = autocomplete.locator("[data-slot='autocomplete-value']")
 
     await expect(autocomplete).toHaveAttribute("data-filter", "false")
     await input.fill("no label or keyword matches")
-    await expect(autocomplete.locator("[data-autocomplete-item]:visible")).toHaveText(["Levi Buzolic", "Mira Chen"])
+    await expect(autocomplete.locator("[data-autocomplete-item]:visible")).toHaveText([/Levi Buzolic/, /Mira Chen/, /Sam Hall/])
     await expect(autocomplete.locator("[data-slot='autocomplete-empty']")).toBeHidden()
     await input.press("Enter")
     await expect(hiddenInput).toHaveValue("levi")
@@ -362,6 +363,64 @@ test.describe("interactive previews", () => {
     await expect(hiddenInput).toHaveValue("levi")
     await expect(input).toHaveValue("Levi Buzolic")
   })
+
+  for (const mode of ["demo", "static"]) {
+    const url = `/docs/forms-autocomplete/${mode === "static" ? "?static=1" : ""}`
+
+    test(`${mode} autocomplete simulates on-demand server search`, async ({ page }) => {
+      await page.goto(url)
+      await page.clock.install()
+      const autocomplete = page.locator("#on-demand-owner-search")
+      const input = autocomplete.locator("[data-autocomplete-input]")
+      const items = autocomplete.locator("[data-autocomplete-item]:visible")
+      const search = autocomplete.getByRole("button", { name: "Search", exact: true })
+      const loading = autocomplete.getByRole("status")
+
+      await input.fill("designer")
+      // Let a simulated response window pass: typing alone must not search.
+      await page.clock.fastForward(1000)
+      await expect(items).toHaveCount(3)
+      await expect(loading).toBeHidden()
+
+      await input.press("Enter")
+      await expect(loading).toBeVisible()
+      await expect(search).toBeDisabled()
+      await expect(items).toHaveCount(1)
+      await expect(items).toHaveText("Mira Chen")
+      await expect(search).toBeEnabled()
+
+      await input.fill("no-such-person")
+      await search.click()
+      await expect(loading).toBeVisible()
+      await expect(items).toHaveCount(0)
+      await expect(autocomplete.locator("[data-slot='autocomplete-empty']")).toBeVisible()
+
+      await input.fill("engineer")
+      await search.click()
+      await expect(items).toHaveCount(1)
+      await expect(items).toHaveText("Levi Buzolic")
+      await input.focus()
+      await input.press("ArrowDown")
+      await page.keyboard.press("Enter")
+      await expect(autocomplete.locator("[data-slot='autocomplete-value']")).toHaveValue("levi")
+      await expect(autocomplete).toHaveAttribute("data-state", "closed")
+    })
+
+    test(`${mode} autocomplete simulates debounced server search`, async ({ page }) => {
+      await page.goto(url)
+      const autocomplete = page.locator("#owner-search")
+      const input = autocomplete.locator("[data-autocomplete-input]")
+      const items = autocomplete.locator("[data-autocomplete-item]:visible")
+      await input.fill("designer")
+      await expect(autocomplete.getByRole("status")).toBeVisible()
+      await input.fill("ops")
+      await expect(items).toHaveCount(1)
+      await expect(items).toHaveText("Sam Hall")
+      await items.click()
+      await expect(autocomplete.locator("[data-slot='autocomplete-value']")).toHaveValue("sam")
+      await expect(input).toHaveValue("Sam Hall")
+    })
+  }
 
   test("autocomplete popup trigger reopens the searchable list", async ({ page }) => {
     await page.goto("/docs/forms-autocomplete/")

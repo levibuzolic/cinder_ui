@@ -347,6 +347,15 @@ Handle `"search-places"` in your LiveView and update `@places` with the results.
 The search event includes the typed text as `"value"`. The hidden `place_id`
 input submits the selected place ID.
 
+For on-demand search, add `search_event="search-owners"` to the autocomplete.
+Enter in the text field or the built-in Search button sends that event with
+`%{"query" => query}`; typing stays local. Use arrow keys then Enter, or click
+an option, to select a result. `search_label` customizes the button text and
+`phx-target={@myself}` targets a LiveComponent. Both variants support this mode.
+
+The demo's server-search examples simulate latency and match names and roles.
+Try `designer`, `engineer`, or `ops` to see loading, results, and selection.
+
 Custom label markup remains available when you need richer label content:
 
 ```heex

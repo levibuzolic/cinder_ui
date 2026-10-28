@@ -76,6 +76,12 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
     end)
 
     File.write!(Path.join(assets_dir, "static_docs.js"), site_js())
+
+    File.write!(
+      Path.join(assets_dir, "autocomplete_search_demo.js"),
+      docs_asset!("autocomplete_search_demo.js")
+    )
+
     File.write!(Path.join(assets_dir, "cinder_ui.js"), cinder_ui_js())
     File.write!(Path.join(assets_dir, "site.css"), site_css())
 

@@ -77,6 +77,12 @@ defmodule Mix.Tasks.Demo.Site.Export do
 
     File.write!(Path.join(assets_dir, "site.css"), File.read!(SiteRuntime.asset_path("site.css")))
     File.write!(Path.join(assets_dir, "static_docs.js"), SiteRuntime.docs_site_js())
+
+    File.write!(
+      Path.join(assets_dir, "autocomplete_search_demo.js"),
+      File.read!(SiteRuntime.asset_path("autocomplete_search_demo.js"))
+    )
+
     File.write!(Path.join(assets_dir, "cinder_ui.js"), SiteRuntime.cinder_ui_js())
   end
 

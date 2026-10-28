@@ -56,6 +56,7 @@ Default hooks:
 - Public install task: `lib/mix/tasks/cinder_ui.install.ex`
 - Internal docs/site tasks: `dev/lib/mix/tasks/**`
 - Static docs catalog definitions: `dev/lib/cinder_ui/docs/catalog.ex`
+- Simulated autocomplete search for demo/static previews: `dev/assets/docs/autocomplete_search_demo.js`
 - Demo integration app: `demo`
 - Browser tests: `demo/tests/browser/**`
 - Long-lived competitive roadmap and backlog: `docs/competitive-audit-roadmap.md`
@@ -70,6 +71,9 @@ Default hooks:
    `Enter`, `Escape`, and outside-click behavior where applicable.
    Autocomplete tests must cover default client filtering and `filter={false}`
    server results in both input and popup variants.
+
+   On-demand search tests should distinguish submitting a query from selecting
+   a result and verify that typing alone does not submit.
 5. For hook JavaScript changes, edit `priv/templates/cinder_ui/**`; the install task, docs build, and tests assemble the single install artifact on demand.
 6. If the change relates to strategic component coverage or interaction quality, update `docs/competitive-audit-roadmap.md`.
 7. Run quality gates.
