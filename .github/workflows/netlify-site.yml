@@ -18,7 +18,6 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  CINDER_UI_SITE_URL: ${{ vars.CINDER_UI_SITE_URL }}
 
 jobs:
   deploy:
@@ -62,9 +61,37 @@ jobs:
         with:
           cache-key-prefix: netlify-site
 
+      - name: Resolve Netlify site URL
+        if: steps.netlify.outputs.configured == 'true'
+        id: site_url
+        uses: actions/github-script@v8
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        with:
+          script: |
+            const response = await fetch(
+              `https://api.netlify.com/api/v1/sites/${encodeURIComponent(process.env.NETLIFY_SITE_ID)}`,
+              { headers: { Authorization: `Bearer ${process.env.NETLIFY_AUTH_TOKEN}` } },
+            );
+            if (!response.ok) {
+              throw new Error(`Netlify site lookup failed (${response.status}).`);
+            }
+
+            const site = await response.json();
+            const alias = context.eventName === "pull_request"
+              ? `deploy-preview-${context.issue.number}`
+              : "";
+            core.setOutput("alias", alias);
+            core.setOutput("url", alias
+              ? `https://${alias}--${site.name}.netlify.app`
+              : site.ssl_url || site.url);
+
       - name: Build static site from demo app
         if: steps.netlify.outputs.configured == 'true'
         working-directory: demo
+        env:
+          CINDER_UI_SITE_URL: ${{ steps.site_url.outputs.url }}
         run: |
           npm ci
           mix assets.build
@@ -74,10 +101,9 @@ jobs:
         if: steps.netlify.outputs.configured == 'true'
         id: deploy
         env:
-          IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
+          DEPLOY_ALIAS: ${{ steps.site_url.outputs.alias }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           deploy_args=(
             --dir dist/site
@@ -87,8 +113,8 @@ jobs:
             --json
           )
 
-          if [ "${IS_PULL_REQUEST}" = "true" ]; then
-            deploy_args+=(--alias "deploy-preview-${PR_NUMBER}")
+          if [ -n "${DEPLOY_ALIAS}" ]; then
+            deploy_args+=(--alias "${DEPLOY_ALIAS}")
           else
             deploy_args+=(--prod)
           fi

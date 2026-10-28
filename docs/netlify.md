@@ -18,6 +18,12 @@ Until both secrets are configured, the workflow exits with a notice and does not
 - Pull requests from this repository deploy a stable preview alias with `netlify deploy --alias deploy-preview-<number>`.
 - Pull requests from forks are skipped because GitHub does not expose repository secrets to untrusted fork workflows.
 
+Before building, the workflow fetches the site's public URL from the Netlify API
+and sets `CINDER_UI_SITE_URL` for the export. PR builds use their
+`deploy-preview-<number>--<site-name>.netlify.app` alias, so preview metadata and
+images point to that PR's deployment. Production builds use the site's public URL,
+including its custom domain when configured. No URL repository variable is needed.
+
 The repository also includes a `netlify.toml` file that points Netlify at `dist/site` and intentionally fails native Netlify Git builds. This prevents accidental source-code deploys from Netlify's Git integration. The GitHub Actions workflow deploys the already-built `dist/site` directory directly with `netlify deploy --dir dist/site --no-build`.
 
 Default preview URLs look like:
