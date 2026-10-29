@@ -47,9 +47,27 @@ defmodule CinderUI.Docs.UIComponents.Code do
   def summary_markdown_html(text) do
     text
     |> ExDoc.Markdown.to_ast(markdown_processor: ExDoc.Markdown.Earmark)
+    |> ExDoc.DocAST.map_tags(&highlight_markdown_code/1)
     |> ExDoc.DocAST.to_html()
   rescue
     _ ->
       "<p>#{escape(text)}</p>"
   end
+
+  defp highlight_markdown_code({:pre, attrs, [{:code, code_attrs, [source], meta}], pre_meta})
+       when is_binary(source) do
+    language =
+      Map.get(
+        %{"elixir" => :elixir, "heex" => :heex, "html" => :heex, "css" => :css, "bash" => :bash},
+        Keyword.get(code_attrs, :class),
+        :plain
+      )
+
+    code_attrs = Keyword.update(code_attrs, :class, "code-highlight", &("code-highlight " <> &1))
+    highlighted = CodeHighlighter.highlight(source, language)
+    code = {:code, code_attrs, [highlighted], Map.put(meta, :verbatim, true)}
+    {:pre, attrs, [code], pre_meta}
+  end
+
+  defp highlight_markdown_code(node), do: node
 end

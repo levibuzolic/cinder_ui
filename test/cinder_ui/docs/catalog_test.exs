@@ -350,9 +350,10 @@ defmodule CinderUI.Docs.CatalogTest do
         entry: entry
       })
 
-    code = html |> TestHelpers.find_all("pre") |> Floki.text()
-    assert code =~ "owners: []"
+    code = html |> TestHelpers.find_all("pre") |> Floki.text() |> String.replace(~r/\s/u, "")
+    assert code =~ "owners:[]"
     assert code =~ "Accounts.search_owners(query)"
+    assert TestHelpers.find_all(html, ".docs-markdown pre code.code-highlight .tok-keyword") != []
   end
 
   test "icons section includes lucide wrapper entry" do
