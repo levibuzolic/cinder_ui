@@ -192,7 +192,7 @@ defmodule CinderUI.Docs.InlineExamples do
     |> then(fn {chunk, _rest} ->
       code =
         chunk
-        |> Enum.map_join("\n", &String.trim_leading(&1, "    "))
+        |> Enum.map_join("\n", &String.replace_prefix(&1, "    ", ""))
 
       {start_index + length(chunk), code}
     end)
