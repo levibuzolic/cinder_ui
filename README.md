@@ -95,7 +95,7 @@ Add the dependency to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:cinder_ui, "~> 0.2.4"},
+    {:cinder_ui, "~> 0.2.5"},
     # Optional but recommended — required for the <.icon /> component
     {:lucide_icons, "~> 2.4"},
     # ...

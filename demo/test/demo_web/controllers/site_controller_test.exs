@@ -10,6 +10,9 @@ defmodule DemoWeb.SiteControllerTest do
     assert body =~ "Cinder UI"
     assert body =~ "Explore Components"
     assert body =~ "Forge beautiful interfaces with Phoenix"
+    version = to_string(Application.spec(:cinder_ui, :vsn))
+    assert body =~ "v#{version}"
+    assert body =~ "~&gt; #{version}"
   end
 
   test "GET /docs renders component index", %{conn: conn} do

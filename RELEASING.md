@@ -52,7 +52,7 @@ Stable releases publish both the Hex package and HexDocs. Beta/prerelease releas
 4. Commit and push the release changes to `main`:
 
    ```bash
-   git add mix.exs CHANGELOG.md README.md CONTRIBUTING.md RELEASING.md .github/workflows/publish-hex.yml
+   git add mix.exs package.json CHANGELOG.md README.md CONTRIBUTING.md RELEASING.md .github/workflows/publish-hex.yml
    git commit -m "Release v0.1.0"
    git push origin main
    ```

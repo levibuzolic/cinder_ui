@@ -245,7 +245,7 @@ defmodule CinderUI.Docs.StaticRenderer do
       <p>Add the dependency to your <code>mix.exs</code>:</p>
       <p>The optional Lucide icon integration requires Elixir 1.18+.</p>
       <UIComponents.docs_code_block
-        source={"defp deps do\n  [\n    {:cinder_ui, \"~> 0.2.4\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.4\"},\n    # ...\n  ]\nend"}
+        source={"defp deps do\n  [\n    {:cinder_ui, \"~> 0.2.5\"},\n    # Optional but recommended — required for the <.icon /> component\n    {:lucide_icons, \"~> 2.4\"},\n    # ...\n  ]\nend"}
         language={:elixir}
       />
       <p>Fetch dependencies:</p>

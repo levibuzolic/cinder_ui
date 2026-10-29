@@ -4,12 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-10-29
+
+### Added
+
+- Added `filter={false}` to both autocomplete variants so server search results retain their supplied order without client-side label or keyword filtering.
+- Added on-demand autocomplete search with `search_event`, a customizable `search_label`, and a `search` hook command. Enter or the Search button submits the query, with LiveComponent targeting and loading/disabled guards.
+- Added component screenshot previews and canonical URLs for shared documentation links, including automatic Netlify production and preview URLs.
+
 ### Changed
 
-- Updated library and demo dependencies to current stable releases, including Phoenix 1.8.16, LiveView 1.2.13, Lucide Icons 2.4.7, Bandit 1.14, and Req 0.7.5, and refreshed transitive packages to address reported security advisories.
+- Updated library and demo dependencies to current stable releases, including Phoenix 1.8.16, LiveView 1.2.13, Lucide Icons 2.4.7, Bandit 1.14.1, and Req 0.7.5, and refreshed transitive packages to address reported security advisories.
 - Excluded vulnerable Phoenix and LiveView releases from library dependency requirements while retaining the Phoenix 1.7 and LiveView 1.0/1.1 release lines. The optional Lucide integration and demo require Elixir 1.18+; the core library still supports Elixir 1.16+.
 - Aligned demo, static docs, and installation examples on Tailwind CSS 4.3.3, upgraded esbuild to 0.28.2, and made first-time docs asset installation use the npm lockfile.
 - Updated Playwright, TypeScript, Vitest, jsdom, and vendored Topbar; pinned contributor and CI runtimes; and refreshed GitHub Pages, GitHub Script, and Netlify CLI tooling.
+- Aligned documentation examples around shared Futurama records and local portraits, added simulated server-search previews, and separated popup screenshot setup from copyable snippets.
+- Added syntax highlighting for fenced code in documentation prose and preserved nested indentation in Markdown examples.
+
+### Fixed
+
+- Fixed the demo and exported marketing page showing the demo application's version instead of the Cinder UI release version, and synchronized the packaged JavaScript version and installation examples.
+- Fixed autocomplete popup keyboard events propagating to the enclosing popover.
 
 ## [0.2.4] - 2026-08-03
 

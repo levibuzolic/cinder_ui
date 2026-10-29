@@ -7,6 +7,7 @@ defmodule Demo.SiteRenderer do
 
   def marketing_html do
     Marketing.render_marketing_html(%{
+      version: to_string(Application.spec(:cinder_ui, :vsn)),
       component_count: SiteRuntime.catalog_component_count(),
       docs_path: "./docs/",
       theme_script_src: "./assets/static_docs.js",
