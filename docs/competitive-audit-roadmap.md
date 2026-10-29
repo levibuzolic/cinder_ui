@@ -154,6 +154,7 @@ Acceptance criteria:
 - [x] Separate autocomplete from select semantics.
 - [x] Support client-side filtering first.
 - [x] Add a documented server-search pattern for LiveView.
+- [x] Support on-demand search with Enter or a Search button and optional client filtering.
 - [x] Support empty state, loading state, and no-results messaging.
 
 Borrow from:

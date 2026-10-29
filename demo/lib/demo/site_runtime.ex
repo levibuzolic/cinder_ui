@@ -17,6 +17,7 @@ defmodule Demo.SiteRuntime do
   def asset_path(path) when is_binary(path) do
     case path do
       "static_docs.js" -> Path.join(@docs_assets_dir, "static_docs.js")
+      "autocomplete_search_demo.js" -> Path.join(@docs_assets_dir, "autocomplete_search_demo.js")
       "site.css" -> Path.join(@site_assets_dir, "site.css")
       "theme.css" -> theme_css_path()
       _ -> nil

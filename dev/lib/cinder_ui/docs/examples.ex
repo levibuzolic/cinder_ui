@@ -23,6 +23,7 @@ defmodule CinderUI.Docs.Examples do
         template_heex: display_template_heex,
         preview_align: example.preview_align || :center,
         promoted_visual: Map.get(example, :promoted_visual, false),
+        screenshot_open: Map.get(example, :screenshot_open, false),
         phoenix_shim: Map.get(example, :phoenix_shim, false)
       }
     end)

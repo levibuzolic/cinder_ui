@@ -64,32 +64,32 @@ defmodule CinderUI.Components.Typography do
 
   ```heex title="Article heading stack" align="full" vrt
   <div class="max-w-2xl">
-    <.typography variant={:h1}>Realtime payments need boring interfaces</.typography>
+    <.typography variant={:h1}>Delivering across the galaxy</.typography>
     <.typography variant={:lead} class="mt-4">
-      Operators need clear hierarchy, calm defaults, and text that survives dense workflows.
+      Meet the Planet Express crew and their circle of humans, robots, and aliens.
     </.typography>
     <.typography>
-      Use typography recipes when component copy needs consistent rhythm without introducing
-      a rich text renderer or client-side dependency.
+      From New New York to Omicron Persei 8, every delivery starts with a clear manifest
+      and a crew ready for the unexpected.
     </.typography>
   </div>
   ```
 
   ```heex title="Inline UI copy" align="full"
   <div class="max-w-md space-y-3">
-    <.typography variant={:h3}>Workspace limits</.typography>
+    <.typography variant={:h3}>Delivery checklist</.typography>
     <.typography variant={:muted}>
-      API keys expire after <.typography variant={:inline_code}>90d</.typography>.
+      Keep each package below <.typography variant={:inline_code}>30kg</.typography>.
     </.typography>
-    <.typography variant={:small} as="p">Last updated by the billing service.</.typography>
+    <.typography variant={:small} as="p">Manifest reviewed by Hermes Conrad.</.typography>
   </div>
   ```
 
   ```heex title="List recipe" align="full"
   <.typography variant={:list}>
-    <li>Keep headings semantic.</li>
-    <li>Use tokens like <.typography variant={:inline_code}>text-muted-foreground</.typography>.</li>
-    <li>Reach for component slots before custom wrappers.</li>
+    <li>Check Leela's flight plan.</li>
+    <li>Load the <.typography variant={:inline_code}>delivery-manifest</.typography>.</li>
+    <li>Ask Bender to secure the cargo.</li>
   </.typography>
   ```
   """)

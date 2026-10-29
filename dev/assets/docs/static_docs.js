@@ -1,4 +1,5 @@
 import { CinderUIHooks } from "./cinder_ui.js"
+import { withAutocompleteSearchDemo } from "./autocomplete_search_demo.js"
 
 /**
  * Static docs interactivity — vanilla JS replacements for CinderUI LiveView
@@ -44,7 +45,9 @@ export const mountStaticHook = (el) => {
   const definition = CinderUIHooks[hookName]
   if (!definition) return false
 
-  const instance = Object.create(definition)
+  const instance = Object.create(
+    hookName === "CuiAutocomplete" ? withAutocompleteSearchDemo(definition) : definition
+  )
   instance.el = el
   instance.pushEvent = () => Promise.resolve()
   instance.pushEventTo = () => Promise.resolve()

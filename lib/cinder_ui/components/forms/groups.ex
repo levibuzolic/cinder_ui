@@ -78,50 +78,46 @@ defmodule CinderUI.Components.Forms.Groups do
       <:option value="editor" label="Editor" />
       <:option value="viewer" label="Viewer" />
     </.native_select>
-    <.input placeholder="email@example.com" type="email" class="flex-1" />
+    <.input placeholder="fry@planetexpress.example" type="email" class="flex-1" />
   </.input_group>
   ```
 
-  ```heex title="Autocomplete input group" align="full" vrt
-  <div class="pb-40">
-    <.input_group>
-      <.input_group_addon>
-        <.input_group_text>Owner</.input_group_text>
-      </.input_group_addon>
-      <.autocomplete
-        id="group-owner-search"
-        name="owner"
-        placeholder="Search teammates..."
-        open={true}
-      >
-        <:option value="levi" label="Levi Buzolic" />
-        <:option value="mira" label="Mira Chen" />
-        <:option value="sam" label="Sam Hall" />
-      </.autocomplete>
-    </.input_group>
-  </div>
+  ```heex title="Autocomplete input group" align="full" vrt screenshot="open"
+  <.input_group>
+    <.input_group_addon>
+      <.input_group_text>Owner</.input_group_text>
+    </.input_group_addon>
+    <.autocomplete
+      id="group-owner-search"
+      name="owner"
+      placeholder="Search characters..."
+    >
+      <:option
+        :for={character <- @characters}
+        value={character.id}
+        label={character.label}
+        description={character.description}
+        keywords={character.keywords}
+      />
+    </.autocomplete>
+  </.input_group>
   ```
 
-  ```heex title="Autocomplete popup input group" align="full" vrt
-  <div class="pb-40">
-    <.input_group>
-      <.input_group_addon>
-        <.input_group_text>Country</.input_group_text>
-      </.input_group_addon>
-      <.autocomplete
-        id="group-country-search"
-        name="country"
-        value="au"
-        variant={:popup}
-        placeholder="Search countries..."
-        open={true}
-      >
-        <:option value="au" label="Australia" />
-        <:option value="nz" label="New Zealand" />
-        <:option value="us" label="United States" />
-      </.autocomplete>
-    </.input_group>
-  </div>
+  ```heex title="Autocomplete popup input group" align="full" vrt screenshot="open"
+  <.input_group>
+    <.input_group_addon>
+      <.input_group_text>Country</.input_group_text>
+    </.input_group_addon>
+    <.autocomplete
+      id="group-country-search"
+      name="country"
+      value="au"
+      variant={:popup}
+      placeholder="Search countries..."
+    >
+      <:option :for={country <- @countries} value={country.id} label={country.label} />
+    </.autocomplete>
+  </.input_group>
   ```
 
   ```heex title="Textarea with footer action" align="full"
@@ -227,7 +223,7 @@ defmodule CinderUI.Components.Forms.Groups do
     <.input_group_addon>
       <.icon name="mail" class="size-4" />
     </.input_group_addon>
-    <.input type="email" placeholder="team@example.com" />
+    <.input type="email" placeholder="crew@planetexpress.example" />
   </.input_group>
   ```
   """)

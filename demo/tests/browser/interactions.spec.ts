@@ -174,9 +174,9 @@ test.describe("interactive previews", () => {
     await enterpriseOption.click()
     await expect(select.locator("[data-slot='select-input']")).not.toHaveValue("")
 
-    await autocomplete.locator("[data-autocomplete-input]").fill("Mira")
-    await autocomplete.locator("[data-slot='autocomplete-item'][data-value='mira']").click()
-    await expect(autocomplete.locator("[data-slot='autocomplete-value']")).toHaveValue("mira")
+    await autocomplete.locator("[data-autocomplete-input]").fill("Leela")
+    await autocomplete.locator("[data-slot='autocomplete-item'][data-value='leela']").click()
+    await expect(autocomplete.locator("[data-slot='autocomplete-value']")).toHaveValue("leela")
   })
 
   test("select opens from the keyboard and updates the hidden value", async ({ page }) => {
@@ -299,7 +299,7 @@ test.describe("interactive previews", () => {
     await input.click()
     expect(await hasClass(content, "hidden")).toBe(false)
 
-    await input.fill("Mira")
+    await input.fill("Leela")
     const highlightedAutocompleteItem = autocomplete.locator("[data-slot='autocomplete-item'][data-highlighted='true']").first()
     await expect(highlightedAutocompleteItem).toBeVisible()
     await expect(input).toHaveAttribute("aria-activedescendant", (await highlightedAutocompleteItem.getAttribute("id"))!)
@@ -310,15 +310,15 @@ test.describe("interactive previews", () => {
       })),
     )
 
-    const levi = itemStates.find((item) => item.text.includes("Levi"))
-    const mira = itemStates.find((item) => item.text.includes("Mira"))
+    const fry = itemStates.find((item) => item.text.includes("Fry"))
+    const leela = itemStates.find((item) => item.text.includes("Leela"))
 
-    expect(levi?.hidden).toBe(true)
-    expect(mira?.hidden).toBe(false)
+    expect(fry?.hidden).toBe(true)
+    expect(leela?.hidden).toBe(false)
 
     await page.keyboard.press("Enter")
-    await expect(input).toHaveValue("Mira Chen")
-    await expect(hiddenInput).toHaveValue("mira")
+    await expect(input).toHaveValue("Turanga Leela")
+    await expect(hiddenInput).toHaveValue("leela")
   })
 
   test("autocomplete escape and outside click restore the committed selection", async ({ page }) => {
@@ -327,41 +327,109 @@ test.describe("interactive previews", () => {
     const hiddenInput = autocomplete.locator("[data-slot='autocomplete-value']")
 
     await autocomplete.scrollIntoViewIfNeeded()
-    await expect(input).toHaveValue("Levi Buzolic")
-    await expect(hiddenInput).toHaveValue("levi")
+    await expect(input).toHaveValue("Philip J. Fry")
+    await expect(hiddenInput).toHaveValue("fry")
 
     await input.click()
-    await input.fill("Mira")
+    await input.fill("Leela")
     await page.keyboard.press("Escape")
-    await expect(input).toHaveValue("Levi Buzolic")
-    await expect(hiddenInput).toHaveValue("levi")
+    await expect(input).toHaveValue("Philip J. Fry")
+    await expect(hiddenInput).toHaveValue("fry")
 
     await input.click()
-    await input.fill("Mira")
+    await input.fill("Leela")
     await page.mouse.click(5, 5)
-    await expect(input).toHaveValue("Levi Buzolic")
-    await expect(hiddenInput).toHaveValue("levi")
+    await expect(input).toHaveValue("Philip J. Fry")
+    await expect(hiddenInput).toHaveValue("fry")
   })
 
   test("autocomplete server search keeps all supplied results and selects the first result", async ({ page }) => {
     await page.goto("/docs/forms-autocomplete/")
-    const autocomplete = page.locator("#owner-search")
+    const autocomplete = page.locator("#team-owner")
+    await autocomplete.evaluate((el) => el.setAttribute("data-filter", "false"))
     const input = autocomplete.locator("[data-autocomplete-input]")
     const hiddenInput = autocomplete.locator("[data-slot='autocomplete-value']")
 
     await expect(autocomplete).toHaveAttribute("data-filter", "false")
     await input.fill("no label or keyword matches")
-    await expect(autocomplete.locator("[data-autocomplete-item]:visible")).toHaveText(["Levi Buzolic", "Mira Chen"])
+    const items = autocomplete.locator("[data-autocomplete-item]")
+    await expect(autocomplete.locator("[data-autocomplete-item]:visible")).toHaveCount(await items.count())
+    await expect(items.first()).toHaveAttribute("data-value", "fry")
     await expect(autocomplete.locator("[data-slot='autocomplete-empty']")).toBeHidden()
     await input.press("Enter")
-    await expect(hiddenInput).toHaveValue("levi")
-    await expect(input).toHaveValue("Levi Buzolic")
+    await expect(hiddenInput).toHaveValue("fry")
+    await expect(input).toHaveValue("Philip J. Fry")
 
     await input.fill("another query")
     await input.press("Escape")
-    await expect(hiddenInput).toHaveValue("levi")
-    await expect(input).toHaveValue("Levi Buzolic")
+    await expect(hiddenInput).toHaveValue("fry")
+    await expect(input).toHaveValue("Philip J. Fry")
   })
+
+  for (const mode of ["demo", "static"]) {
+    const url = `/docs/forms-autocomplete/${mode === "static" ? "?static=1" : ""}`
+
+    test(`${mode} autocomplete simulates on-demand server search`, async ({ page }) => {
+      await page.goto(url)
+      await page.clock.install()
+      const autocomplete = page.locator("#on-demand-owner-search")
+      const input = autocomplete.locator("[data-autocomplete-input]")
+      const items = autocomplete.locator("[data-autocomplete-item]:visible")
+      const search = autocomplete.getByRole("button", { name: "Search", exact: true })
+      const loading = autocomplete.getByRole("status")
+
+      await input.fill("captain")
+      // Let a simulated response window pass: typing alone must not search.
+      await page.clock.fastForward(1000)
+      await expect(items).toHaveCount(24)
+      await expect(loading).toBeHidden()
+
+      await input.press("Enter")
+      await expect(loading).toBeVisible()
+      await expect(search).toBeDisabled()
+      await expect(items).toHaveCount(2)
+      await expect(items.first()).toHaveAttribute("data-label", "Turanga Leela")
+      await expect(items.last()).toHaveAttribute("data-label", "Zapp Brannigan")
+      await expect(search).toBeEnabled()
+
+      await input.fill("no-such-person")
+      await search.click()
+      await expect(loading).toBeVisible()
+      await expect(items).toHaveCount(0)
+      await expect(autocomplete.locator("[data-slot='autocomplete-empty']")).toBeVisible()
+
+      await input.fill("courier")
+      await search.click()
+      await expect(items).toHaveCount(1)
+      await expect(items).toHaveAttribute("data-label", "Philip J. Fry")
+      await input.focus()
+      await input.press("ArrowDown")
+      await page.keyboard.press("Enter")
+      await expect(autocomplete.locator("[data-slot='autocomplete-value']")).toHaveValue("fry")
+      await expect(autocomplete).toHaveAttribute("data-state", "closed")
+    })
+
+    test(`${mode} autocomplete simulates debounced server search`, async ({ page }) => {
+      await page.goto(url)
+      await page.clock.install()
+      const autocomplete = page.locator("#owner-search")
+      const input = autocomplete.locator("[data-autocomplete-input]")
+      const items = autocomplete.locator("[data-autocomplete-item]:visible")
+      await input.fill("captain")
+      await expect(autocomplete.getByRole("status")).toBeVisible()
+      await page.clock.fastForward(400)
+      await input.fill("physician")
+      await page.clock.fastForward(400)
+      await expect(autocomplete.getByRole("status")).toBeVisible()
+      await expect(items).toHaveCount(0)
+      await page.clock.fastForward(400)
+      await expect(items).toHaveCount(1)
+      await expect(items).toHaveAttribute("data-label", "Dr. John Zoidberg")
+      await items.click()
+      await expect(autocomplete.locator("[data-slot='autocomplete-value']")).toHaveValue("zoidberg")
+      await expect(input).toHaveValue("Dr. John Zoidberg")
+    })
+  }
 
   test("autocomplete popup trigger reopens the searchable list", async ({ page }) => {
     await page.goto("/docs/forms-autocomplete/")
@@ -372,14 +440,15 @@ test.describe("interactive previews", () => {
     const content = autocomplete.locator("[data-autocomplete-content]")
 
     await autocomplete.scrollIntoViewIfNeeded()
-    expect(await hasClass(content, "hidden")).toBe(false)
-
-    await trigger.click()
-    expect(await hasClass(content, "hidden")).toBe(true)
+    await expect(content).toBeHidden()
     await expect(trigger).toHaveAttribute("aria-expanded", "false")
 
     await trigger.click()
-    expect(await hasClass(content, "hidden")).toBe(false)
+    await expect(content).toBeVisible()
+    await trigger.click()
+    await expect(content).toBeHidden()
+    await trigger.click()
+    await expect(content).toBeVisible()
     await expect(trigger).toHaveAttribute("aria-expanded", "true")
     await expect(input).toBeFocused()
 
@@ -868,12 +937,7 @@ test.describe("select highlight and keyboard behavior", () => {
     await page.keyboard.press("ArrowDown")
     await page.keyboard.press("ArrowDown")
 
-    const highlightedCount = await items.filter({ has: page.locator("[data-highlighted='true']") }).count()
-    // Only use evaluateAll to check data attribute directly since filter uses CSS
-    const highlightedItems = await items.evaluateAll((els) =>
-      els.filter((el) => el.getAttribute("data-highlighted") === "true").map((el) => el.getAttribute("data-value")),
-    )
-    expect(highlightedItems.length).toBe(1)
+    await expect(select.locator("[data-select-item][data-highlighted='true']")).toHaveCount(1)
   })
 
   test("selected item shows check icon but no background highlight", async ({ page }) => {
@@ -1072,14 +1136,15 @@ test.describe("static docs interactivity", () => {
     const content = autocomplete.locator("[data-autocomplete-content]")
 
     await autocomplete.scrollIntoViewIfNeeded()
-    expect(await hasClass(content, "hidden")).toBe(false)
-
-    await trigger.click()
-    expect(await hasClass(content, "hidden")).toBe(true)
+    await expect(content).toBeHidden()
     await expect(trigger).toHaveAttribute("aria-expanded", "false")
 
     await trigger.click()
-    expect(await hasClass(content, "hidden")).toBe(false)
+    await expect(content).toBeVisible()
+    await trigger.click()
+    await expect(content).toBeHidden()
+    await trigger.click()
+    await expect(content).toBeVisible()
     await expect(trigger).toHaveAttribute("aria-expanded", "true")
     await expect(input).toBeFocused()
 

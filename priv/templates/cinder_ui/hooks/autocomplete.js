@@ -9,14 +9,14 @@ import { registerCommandListener } from "../commands.js"
  * Phoenix LiveView hook for the `autocomplete` component.
  *
  * Combines a text input with a filterable listbox. Typing filters options
- * client-side unless `data-filter="false"`. Selecting an option writes to a
- * hidden input for form submission. Supports keyboard navigation and
- * server-driven option lists via LiveView updates.
+ * client-side unless `data-filter="false"`; selecting an option writes to a
+ * hidden input for form submission. With `data-search-event`, typing stays
+ * local and Enter or the search button pushes a LiveView event with the query.
  *
  * **Data attributes:** `data-autocomplete-input`, `data-autocomplete-content`,
  * `data-autocomplete-item`.
  *
- * **Commands:** `open`, `close`, `toggle`, `focus`, `clear`.
+ * **Commands:** `open`, `close`, `toggle`, `focus`, `clear`, `search`.
  *
  * @type {import("phoenix_live_view").ViewHookInterface}
  */
@@ -37,7 +37,10 @@ export const CuiAutocomplete = {
       this.groups = Array.from(this.el.querySelectorAll("[data-autocomplete-group]"))
       this.empty = this.el.querySelector("[data-slot='autocomplete-empty']")
       this.loading = this.el.querySelector("[data-slot='autocomplete-loading']")
+      this.searchButton = this.el.querySelector("[data-autocomplete-search]")
     }
+
+    this.isManualSearch = () => Boolean(this.el.dataset.searchEvent)
 
     /** @returns {HTMLElement[]} Visible, enabled option items. */
     this.visibleItems = () =>
@@ -47,13 +50,13 @@ export const CuiAutocomplete = {
     this.highlightItem = this._hl.highlight
 
     /**
-     * Highlight the selected visible item or first visible item.
+     * Highlight the selected or first visible item unless search is on-demand.
      * @param {{ preferSelection?: boolean }} [options]
      * @returns {HTMLElement | null}
      */
     this.highlightVisibleDefault = ({ preferSelection = false } = {}) => {
       const visibleItems = this.visibleItems()
-      if (!visibleItems.length) {
+      if (this.isManualSearch() || !visibleItems.length) {
         this.highlightItem(null)
         return null
       }
@@ -165,6 +168,21 @@ export const CuiAutocomplete = {
       this.sync()
     }
 
+    this.search = () => {
+      if (this.input?.disabled || ("loading" in this.el.dataset && this.el.dataset.loading !== "false")) return
+      this.filterItems()
+      const eventName = this.el.dataset.searchEvent
+      if (!eventName) return
+
+      const payload = { query: this.input?.value || "" }
+      const target = this.input?.getAttribute("phx-target")
+      if (target) {
+        this.pushEventTo(target, eventName, payload)
+      } else {
+        this.pushEvent(eventName, payload)
+      }
+    }
+
     /** Restore the last committed selection and close the list. */
     this.restoreSelection = () => {
       if (this.input) this.input.value = this.isPopup ? "" : this.selectedLabel
@@ -210,17 +228,30 @@ export const CuiAutocomplete = {
         return
       }
       this.open = true
-      if (this.isPopup && this.input) this.input.value = ""
+      if (this.isPopup && !this.isManualSearch() && this.input) this.input.value = ""
       this.highlightVisibleDefault({ preferSelection: true })
       this.sync()
     }
 
-    this.onInput = () => {
+    this.onInput = (event) => {
+      if (this.isManualSearch()) {
+        event.stopPropagation()
+        if (!this.isPopup && this.valueInput && this.input.value !== this.selectedLabel) this.valueInput.value = ""
+        this.highlightItem(null)
+        return
+      }
       this.filterItems()
+    }
+
+    this.onChange = (event) => {
+      if (this.isManualSearch()) event.stopPropagation()
     }
 
     /** @param {KeyboardEvent} event */
     this.onKeyDown = (event) => {
+      if (this.isPopup && ["ArrowDown", "ArrowUp", "Home", "End", "Enter", "Escape"].includes(event.key)) {
+        event.stopPropagation()
+      }
       if (event.key === "ArrowDown") {
         event.preventDefault()
         this.open = true
@@ -250,6 +281,13 @@ export const CuiAutocomplete = {
       }
 
       if (event.key === "Enter") {
+        if (event.isComposing) return
+        if (this.isManualSearch()) {
+          event.preventDefault()
+          event.stopPropagation()
+          this.search()
+          return
+        }
         const firstVisible = this.visibleItems()[0]
         if (!this.open || !firstVisible) return
         event.preventDefault()
@@ -343,8 +381,10 @@ export const CuiAutocomplete = {
 
     this.bindEvents = () => {
       this.trigger?.addEventListener("click", this.onTriggerClick)
+      this.searchButton?.addEventListener("click", this.search)
       this.input?.addEventListener("focus", this.onFocus)
       this.input?.addEventListener("input", this.onInput)
+      this.input?.addEventListener("change", this.onChange)
       this.input?.addEventListener("keydown", this.onKeyDown)
       this.content?.addEventListener("keydown", this.onContentKeyDown)
       this.items.forEach((item) => item.addEventListener("click", this.onItemClick))
@@ -354,8 +394,10 @@ export const CuiAutocomplete = {
 
     this.unbindEvents = () => {
       this.trigger?.removeEventListener("click", this.onTriggerClick)
+      this.searchButton?.removeEventListener("click", this.search)
       this.input?.removeEventListener("focus", this.onFocus)
       this.input?.removeEventListener("input", this.onInput)
+      this.input?.removeEventListener("change", this.onChange)
       this.input?.removeEventListener("keydown", this.onKeyDown)
       this.content?.removeEventListener("keydown", this.onContentKeyDown)
       this.items.forEach((item) => item.removeEventListener("click", this.onItemClick))
@@ -380,6 +422,7 @@ export const CuiAutocomplete = {
         this.sync()
       },
       focus: () => this.input?.focus(),
+      search: () => this.search(),
       clear: () => {
         if (this.input) this.input.value = ""
         if (this.valueInput) this.valueInput.value = ""
@@ -390,6 +433,7 @@ export const CuiAutocomplete = {
         this.filterItems()
       },
     })
+    this.syncGroups()
     this.syncEmpty()
     this.syncTriggerValue()
     this.sync()
@@ -402,7 +446,9 @@ export const CuiAutocomplete = {
     this.selectedLabel = this.el.dataset.selectedLabel ?? this.selectedLabel
     this.selectedValue = this.valueInput?.value ?? this.selectedValue
     this.bindEvents()
+    this.syncGroups()
     this.syncEmpty()
+    if (this.isManualSearch()) this.highlightItem(null)
     this.syncTriggerValue()
     this.sync()
   },

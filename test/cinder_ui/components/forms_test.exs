@@ -562,6 +562,47 @@ defmodule CinderUI.Components.FormsTest do
 
     assert TestHelpers.attr(html, "[data-slot='autocomplete-input']", "aria-activedescendant") ==
              ""
+
+    assert TestHelpers.find_all(html, "[data-autocomplete-search]") == []
+  end
+
+  test "autocomplete renders on-demand search for both variants with or without a field label" do
+    for variant <- [:input, :popup], label <- [nil, "Owner"] do
+      html =
+        render_component(&Forms.autocomplete/1, %{
+          id: "manual-owner",
+          name: "owner",
+          label: label,
+          variant: variant,
+          filter: false,
+          search_event: "search-owners",
+          search_label: "Find owners",
+          "phx-target": "12",
+          option: []
+        })
+
+      assert TestHelpers.attr(html, "[data-slot='autocomplete']", "data-search-event") ==
+               "search-owners"
+
+      assert TestHelpers.attr(html, "[data-autocomplete-input]", "phx-target") == "12"
+      assert TestHelpers.attr(html, "[data-autocomplete-search]", "type") == "button"
+      assert TestHelpers.text(html, "[data-autocomplete-search]") == "Find owners"
+    end
+  end
+
+  test "autocomplete disables the search button when disabled or loading" do
+    for variant <- [:input, :popup], state <- [:disabled, :loading] do
+      html =
+        render_component(&Forms.autocomplete/1, %{
+          state => true,
+          id: "manual-owner",
+          variant: variant,
+          search_event: "search-owners",
+          option: []
+        })
+
+      assert TestHelpers.attr(html, "[data-autocomplete-search]", "disabled") != nil
+    end
   end
 
   test "field infers invalid state from error slot and renders subcomponents" do

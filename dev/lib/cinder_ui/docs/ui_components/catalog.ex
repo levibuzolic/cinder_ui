@@ -123,6 +123,7 @@ defmodule CinderUI.Docs.UIComponents.Catalog do
             data-example-id={example.id}
             data-example-title={example.title}
             data-promoted-visual={example.promoted_visual}
+            data-screenshot-open={if example.screenshot_open, do: "true"}
           >
             <header>
               <div class="flex flex-wrap items-center gap-2">

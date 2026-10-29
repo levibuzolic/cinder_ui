@@ -4,8 +4,10 @@ defmodule CinderUI.Docs.CatalogTest do
   import Phoenix.LiveViewTest
 
   alias CinderUI.Docs.Catalog
+  alias CinderUI.Docs.SampleData
   alias CinderUI.Docs.UIComponents.Catalog, as: CatalogComponents
   alias CinderUI.Registry
+  alias CinderUI.TestHelpers
 
   test "catalog includes all public component functions" do
     expected_count =
@@ -36,6 +38,12 @@ defmodule CinderUI.Docs.CatalogTest do
         Enum.each(entry.examples, fn example ->
           refute example.template_heex =~ "CinderUI.Icons.icon"
           assert example.preview_align in [:center, :full]
+
+          if example.screenshot_open do
+            refute example.template_heex =~ "pb-80"
+            refute example.template_heex =~ "open={true}"
+            assert example.preview_html =~ ~s(data-state="closed")
+          end
         end)
 
         assert is_list(entry.attributes)
@@ -299,13 +307,59 @@ defmodule CinderUI.Docs.CatalogTest do
 
     assert avatar_entry.template_heex =~ "<.avatar"
     assert avatar_entry.template_heex =~ "example.png"
-    assert avatar_entry.template_heex =~ "alt=\"Levi\""
+    assert avatar_entry.template_heex =~ "alt=\"Philip J. Fry\""
     refute avatar_entry.template_heex =~ "data:image/"
     assert avatar_entry.preview_html =~ "data:image/"
     assert avatar_group_entry.template_heex =~ "<.avatar_group"
     assert avatar_group_entry.template_heex =~ "example.png"
     refute avatar_group_entry.template_heex =~ "data:image/"
     assert avatar_group_entry.preview_html =~ "data:image/"
+  end
+
+  test "record examples use the shared Futurama roster" do
+    characters = SampleData.characters()
+    assert length(characters) >= 20
+    assert Enum.uniq_by(characters, & &1.id) == characters
+
+    entries = Catalog.sections() |> Enum.flat_map(& &1.entries)
+    autocomplete = Enum.find(entries, &(&1.function == :autocomplete))
+    table = Enum.find(entries, &(&1.function == :table))
+
+    assert length(TestHelpers.find_all(autocomplete.preview_html, "[data-autocomplete-item]")) ==
+             length(characters)
+
+    assert length(TestHelpers.find_all(table.preview_html, "tbody [data-slot='table-row']")) ==
+             length(characters)
+
+    assert autocomplete.template_heex =~ "@characters"
+    assert table.template_heex =~ "@characters"
+  end
+
+  test "server search examples show LiveView results and initialization while previews use fixtures" do
+    sections = Catalog.sections()
+
+    entry =
+      find_entry(Enum.flat_map(sections, & &1.entries), CinderUI.Components.Forms, :autocomplete)
+
+    for title <- ["LiveView server search", "On-demand server search"] do
+      example = Enum.find(entry.examples, &(&1.title == title))
+      assert example.template_heex =~ "@owners"
+      refute example.template_heex =~ "@characters"
+
+      assert length(TestHelpers.find_all(example.preview_html, "[data-autocomplete-item]")) ==
+               length(SampleData.characters())
+    end
+
+    html =
+      render_component(&CatalogComponents.docs_component_detail/1, %{
+        sections: sections,
+        entry: entry
+      })
+
+    code = html |> TestHelpers.find_all("pre") |> Floki.text() |> String.replace(~r/\s/u, "")
+    assert code =~ "owners:[]"
+    assert code =~ "Accounts.search_owners(query)"
+    assert TestHelpers.find_all(html, ".docs-markdown pre code.code-highlight .tok-keyword") != []
   end
 
   test "icons section includes lucide wrapper entry" do

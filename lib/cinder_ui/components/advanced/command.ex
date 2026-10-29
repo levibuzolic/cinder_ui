@@ -28,15 +28,15 @@ defmodule CinderUI.Components.Advanced.Command do
   </.command>
   ```
 
-  ```heex title="Project switcher" align="full"
-  <.command placeholder="Jump to project...">
-    <:group heading="Projects">
-      <.item value="docs">Docs site</.item>
-      <.item value="demo">Demo app</.item>
+  ```heex title="Crew directory" align="full"
+  <.command placeholder="Find a page or crew member...">
+    <:group heading="Planet Express">
+      <.item value="deliveries">Deliveries</.item>
+      <.item value="manifest">Cargo manifest</.item>
     </:group>
 
-    <:group heading="Teams">
-      <.item value="platform">Platform team</.item>
+    <:group heading="Crew">
+      <.item :for={character <- @crew} value={character.id}>{character.label}</.item>
     </:group>
   </.command>
   ```
@@ -156,34 +156,35 @@ defmodule CinderUI.Components.Advanced.Command do
   </.combobox>
   ```
 
-  ```heex title="Grouped combobox" align="full" vrt
-  <div class="pb-40">
-    <.combobox
-      id="timezone"
-      placeholder="Select a timezone"
-      open={true}
-    >
-      <:option value="new-york" label="(GMT-5) New York" group="Americas" />
-      <:option value="london" label="(GMT+0) London" group="Europe" />
-    </.combobox>
-  </div>
+  ```heex title="Grouped combobox" align="full" vrt screenshot="open"
+  <.combobox
+    id="crew-combobox"
+    placeholder="Search characters..."
+    content_class="max-h-72 overflow-y-auto"
+  >
+    <:option
+      :for={character <- Enum.sort_by(@characters, & &1.group)}
+      value={character.label}
+      label={character.label}
+      group={character.group}
+    />
+  </.combobox>
   ```
 
-  ```heex title="Custom combobox items" align="full" vrt
-  <div class="pb-32">
-    <.combobox
-      id="framework"
-      placeholder="Select a framework"
-      open={true}
-    >
-      <:option value="next" label="Next.js">
-        <span class="flex flex-col">
-          <span class="font-medium">Next.js</span>
-          <span class="text-muted-foreground text-xs">React framework</span>
-        </span>
-      </:option>
-    </.combobox>
-  </div>
+  ```heex title="Custom combobox items" align="full" vrt screenshot="open"
+  <.combobox
+    id="character-combobox"
+    placeholder="Search characters..."
+    content_class="max-h-72 overflow-y-auto"
+  >
+    <:option :for={character <- @characters} value={character.label} label={character.label}>
+      <.avatar size={:sm} src={character.avatar} alt={character.label} />
+      <span class="flex flex-col">
+        <span class="font-medium">{character.label}</span>
+        <span class="text-muted-foreground text-xs">{character.description}</span>
+      </span>
+    </:option>
+  </.combobox>
   ```
   """)
 

@@ -3,6 +3,7 @@ defmodule CinderUI.Docs.Recipes do
 
   use CinderUI
 
+  alias CinderUI.Docs.SampleData
   alias CinderUI.Docs.UIComponents.Code
 
   @auth_form_template Path.join([__DIR__, "recipes", "auth_form.html.heex"])
@@ -19,12 +20,7 @@ defmodule CinderUI.Docs.Recipes do
   <% filter = @filter || "" %>
   <% sort = @sort || %{by: :number, dir: :asc} %>
   <% selected_ids = @selected_ids || MapSet.new([1002]) %>
-  <% page = @page || %{number: 1, total: 4, prev_path: nil, next_path: "/orders?page=2"} %>
-  <% orders = @orders || [
-    %{id: 1001, number: "ORD-1001", customer: "Mira Chen", status: :paid, total: "$240.00"},
-    %{id: 1002, number: "ORD-1002", customer: "Ari Patel", status: :pending, total: "$88.50"},
-    %{id: 1003, number: "ORD-1003", customer: "Levi Buzolic", status: :paid, total: "$149.00"}
-  ] %>
+  <% page = @page || %{number: 1, total: 3, prev_path: nil, next_path: "/orders?page=2"} %>
 
   <div class="space-y-4">
     <form phx-change="filter" phx-submit="filter" class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -68,7 +64,7 @@ defmodule CinderUI.Docs.Recipes do
         </.table_row>
       </.table_header>
       <.table_body>
-        <.table_row :for={order <- orders} state={if MapSet.member?(selected_ids, order.id), do: "selected"}>
+        <.table_row :for={order <- @orders} state={if MapSet.member?(selected_ids, order.id), do: "selected"}>
           <.table_cell>
             <.checkbox
               id={"select-order-" <> to_string(order.id)}
@@ -246,8 +242,10 @@ defmodule CinderUI.Docs.Recipes do
   end
 
   defp recipe_preview(%{recipe: %{template: :admin_shell}} = assigns) do
+    assigns = assign(assigns, :crew, SampleData.crew())
+
     ~H"""
-    <.admin_shell />
+    <.admin_shell crew={@crew} />
     """
   end
 
@@ -257,24 +255,8 @@ defmodule CinderUI.Docs.Recipes do
         filter: "",
         sort: %{by: :number, dir: :asc},
         selected_ids: MapSet.new([1002]),
-        page: %{number: 1, total: 4, prev_path: nil, next_path: "/orders?page=2"},
-        orders: [
-          %{id: 1001, number: "ORD-1001", customer: "Mira Chen", status: :paid, total: "$240.00"},
-          %{
-            id: 1002,
-            number: "ORD-1002",
-            customer: "Ari Patel",
-            status: :pending,
-            total: "$88.50"
-          },
-          %{
-            id: 1003,
-            number: "ORD-1003",
-            customer: "Levi Buzolic",
-            status: :paid,
-            total: "$149.00"
-          }
-        ]
+        page: %{number: 1, total: 3, prev_path: nil, next_path: "/orders?page=2"},
+        orders: Enum.take(SampleData.orders(), 8)
       )
 
     ~H"""

@@ -33,6 +33,7 @@ defmodule CinderUI.Docs.BuildTaskTest do
     assert File.exists?(Path.join(@output, "docs/layout-card/index.html"))
     assert File.exists?(Path.join(@output, "docs/assets/site.css"))
     assert File.exists?(Path.join(@output, "docs/assets/static_docs.js"))
+    assert File.exists?(Path.join(@output, "docs/assets/autocomplete_search_demo.js"))
 
     marketing_index = File.read!(Path.join(@output, "index.html"))
     docs_index = File.read!(Path.join(@output, "docs/index.html"))

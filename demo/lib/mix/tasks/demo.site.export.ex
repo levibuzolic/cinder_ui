@@ -70,14 +70,16 @@ defmodule Mix.Tasks.Demo.Site.Export do
     assets_dir = Path.join(output_dir, "assets")
     File.mkdir_p!(assets_dir)
 
-    File.write!(
-      Path.join(assets_dir, "theme.css"),
-      File.read!(SiteRuntime.asset_path("theme.css"))
-    )
-
-    File.write!(Path.join(assets_dir, "site.css"), File.read!(SiteRuntime.asset_path("site.css")))
-    File.write!(Path.join(assets_dir, "static_docs.js"), SiteRuntime.docs_site_js())
-    File.write!(Path.join(assets_dir, "cinder_ui.js"), SiteRuntime.cinder_ui_js())
+    for {name, contents} <- [
+          {"theme.css", File.read!(SiteRuntime.asset_path("theme.css"))},
+          {"site.css", File.read!(SiteRuntime.asset_path("site.css"))},
+          {"static_docs.js", SiteRuntime.docs_site_js()},
+          {"autocomplete_search_demo.js",
+           File.read!(SiteRuntime.asset_path("autocomplete_search_demo.js"))},
+          {"cinder_ui.js", SiteRuntime.cinder_ui_js()}
+        ] do
+      File.write!(Path.join(assets_dir, name), contents)
+    end
   end
 
   defp fetch_html!(url) do

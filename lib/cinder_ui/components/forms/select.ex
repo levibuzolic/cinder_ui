@@ -7,6 +7,7 @@ defmodule CinderUI.Components.Forms.Select do
   import CinderUI.Components.Forms.Field, only: [field_error: 1, label: 1]
   import CinderUI.Components.Forms.Helpers
 
+  alias CinderUI.Components.Actions
   alias CinderUI.Icons
   alias Phoenix.HTML.Safe
 
@@ -27,8 +28,13 @@ defmodule CinderUI.Components.Forms.Select do
 
   ```heex title="Grouped labels" align="full" vrt
   <.select id="assignee" name="assignee" placeholder="Assign a teammate">
-    <:option value="levi" label="Levi" description="Platform" group="Engineering" />
-    <:option value="mira" label="Mira" description="Product Design" group="Design" />
+    <:option
+      :for={character <- Enum.sort_by(@characters, & &1.group)}
+      value={character.id}
+      label={character.label}
+      description={character.description}
+      group={character.group}
+    />
   </.select>
   ```
 
@@ -344,18 +350,51 @@ defmodule CinderUI.Components.Forms.Select do
   without matching the query against labels or keywords. This works with both
   `:input` and `:popup` variants. Client-side filtering defaults to `true`.
 
+  For on-demand server search, set `search_event="search-owners"`. Typing does
+  not send input/change events to LiveView; Enter in the text field or the
+  built-in Search button pushes that event with `%{"query" => query}`. Use
+  `search_label` to change the button text and `phx-target={@myself}` to target
+  a LiveComponent. Both input and popup variants support this mode.
+
+  In this mode, use the arrow keys to focus a result, then Enter to select it,
+  or click a result. Enter in the text field always searches, even when old
+  results are visible. Searches are ignored while disabled or loading. Escape
+  and clicking outside restore the committed selection without searching.
+
+  ## Server search
+
+  Start with an empty `@owners` list and replace it with each search result.
+  `Accounts.search_owners/1` is your application’s query, returning records with
+  `id`, `label`, `description`, and `keywords`.
+
+  Debounced `phx-keyup` sends `"value"`; on-demand `search_event` sends `"query"`.
+  This handler supports both examples:
+
+  ```elixir
+  def mount(_params, _session, socket) do
+    {:ok, assign(socket, owner_id: nil, owners: [])}
+  end
+
+  def handle_event("search-owners", params, socket) do
+    query = params["query"] || params["value"]
+    {:noreply, assign(socket, :owners, Accounts.search_owners(query))}
+  end
+  ```
+
+  The previews use Futurama fixtures and simulate latency. Try `robot`,
+  `captain`, or `doctor`; an unmatched query shows the empty state.
+
   ## Examples
 
   ```heex title="Autocomplete" align="full"
-  <.autocomplete id="team-owner" name="owner" value="levi">
+  <.autocomplete id="team-owner" name="owner" value="fry">
     <:option
-      value="levi"
-      label="Levi Buzolic"
-      description="Engineering"
-      keywords={["backend", "Elixir"]}
+      :for={character <- @characters}
+      value={character.id}
+      label={character.label}
+      description={character.description}
+      keywords={character.keywords}
     />
-    <:option value="mira" label="Mira Chen" description="Design" />
-    <:option value="sam" label="Sam Hall" description="Operations" />
   </.autocomplete>
   ```
 
@@ -370,87 +409,122 @@ defmodule CinderUI.Components.Forms.Select do
     <.autocomplete
       id="owner-search"
       name="owner"
-      value="mira"
-      placeholder="Search teammates..."
+      value={@owner_id}
+      placeholder="Search characters..."
       filter={false}
-      loading={false}
       phx-keyup="search-owners"
       phx-debounce="300"
       aria-label="Search owners"
     >
-      <:option value="levi" label="Levi Buzolic" />
-      <:option value="mira" label="Mira Chen" />
-      <:empty>No teammates match the current query.</:empty>
+      <:option
+        :for={owner <- @owners}
+        value={owner.id}
+        label={owner.label}
+        description={owner.description}
+        keywords={owner.keywords}
+      />
+      <:empty>No characters match the current query.</:empty>
     </.autocomplete>
   </.form>
   ```
 
-  ```heex title="Autocomplete popup" align="full" vrt
-  <div class="pb-48">
-    <.autocomplete
-      id="country-search"
-      name="country"
-      value="au"
-      variant={:popup}
-      placeholder="Search countries..."
-      open={true}
-    >
-      <:option value="au" label="Australia" />
-      <:option value="nz" label="New Zealand" />
-      <:option value="us" label="United States" />
-    </.autocomplete>
-  </div>
+  ```heex title="On-demand server search" align="full"
+  <.autocomplete
+    id="on-demand-owner-search"
+    name="owner"
+    search_event="search-owners"
+    filter={false}
+    placeholder="Search characters..."
+    aria-label="Search characters on demand"
+  >
+    <:option
+      :for={owner <- @owners}
+      value={owner.id}
+      label={owner.label}
+      description={owner.description}
+      keywords={owner.keywords}
+    />
+  </.autocomplete>
   ```
 
-  ```heex title="Grouped autocomplete" align="full" vrt
-  <div class="pb-48">
-    <.autocomplete
-      id="timezone-search"
-      name="timezone"
-      placeholder="Search timezones..."
-      open={true}
-    >
-      <:option value="nyc" label="(GMT-5) New York" group="Americas" />
-      <:option value="lax" label="(GMT-8) Los Angeles" group="Americas" />
-      <:option value="lon" label="(GMT+0) London" group="Europe" />
-    </.autocomplete>
-  </div>
+  ```heex title="Autocomplete popup" align="full" vrt screenshot="open"
+  <.autocomplete
+    id="country-search"
+    name="country"
+    value="au"
+    variant={:popup}
+    placeholder="Search countries..."
+  >
+    <:option :for={country <- @countries} value={country.id} label={country.label} />
+  </.autocomplete>
   ```
 
-  ```heex title="Custom autocomplete items" align="full" vrt
-  <div class="pb-36">
-    <.autocomplete
-      id="framework-search"
-      name="framework"
-      open={true}
-    >
-      <:option value="next" label="Next.js">
-        <span class="flex flex-col">
-          <span class="font-medium">Next.js</span>
-          <span class="text-muted-foreground text-xs">React framework</span>
-        </span>
-      </:option>
-    </.autocomplete>
-  </div>
+  ```heex title="Grouped autocomplete" align="full" vrt screenshot="open"
+  <.autocomplete
+    id="crew-directory-search"
+    name="character"
+    placeholder="Search characters..."
+  >
+    <:option
+      :for={character <- Enum.sort_by(@characters, & &1.group)}
+      value={character.id}
+      label={character.label}
+      description={character.description}
+      group={character.group}
+      keywords={character.keywords}
+    />
+  </.autocomplete>
+  ```
+
+  ```heex title="Custom autocomplete items" align="full" vrt screenshot="open"
+  <.autocomplete
+    id="character-search"
+    name="character"
+  >
+    <:option :for={character <- @characters} value={character.id} label={character.label} keywords={character.keywords}>
+      <.avatar size={:sm} src={character.avatar} alt={character.label} />
+      <span class="flex flex-col">
+        <span class="font-medium">{character.label}</span>
+        <span class="text-muted-foreground text-xs">{character.description}</span>
+      </span>
+    </:option>
+  </.autocomplete>
   ```
 
   ### With FormField
 
       <.autocomplete field={@form[:owner]}>
-        <:option value="levi" label="Levi Buzolic" />
-        <:option value="mira" label="Mira Chen" />
+        <:option
+          :for={character <- @characters}
+          value={character.id}
+          label={character.label}
+          description={character.description}
+          keywords={character.keywords}
+        />
       </.autocomplete>
 
   ### With label
 
       <.autocomplete field={@form[:owner]} label="Owner">
-        <:option value="levi" label="Levi Buzolic" />
+        <:option
+          :for={character <- @characters}
+          value={character.id}
+          label={character.label}
+          description={character.description}
+          keywords={character.keywords}
+        />
       </.autocomplete>
 
   ### With explicit errors
 
       <.autocomplete field={@form[:owner]} label="Owner" errors={["is required"]}>
-        <:option value="levi" label="Levi Buzolic" />
+        <:option
+          :for={character <- @characters}
+          value={character.id}
+          label={character.label}
+          description={character.description}
+          keywords={character.keywords}
+        />
       </.autocomplete>
 
   ### Inside field composition
@@ -458,7 +532,13 @@ defmodule CinderUI.Components.Forms.Select do
       <.field>
         <:label for={@form[:owner].id}>Owner</:label>
         <.autocomplete field={@form[:owner]}>
-          <:option value="levi" label="Levi Buzolic" />
+          <:option
+            :for={character <- @characters}
+            value={character.id}
+            label={character.label}
+            description={character.description}
+            keywords={character.keywords}
+          />
         </.autocomplete>
         <:description>Assign a teammate to this project.</:description>
       </.field>
@@ -477,6 +557,12 @@ defmodule CinderUI.Components.Forms.Select do
   attr :loading, :boolean, default: false
   attr :filter, :boolean, default: true, doc: "Filter options by label or keywords on the client."
   attr :loading_text, :string, default: "Loading..."
+
+  attr :search_event, :string,
+    default: nil,
+    doc: "LiveView event for on-demand search; receives %{\"query\" => query}."
+
+  attr :search_label, :string, default: "Search", doc: "Label for the on-demand Search button."
   attr :class, :string, default: nil
   attr :content_class, :string, default: nil
   attr :rest, :global, include: ~w(required aria-label)
@@ -533,6 +619,8 @@ defmodule CinderUI.Components.Forms.Select do
         loading={@loading}
         filter={@filter}
         loading_text={@loading_text}
+        search_event={@search_event}
+        search_label={@search_label}
         option={@option}
         trigger={@trigger}
         empty={@empty}
@@ -556,6 +644,8 @@ defmodule CinderUI.Components.Forms.Select do
       loading={@loading}
       filter={@filter}
       loading_text={@loading_text}
+      search_event={@search_event}
+      search_label={@search_label}
       option={@option}
       trigger={@trigger}
       empty={@empty}
@@ -578,6 +668,8 @@ defmodule CinderUI.Components.Forms.Select do
   attr :loading, :boolean, required: true
   attr :filter, :boolean, required: true
   attr :loading_text, :string, required: true
+  attr :search_event, :string, required: true
+  attr :search_label, :string, required: true
   attr :root_classes, :list, required: true
   attr :input_classes, :list, required: true
   attr :content_classes, :list, required: true
@@ -597,7 +689,10 @@ defmodule CinderUI.Components.Forms.Select do
       data-selected-label={@selected_label}
       data-loading={@loading}
       data-filter={to_string(@filter)}
-      class={classes(@root_classes)}
+      data-search-event={@search_event}
+      class={
+        classes([@root_classes, @search_event && @variant == :input && "flex items-center gap-2"])
+      }
       phx-hook="CuiAutocomplete"
     >
       <input
@@ -655,9 +750,19 @@ defmodule CinderUI.Components.Forms.Select do
         aria-expanded={@open}
         aria-activedescendant=""
         disabled={@disabled}
-        class={classes(@input_classes)}
+        class={classes([@input_classes, @search_event && "min-w-0 flex-1"])}
         {@rest}
       />
+
+      <Actions.button
+        :if={@variant == :input && @search_event}
+        type="button"
+        variant={:secondary}
+        data-autocomplete-search
+        disabled={@disabled || @loading}
+      >
+        {@search_label}
+      </Actions.button>
 
       <div
         id={"#{@id}-content"}
@@ -667,28 +772,39 @@ defmodule CinderUI.Components.Forms.Select do
         tabindex="-1"
         class={classes(@content_classes)}
       >
-        <input
-          :if={@variant == :popup}
-          data-slot="autocomplete-input"
-          data-autocomplete-input
-          type="text"
-          value=""
-          placeholder={@placeholder}
-          autocomplete="off"
-          role="combobox"
-          aria-autocomplete="list"
-          aria-controls={"#{@id}-content"}
-          aria-expanded={@open}
-          aria-activedescendant=""
-          disabled={@disabled}
-          class={
-            classes([
-              @input_classes,
-              "mb-1 h-8 border-input/30 bg-input/30 shadow-none focus-visible:ring-0"
-            ])
-          }
-          {@rest}
-        />
+        <div :if={@variant == :popup} class="flex items-start gap-1">
+          <input
+            data-slot="autocomplete-input"
+            data-autocomplete-input
+            type="text"
+            value=""
+            placeholder={@placeholder}
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls={"#{@id}-content"}
+            aria-expanded={@open}
+            aria-activedescendant=""
+            disabled={@disabled}
+            class={
+              classes([
+                @input_classes,
+                "mb-1 h-8 min-w-0 flex-1 border-input/30 bg-input/30 shadow-none focus-visible:ring-0"
+              ])
+            }
+            {@rest}
+          />
+          <Actions.button
+            :if={@search_event}
+            type="button"
+            variant={:secondary}
+            size={:sm}
+            data-autocomplete-search
+            disabled={@disabled || @loading}
+          >
+            {@search_label}
+          </Actions.button>
+        </div>
 
         <div
           :if={@loading}

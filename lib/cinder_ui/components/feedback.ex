@@ -590,8 +590,8 @@ defmodule CinderUI.Components.Feedback do
   ## Example
 
       <.empty_state>
-        <:title>No projects</:title>
-        <:description>Create your first project to get started.</:description>
+        <:title>No deliveries</:title>
+        <:description>All Planet Express packages have shipped.</:description>
       </.empty_state>
   """)
 

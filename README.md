@@ -282,6 +282,37 @@ components:
 <.p>Inline values like <.inline_code>90d</.inline_code> stay aligned.</.p>
 ```
 
+## Example data
+
+The docs and demo share 24 Futurama characters, including the Planet Express
+crew and their wider circle of contacts. Autocomplete, selects, command lists,
+avatars, tables, and recipes use the same records. Try `robot` or `captain` in
+the search examples; results can match a role as well as a name.
+
+Copyable examples use `@characters` (the full roster), `@crew` (Planet Express),
+and `@orders` (delivery orders). Supply these assigns from your own application.
+A character has this shape:
+
+```elixir
+%{
+  id: "fry",
+  label: "Philip J. Fry",
+  description: "Delivery boy",
+  group: "Planet Express",
+  keywords: ["human", "courier"],
+  avatar: "/images/fry.webp",
+  email: "fry@planetexpress.example",
+  status: :active
+}
+```
+
+The complete fixture lives in [sample_data.ex](dev/lib/cinder_ui/docs/sample_data.ex)
+and is used only by documentation tooling. Contact details and account states
+are fictional. Country and date examples retain real-world values appropriate
+to their controls. Character portraits are bundled locally for stable previews;
+[portrait sources and copyright notes](dev/assets/docs/avatars/README.md) are
+recorded separately from the library’s MIT license.
+
 ## Forms and Validation
 
 `CinderUI.Components.Forms` supports both simple field wrappers and more explicit
@@ -314,8 +345,8 @@ Explicit composition with validation messaging:
         value={@form[:owner].value}
         aria-label="Owner"
       >
-        <:option value="levi" label="Levi Buzolic" description="Engineering" />
-        <:option value="mira" label="Mira Chen" description="Design" />
+        <:option value="fry" label="Philip J. Fry" description="Delivery boy" />
+        <:option value="leela" label="Turanga Leela" description="Ship captain" />
         <:empty>No matching teammates.</:empty>
       </.autocomplete>
     </.field_control>
@@ -346,6 +377,20 @@ server's order. Both input and popup variants support this flag. The default,
 Handle `"search-places"` in your LiveView and update `@places` with the results.
 The search event includes the typed text as `"value"`. The hidden `place_id`
 input submits the selected place ID.
+
+For on-demand search, add `search_event="search-owners"` to the autocomplete.
+Enter in the text field or the built-in Search button sends that event with
+`%{"query" => query}`; typing stays local. Use arrow keys then Enter, or click
+an option, to select a result. `search_label` customizes the button text and
+`phx-target={@myself}` targets a LiveComponent. Both variants support this mode.
+
+The [autocomplete examples](lib/cinder_ui/components/forms/select.ex) show
+LiveView initialization and a search handler that updates `@owners`.
+The option slots loop over those results. Replace `Accounts.search_owners/1`
+with your application’s query.
+
+The demo's server-search examples simulate latency and match names and roles.
+Try `robot`, `captain`, or `doctor` to see loading, results, and selection.
 
 Custom label markup remains available when you need richer label content:
 

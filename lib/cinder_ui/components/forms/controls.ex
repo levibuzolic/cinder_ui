@@ -16,11 +16,11 @@ defmodule CinderUI.Components.Forms.Controls do
   ## Examples
 
   ```heex title="Text input" align="full"
-  <.input id="email" type="email" placeholder="name@example.com" />
+  <.input id="email" type="email" placeholder="fry@planetexpress.example" />
   ```
 
   ```heex title="With value" align="full"
-  <.input id="username" name="username" value="levi" />
+  <.input id="username" name="username" value="fry" />
   ```
 
   ### With FormField
@@ -630,8 +630,11 @@ defmodule CinderUI.Components.Forms.Controls do
 
   ```heex title="With placeholder" align="full"
   <.native_select name="assignee" placeholder="Assign a teammate">
-    <:option value="levi" label="Levi" />
-    <:option value="juz" label="Justin" />
+    <:option
+      :for={character <- @characters}
+      value={character.id}
+      label={character.label}
+    />
   </.native_select>
   ```
 

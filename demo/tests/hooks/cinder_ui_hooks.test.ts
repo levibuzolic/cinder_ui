@@ -26,6 +26,78 @@ afterEach(() => {
   document.body.innerHTML = ""
 })
 
+describe.each(["input", "popup"])("on-demand autocomplete (%s)", (variant) => {
+  const setup = () => {
+    const { el, hook } = mountHook("CuiAutocomplete", `
+      <div data-variant="${variant}" data-search-event="search-owners" data-filter="false" data-selected-label="Mira Chen">
+        <input data-slot="autocomplete-value" type="hidden" value="mira" />
+        ${variant === "popup" ? '<button data-autocomplete-trigger type="button">Choose owner</button>' : ""}
+        ${variant === "input" ? '<input data-autocomplete-input value="Mira Chen" />' : ""}
+        <div data-autocomplete-content>
+          ${variant === "popup" ? '<input data-autocomplete-input />' : ""}
+          <button data-autocomplete-search type="button">Search</button>
+          <button id="manual-mira" data-autocomplete-item data-value="mira" data-label="Mira Chen">Mira Chen</button>
+        </div>
+      </div>`)
+    const pushEvent = vi.fn()
+    const pushEventTo = vi.fn()
+    Object.assign(hook, { pushEvent, pushEventTo })
+    const input = el.querySelector<HTMLInputElement>("[data-autocomplete-input]")!
+    const button = el.querySelector<HTMLButtonElement>("[data-autocomplete-search]")!
+    const value = el.querySelector<HTMLInputElement>("[data-slot='autocomplete-value']")!
+    return { el, hook, pushEvent, pushEventTo, input, button, value }
+  }
+
+  it("keeps typing local, submits on Enter or click, and selects with arrow navigation", () => {
+    const { el, hook, pushEvent, input, button, value } = setup()
+    const formChanged = vi.fn()
+    el.addEventListener("input", formChanged)
+    el.addEventListener("change", formChanged)
+    input.value = "designer"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    input.dispatchEvent(new Event("change", { bubbles: true }))
+    expect(formChanged).not.toHaveBeenCalled()
+    expect(pushEvent).not.toHaveBeenCalled()
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }))
+    expect(pushEvent).toHaveBeenCalledExactlyOnceWith("search-owners", { query: "designer" })
+    button.click()
+    expect(pushEvent).toHaveBeenCalledTimes(2)
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }))
+    document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+    expect(value.value).toBe("mira")
+    expect(el.dataset.state).toBe("closed")
+    expect(formChanged).toHaveBeenCalledTimes(2)
+    expect(pushEvent).toHaveBeenCalledTimes(2)
+    input.value = "another query"
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+    expect(input.value).toBe(variant === "popup" ? "" : "Mira Chen")
+    expect(pushEvent).toHaveBeenCalledTimes(2)
+    hook.destroyed?.()
+  })
+
+  it("targets LiveComponents, guards submission, and rebinds a patched button once", () => {
+    const { el, hook, pushEventTo, input, button } = setup()
+    input.setAttribute("phx-target", "12")
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", isComposing: true, bubbles: true }))
+    el.dataset.loading = "true"
+    button.click()
+    el.dataset.loading = "false"
+    input.disabled = true
+    button.click()
+    expect(pushEventTo).not.toHaveBeenCalled()
+    input.disabled = false
+    const replacement = button.cloneNode(true) as HTMLButtonElement
+    button.replaceWith(replacement)
+    hook.updated?.()
+    hook.updated?.()
+    replacement.click()
+    expect(pushEventTo).toHaveBeenCalledExactlyOnceWith("12", "search-owners", { query: input.value })
+    hook.destroyed?.()
+    replacement.click()
+    expect(pushEventTo).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe("Cinder UI hook harness", () => {
   it("select supports typeahead and clear commands", () => {
     const { el } = mountHook(
@@ -332,6 +404,10 @@ describe("Cinder UI hook harness", () => {
 
     const input = el.querySelector("[data-autocomplete-input]") as HTMLInputElement
     const hiddenInput = el.querySelector("[data-slot='autocomplete-value']") as HTMLInputElement
+
+    input.focus()
+    hook.updated?.()
+    expect(el.querySelector("#owner-mira")?.classList.contains("hidden")).toBe(false)
 
     el.dataset.selectedLabel = ""
     input.value = ""

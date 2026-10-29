@@ -54,13 +54,13 @@ defmodule CinderUI.Components.Overlay do
   ```heex title="Form inside dialog" vrt
   <.dialog id="invite-member-dialog">
     <:trigger><.button>Invite member</.button></:trigger>
-    <:title>Invite teammate</:title>
+    <:title>Invite crew member</:title>
     <:description>Grant access to this workspace.</:description>
 
     <div class="grid gap-4">
       <.field>
         <:label for="invite_email">Email</:label>
-        <.input id="invite_email" type="email" placeholder="dev@company.com" />
+        <.input id="invite_email" type="email" placeholder="amy@planetexpress.example" />
       </.field>
       <.field>
         <:label for="invite_role">Role</:label>
@@ -264,7 +264,7 @@ defmodule CinderUI.Components.Overlay do
     <:description>Refine issues by status and owner.</:description>
     <div class="space-y-2 text-sm">
       <p>Status: Open</p>
-      <p>Owner: Platform</p>
+      <p>Captain: Turanga Leela</p>
     </div>
   </.drawer>
   ```
@@ -578,11 +578,11 @@ defmodule CinderUI.Components.Overlay do
 
   ```heex title="Hover card" align="full"
   <.hover_card>
-    <:trigger><span class="text-sm underline">Levi Buzolic</span></:trigger>
+    <:trigger><span class="text-sm underline">Philip J. Fry</span></:trigger>
     <:content>
       <div class="space-y-1 text-sm">
-        <p class="font-medium">Levi Buzolic</p>
-        <p class="text-muted-foreground">Maintains docs and releases.</p>
+        <p class="font-medium">Philip J. Fry</p>
+        <p class="text-muted-foreground">Delivery boy at Planet Express.</p>
       </div>
     </:content>
   </.hover_card>
@@ -625,6 +625,16 @@ defmodule CinderUI.Components.Overlay do
     <:item href="/projects/1">Open project</:item>
     <:item>Rename</:item>
     <:item disabled={true}>Archive</:item>
+  </.dropdown_menu>
+  ```
+
+  ```heex title="Crew switcher" align="full"
+  <.dropdown_menu id="crew-switcher" content_class="max-h-72 overflow-y-auto">
+    <:trigger><.button variant={:outline}>Planet Express crew</.button></:trigger>
+    <:item :for={character <- @crew}>
+      <.avatar size={:sm} src={character.avatar} alt={character.label} />
+      {character.label}
+    </:item>
   </.dropdown_menu>
   ```
   """)

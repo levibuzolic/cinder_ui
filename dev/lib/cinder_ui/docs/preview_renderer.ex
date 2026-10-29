@@ -1,7 +1,7 @@
 defmodule CinderUI.Docs.PreviewRenderer do
   @moduledoc false
 
-  alias CinderUI.Docs.SampleAssets
+  alias CinderUI.Docs.SampleData
   alias Phoenix.HTML.Safe
 
   def render(module, function, code) when is_binary(code) do
@@ -14,7 +14,7 @@ defmodule CinderUI.Docs.PreviewRenderer do
       raise ArgumentError, "empty inline docs example for #{inspect(module)}.#{function}/1"
     end
 
-    preview_snippet = SampleAssets.hydrate_template_for_preview(snippet, module, function)
+    preview_snippet = hydrate_images(snippet)
     unique = System.unique_integer([:positive, :monotonic])
     renderer = Module.concat(__MODULE__, :"DocExample#{unique}")
     file = "docs_example_#{unique}.ex"
@@ -62,6 +62,16 @@ defmodule CinderUI.Docs.PreviewRenderer do
     end
   end
 
+  defp hydrate_images(snippet) do
+    Enum.reduce(SampleData.characters(), snippet, fn character, template ->
+      Regex.replace(
+        ~r/(src=["'])example\.png(["']\s+(?:avatar_)?alt=["']#{Regex.escape(character.label)}["'])/u,
+        template,
+        fn _full, prefix, suffix -> prefix <> character.avatar <> suffix end
+      )
+    end)
+  end
+
   defp indent_block(content, spaces) do
     indentation = String.duplicate(" ", spaces)
 
@@ -79,19 +89,25 @@ defmodule CinderUI.Docs.PreviewRenderer do
   end
 
   defp default_snippet_assign_value("form"), do: example_form_assign()
+  defp default_snippet_assign_value("owners"), do: SampleData.characters()
+  defp default_snippet_assign_value("owner_id"), do: "leela"
+  defp default_snippet_assign_value("characters"), do: SampleData.characters()
+  defp default_snippet_assign_value("crew"), do: SampleData.crew()
+  defp default_snippet_assign_value("orders"), do: SampleData.orders()
+  defp default_snippet_assign_value("countries"), do: SampleData.countries()
   defp default_snippet_assign_value(_key), do: nil
 
   defp example_form_assign do
     Phoenix.Component.to_form(
       %{
-        "email" => "levi@example.com",
+        "email" => "fry@planetexpress.example",
         "quantity" => "3",
         "bio" => "Docs preview copy",
         "active" => "true",
         "terms" => "true",
         "notifications" => "true",
         "role" => "member",
-        "owner" => "mira",
+        "owner" => "leela",
         "plan" => "pro",
         "volume" => "42",
         "code" => "482951"

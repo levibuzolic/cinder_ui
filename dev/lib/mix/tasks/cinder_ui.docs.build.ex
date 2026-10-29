@@ -75,9 +75,14 @@ defmodule Mix.Tasks.CinderUi.Docs.Build do
       )
     end)
 
-    File.write!(Path.join(assets_dir, "static_docs.js"), site_js())
-    File.write!(Path.join(assets_dir, "cinder_ui.js"), cinder_ui_js())
-    File.write!(Path.join(assets_dir, "site.css"), site_css())
+    for {name, contents} <- [
+          {"static_docs.js", site_js()},
+          {"autocomplete_search_demo.js", docs_asset!("autocomplete_search_demo.js")},
+          {"cinder_ui.js", cinder_ui_js()},
+          {"site.css", site_css()}
+        ] do
+      File.write!(Path.join(assets_dir, name), contents)
+    end
 
     Marketing.write_marketing_index!(output_dir, %{
       github_url: github_url,
