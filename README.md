@@ -385,10 +385,9 @@ an option, to select a result. `search_label` customizes the button text and
 `phx-target={@myself}` targets a LiveComponent. Both variants support this mode.
 
 The [autocomplete examples](lib/cinder_ui/components/forms/select.ex) show
-LiveView initialization and an `assign_async/3` search handler. Their option
-slots loop over `@search_results.result`, and their loading state comes from
-the same async assign. Replace `Accounts.search_owners/1` with your database
-query or API call.
+LiveView initialization and a search handler that updates `@owners`.
+The option slots loop over those results. Replace `Accounts.search_owners/1`
+with your application’s query.
 
 The demo's server-search examples simulate latency and match names and roles.
 Try `robot`, `captain`, or `doctor` to see loading, results, and selection.

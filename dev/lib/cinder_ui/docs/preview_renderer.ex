@@ -4,7 +4,6 @@ defmodule CinderUI.Docs.PreviewRenderer do
   alias CinderUI.Docs.SampleAssets
   alias CinderUI.Docs.SampleData
   alias Phoenix.HTML.Safe
-  alias Phoenix.LiveView.AsyncResult
 
   def render(module, function, code) when is_binary(code) do
     snippet =
@@ -81,10 +80,7 @@ defmodule CinderUI.Docs.PreviewRenderer do
   end
 
   defp default_snippet_assign_value("form"), do: example_form_assign()
-
-  defp default_snippet_assign_value("search_results"),
-    do: AsyncResult.ok(SampleData.characters())
-
+  defp default_snippet_assign_value("owners"), do: SampleData.characters()
   defp default_snippet_assign_value("owner_id"), do: "leela"
   defp default_snippet_assign_value("characters"), do: SampleData.characters()
   defp default_snippet_assign_value("crew"), do: SampleData.crew()

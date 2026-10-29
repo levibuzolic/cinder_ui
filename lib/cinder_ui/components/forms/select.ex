@@ -363,34 +363,26 @@ defmodule CinderUI.Components.Forms.Select do
 
   ## Server search
 
-  Keep search results in a LiveView assign and render the returned records as
-  option slots. Initialize the results empty; `Accounts.search_owners/1` is your
-  application’s database or API search, returning maps with the character keys
-  shown in these examples (`id`, `label`, `description`, and `keywords`).
+  Start with an empty `@owners` list and replace it with each search result.
+  `Accounts.search_owners/1` is your application’s query, returning records with
+  `id`, `label`, `description`, and `keywords`.
 
-  `assign_async/3` runs the search without blocking the LiveView and tracks its
-  loading state. Debounced `phx-keyup` sends the text as `"value"`; on-demand
-  `search_event` sends it as `"query"`. This handler supports both examples:
+  Debounced `phx-keyup` sends `"value"`; on-demand `search_event` sends `"query"`.
+  This handler supports both examples:
 
   ```elixir
-  alias Phoenix.LiveView.AsyncResult
-
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, owner_id: nil, search_results: AsyncResult.ok([]))}
+    {:ok, assign(socket, owner_id: nil, owners: [])}
   end
 
   def handle_event("search-owners", params, socket) do
     query = params["query"] || params["value"]
-
-    {:noreply,
-     assign_async(socket, :search_results, fn ->
-       {:ok, %{search_results: Accounts.search_owners(query)}}
-     end)}
+    {:noreply, assign(socket, :owners, Accounts.search_owners(query))}
   end
   ```
 
-  The previews below seed sample results and simulate latency. In your app,
-  the options come from `@search_results.result` after the search completes.
+  The previews use Futurama fixtures and simulate latency. Try `robot`,
+  `captain`, or `doctor`; an unmatched query shows the empty state.
 
   ## Examples
 
@@ -412,9 +404,6 @@ defmodule CinderUI.Components.Forms.Select do
   </.autocomplete>
   ```
 
-  The demo previews simulate server latency and search across names and roles.
-  Try `robot`, `captain`, or `doctor`; an unmatched query shows the empty state.
-
   ```heex title="LiveView server search" align="full" vrt
   <.form for={%{}}>
     <.autocomplete
@@ -423,13 +412,12 @@ defmodule CinderUI.Components.Forms.Select do
       value={@owner_id}
       placeholder="Search characters..."
       filter={false}
-      loading={@search_results.loading != nil}
       phx-keyup="search-owners"
       phx-debounce="300"
       aria-label="Search owners"
     >
       <:option
-        :for={owner <- @search_results.result || []}
+        :for={owner <- @owners}
         value={owner.id}
         label={owner.label}
         description={owner.description}
@@ -446,12 +434,11 @@ defmodule CinderUI.Components.Forms.Select do
     name="owner"
     search_event="search-owners"
     filter={false}
-    loading={@search_results.loading != nil}
     placeholder="Search characters..."
     aria-label="Search characters on demand"
   >
     <:option
-      :for={owner <- @search_results.result || []}
+      :for={owner <- @owners}
       value={owner.id}
       label={owner.label}
       description={owner.description}

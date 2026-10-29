@@ -337,7 +337,7 @@ defmodule CinderUI.Docs.CatalogTest do
 
     for title <- ["LiveView server search", "On-demand server search"] do
       example = Enum.find(entry.examples, &(&1.title == title))
-      assert example.template_heex =~ "@search_results.result"
+      assert example.template_heex =~ "@owners"
       refute example.template_heex =~ "@characters"
 
       assert length(TestHelpers.find_all(example.preview_html, "[data-autocomplete-item]")) ==
@@ -351,7 +351,7 @@ defmodule CinderUI.Docs.CatalogTest do
       })
 
     code = html |> TestHelpers.find_all("pre") |> Floki.text()
-    assert code =~ "AsyncResult.ok([])"
+    assert code =~ "owners: []"
     assert code =~ "Accounts.search_owners(query)"
   end
 

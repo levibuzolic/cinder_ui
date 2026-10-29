@@ -229,7 +229,7 @@ export const CuiAutocomplete = {
       }
       this.open = true
       if (this.isPopup && !this.isManualSearch() && this.input) this.input.value = ""
-      if (!this.isManualSearch()) this.highlightVisibleDefault({ preferSelection: true })
+      this.highlightVisibleDefault({ preferSelection: true })
       this.sync()
     }
 
