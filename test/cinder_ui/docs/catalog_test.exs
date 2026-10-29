@@ -38,6 +38,12 @@ defmodule CinderUI.Docs.CatalogTest do
         Enum.each(entry.examples, fn example ->
           refute example.template_heex =~ "CinderUI.Icons.icon"
           assert example.preview_align in [:center, :full]
+
+          if example.screenshot_open do
+            refute example.template_heex =~ "pb-80"
+            refute example.template_heex =~ "open={true}"
+            assert example.preview_html =~ ~s(data-state="closed")
+          end
         end)
 
         assert is_list(entry.attributes)

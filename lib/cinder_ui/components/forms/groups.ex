@@ -82,48 +82,42 @@ defmodule CinderUI.Components.Forms.Groups do
   </.input_group>
   ```
 
-  ```heex title="Autocomplete input group" align="full" vrt
-  <div class="pb-80">
-    <.input_group>
-      <.input_group_addon>
-        <.input_group_text>Owner</.input_group_text>
-      </.input_group_addon>
-      <.autocomplete
-        id="group-owner-search"
-        name="owner"
-        placeholder="Search characters..."
-        open={true}
-      >
-        <:option
-          :for={character <- @characters}
-          value={character.id}
-          label={character.label}
-          description={character.description}
-          keywords={character.keywords}
-        />
-      </.autocomplete>
-    </.input_group>
-  </div>
+  ```heex title="Autocomplete input group" align="full" vrt screenshot="open"
+  <.input_group>
+    <.input_group_addon>
+      <.input_group_text>Owner</.input_group_text>
+    </.input_group_addon>
+    <.autocomplete
+      id="group-owner-search"
+      name="owner"
+      placeholder="Search characters..."
+    >
+      <:option
+        :for={character <- @characters}
+        value={character.id}
+        label={character.label}
+        description={character.description}
+        keywords={character.keywords}
+      />
+    </.autocomplete>
+  </.input_group>
   ```
 
-  ```heex title="Autocomplete popup input group" align="full" vrt
-  <div class="pb-80">
-    <.input_group>
-      <.input_group_addon>
-        <.input_group_text>Country</.input_group_text>
-      </.input_group_addon>
-      <.autocomplete
-        id="group-country-search"
-        name="country"
-        value="au"
-        variant={:popup}
-        placeholder="Search countries..."
-        open={true}
-      >
-        <:option :for={country <- @countries} value={country.id} label={country.label} />
-      </.autocomplete>
-    </.input_group>
-  </div>
+  ```heex title="Autocomplete popup input group" align="full" vrt screenshot="open"
+  <.input_group>
+    <.input_group_addon>
+      <.input_group_text>Country</.input_group_text>
+    </.input_group_addon>
+    <.autocomplete
+      id="group-country-search"
+      name="country"
+      value="au"
+      variant={:popup}
+      placeholder="Search countries..."
+    >
+      <:option :for={country <- @countries} value={country.id} label={country.label} />
+    </.autocomplete>
+  </.input_group>
   ```
 
   ```heex title="Textarea with footer action" align="full"

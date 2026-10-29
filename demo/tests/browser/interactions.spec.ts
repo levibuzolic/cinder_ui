@@ -440,14 +440,15 @@ test.describe("interactive previews", () => {
     const content = autocomplete.locator("[data-autocomplete-content]")
 
     await autocomplete.scrollIntoViewIfNeeded()
-    expect(await hasClass(content, "hidden")).toBe(false)
-
-    await trigger.click()
-    expect(await hasClass(content, "hidden")).toBe(true)
+    await expect(content).toBeHidden()
     await expect(trigger).toHaveAttribute("aria-expanded", "false")
 
     await trigger.click()
-    expect(await hasClass(content, "hidden")).toBe(false)
+    await expect(content).toBeVisible()
+    await trigger.click()
+    await expect(content).toBeHidden()
+    await trigger.click()
+    await expect(content).toBeVisible()
     await expect(trigger).toHaveAttribute("aria-expanded", "true")
     await expect(input).toBeFocused()
 
@@ -1135,14 +1136,15 @@ test.describe("static docs interactivity", () => {
     const content = autocomplete.locator("[data-autocomplete-content]")
 
     await autocomplete.scrollIntoViewIfNeeded()
-    expect(await hasClass(content, "hidden")).toBe(false)
-
-    await trigger.click()
-    expect(await hasClass(content, "hidden")).toBe(true)
+    await expect(content).toBeHidden()
     await expect(trigger).toHaveAttribute("aria-expanded", "false")
 
     await trigger.click()
-    expect(await hasClass(content, "hidden")).toBe(false)
+    await expect(content).toBeVisible()
+    await trigger.click()
+    await expect(content).toBeHidden()
+    await trigger.click()
+    await expect(content).toBeVisible()
     await expect(trigger).toHaveAttribute("aria-expanded", "true")
     await expect(input).toBeFocused()
 

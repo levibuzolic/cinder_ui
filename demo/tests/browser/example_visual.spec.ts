@@ -96,6 +96,19 @@ test.describe("promoted example visual regression", () => {
 
         await preview.scrollIntoViewIfNeeded()
         await expect(preview).toBeVisible()
+        if (await example.getAttribute("data-screenshot-open") === "true") {
+          const popup = preview.locator("[data-slot='autocomplete'], [data-slot='combobox']")
+          await popup.evaluate((root) => {
+            root.dispatchEvent(new CustomEvent("cinder-ui:command", { detail: { command: "open" } }))
+          })
+          await expect(popup.locator("[role='listbox']")).toBeVisible()
+          await preview.evaluate((container) => {
+            const content = container.querySelector("[role='listbox']")!
+            const padding = parseFloat(getComputedStyle(container).paddingBottom)
+            const height = content.getBoundingClientRect().bottom - container.getBoundingClientRect().top
+            container.style.minHeight = `${Math.ceil(height + padding)}px`
+          })
+        }
         await expect(preview).toHaveScreenshot(`examples/${componentId}-${slugify(exampleTitle)}.png`, {
           animations: "allow",
           scale: "device",

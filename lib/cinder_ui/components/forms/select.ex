@@ -447,57 +447,48 @@ defmodule CinderUI.Components.Forms.Select do
   </.autocomplete>
   ```
 
-  ```heex title="Autocomplete popup" align="full" vrt
-  <div class="pb-80">
-    <.autocomplete
-      id="country-search"
-      name="country"
-      value="au"
-      variant={:popup}
-      placeholder="Search countries..."
-      open={true}
-    >
-      <:option :for={country <- @countries} value={country.id} label={country.label} />
-    </.autocomplete>
-  </div>
+  ```heex title="Autocomplete popup" align="full" vrt screenshot="open"
+  <.autocomplete
+    id="country-search"
+    name="country"
+    value="au"
+    variant={:popup}
+    placeholder="Search countries..."
+  >
+    <:option :for={country <- @countries} value={country.id} label={country.label} />
+  </.autocomplete>
   ```
 
-  ```heex title="Grouped autocomplete" align="full" vrt
-  <div class="pb-80">
-    <.autocomplete
-      id="crew-directory-search"
-      name="character"
-      placeholder="Search characters..."
-      open={true}
-    >
-      <:option
-        :for={character <- Enum.sort_by(@characters, & &1.group)}
-        value={character.id}
-        label={character.label}
-        description={character.description}
-        group={character.group}
-        keywords={character.keywords}
-      />
-    </.autocomplete>
-  </div>
+  ```heex title="Grouped autocomplete" align="full" vrt screenshot="open"
+  <.autocomplete
+    id="crew-directory-search"
+    name="character"
+    placeholder="Search characters..."
+  >
+    <:option
+      :for={character <- Enum.sort_by(@characters, & &1.group)}
+      value={character.id}
+      label={character.label}
+      description={character.description}
+      group={character.group}
+      keywords={character.keywords}
+    />
+  </.autocomplete>
   ```
 
-  ```heex title="Custom autocomplete items" align="full" vrt
-  <div class="pb-80">
-    <.autocomplete
-      id="character-search"
-      name="character"
-      open={true}
-    >
-      <:option :for={character <- @characters} value={character.id} label={character.label} keywords={character.keywords}>
-        <.avatar size={:sm} src={character.avatar} alt={character.label} />
-        <span class="flex flex-col">
-          <span class="font-medium">{character.label}</span>
-          <span class="text-muted-foreground text-xs">{character.description}</span>
-        </span>
-      </:option>
-    </.autocomplete>
-  </div>
+  ```heex title="Custom autocomplete items" align="full" vrt screenshot="open"
+  <.autocomplete
+    id="character-search"
+    name="character"
+  >
+    <:option :for={character <- @characters} value={character.id} label={character.label} keywords={character.keywords}>
+      <.avatar size={:sm} src={character.avatar} alt={character.label} />
+      <span class="flex flex-col">
+        <span class="font-medium">{character.label}</span>
+        <span class="text-muted-foreground text-xs">{character.description}</span>
+      </span>
+    </:option>
+  </.autocomplete>
   ```
 
   ### With FormField

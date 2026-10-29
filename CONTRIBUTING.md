@@ -68,6 +68,9 @@ Default hooks:
 2. Update docs/examples if API or behavior changed.
    Use the shared `@characters`, `@crew`, and `@orders` assigns for people and
    record lists; keep preview data and copyable snippets aligned.
+   Use `screenshot="open"` on a `vrt` HEEx fence to open a popup for visual
+   capture. The screenshot runner reserves space for it; keep screenshot
+   padding and forced open states out of the snippet itself.
 3. Update static docs catalog sample(s) in `dev/lib/cinder_ui/docs/catalog.ex`.
 4. Add or adjust unit/browser tests.
    Interaction changes should cover both confirm and cancel paths such as

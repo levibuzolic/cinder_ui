@@ -156,39 +156,35 @@ defmodule CinderUI.Components.Advanced.Command do
   </.combobox>
   ```
 
-  ```heex title="Grouped combobox" align="full" vrt
-  <div class="pb-80">
-    <.combobox
-      id="crew-combobox"
-      placeholder="Search characters..."
-      open={true}
-    >
-      <:option
-        :for={character <- Enum.sort_by(@characters, & &1.group)}
-        value={character.label}
-        label={character.label}
-        group={character.group}
-      />
-    </.combobox>
-  </div>
+  ```heex title="Grouped combobox" align="full" vrt screenshot="open"
+  <.combobox
+    id="crew-combobox"
+    placeholder="Search characters..."
+    content_class="max-h-72 overflow-y-auto"
+  >
+    <:option
+      :for={character <- Enum.sort_by(@characters, & &1.group)}
+      value={character.label}
+      label={character.label}
+      group={character.group}
+    />
+  </.combobox>
   ```
 
-  ```heex title="Custom combobox items" align="full" vrt
-  <div class="pb-80">
-    <.combobox
-      id="character-combobox"
-      placeholder="Search characters..."
-      open={true}
-    >
-      <:option :for={character <- @characters} value={character.label} label={character.label}>
-        <.avatar size={:sm} src={character.avatar} alt={character.label} />
-        <span class="flex flex-col">
-          <span class="font-medium">{character.label}</span>
-          <span class="text-muted-foreground text-xs">{character.description}</span>
-        </span>
-      </:option>
-    </.combobox>
-  </div>
+  ```heex title="Custom combobox items" align="full" vrt screenshot="open"
+  <.combobox
+    id="character-combobox"
+    placeholder="Search characters..."
+    content_class="max-h-72 overflow-y-auto"
+  >
+    <:option :for={character <- @characters} value={character.label} label={character.label}>
+      <.avatar size={:sm} src={character.avatar} alt={character.label} />
+      <span class="flex flex-col">
+        <span class="font-medium">{character.label}</span>
+        <span class="text-muted-foreground text-xs">{character.description}</span>
+      </span>
+    </:option>
+  </.combobox>
   ```
   """)
 

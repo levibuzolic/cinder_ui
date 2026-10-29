@@ -9,13 +9,14 @@ defmodule CinderUI.Docs.InlineExamples do
     (fenced_doc_examples(doc) ++ indented_doc_examples(doc))
     |> Enum.uniq()
     |> Enum.with_index(1)
-    |> Enum.map(fn {{lang, title, preview_align, promoted_visual, code}, index} ->
+    |> Enum.map(fn {{lang, title, preview_align, promoted_visual, screenshot_open, code}, index} ->
       %{
         id: "inline-#{index}",
         title: inline_doc_example_title(title, lang, index),
         template_heex: code,
         preview_align: preview_align,
         promoted_visual: promoted_visual,
+        screenshot_open: screenshot_open,
         phoenix_shim: phoenix_shim_example?(code)
       }
     end)
@@ -27,9 +28,10 @@ defmodule CinderUI.Docs.InlineExamples do
     |> then(&Regex.scan(~r/```([^\n]*)\n(.*?)```/s, &1, capture: :all_but_first))
     |> Enum.map(fn [info, code] ->
       {lang, title, preview_align, promoted_visual} = parse_fence_info(info)
-      {lang, title, preview_align, promoted_visual, String.trim(code)}
+      screenshot_open = Regex.match?(~r/(?:^|\s)screenshot=["']open["'](?:\s|$)/, info)
+      {lang, title, preview_align, promoted_visual, screenshot_open, String.trim(code)}
     end)
-    |> Enum.filter(fn {lang, _title, _preview_align, _promoted_visual, code} ->
+    |> Enum.filter(fn {lang, _title, _preview_align, _promoted_visual, _screenshot_open, code} ->
       code != "" and (lang in ["", "heex", "html", "elixir"] and String.contains?(code, "<."))
     end)
   end
@@ -124,7 +126,7 @@ defmodule CinderUI.Docs.InlineExamples do
 
       next_examples =
         if normalized_code != "" and String.contains?(normalized_code, "<.") do
-          [{"", heading_title, :center, false, normalized_code} | examples]
+          [{"", heading_title, :center, false, false, normalized_code} | examples]
         else
           examples
         end
