@@ -200,8 +200,8 @@ defmodule CinderUI.Docs.InlineExamples do
 
   defp parse_fence_info(info) do
     trimmed = String.trim(info)
-    title = fence_title(trimmed)
-    preview_align = fence_preview_align(trimmed)
+    title = fence_attribute(trimmed, "title")
+    preview_align = normalize_preview_align(fence_attribute(trimmed, "align") || "")
     promoted_visual = fence_promoted_visual(trimmed)
 
     case String.split(trimmed, ~r/\s+/, trim: true) do
@@ -219,39 +219,16 @@ defmodule CinderUI.Docs.InlineExamples do
     end
   end
 
-  defp fence_title(info) do
-    case Regex.run(~r/title\s*=\s*"([^"]+)"/, info, capture: :all_but_first) do
-      [title] ->
-        title
-
-      _ ->
-        case Regex.run(~r/title\s*=\s*'([^']+)'/, info, capture: :all_but_first) do
-          [title] -> title
-          _ -> nil
-        end
-    end
-  end
-
-  defp fence_preview_align(info) do
-    case Regex.run(~r/align\s*=\s*"([^"]+)"/, info, capture: :all_but_first) do
-      [value] ->
-        normalize_preview_align(value)
-
-      _ ->
-        case Regex.run(~r/align\s*=\s*'([^']+)'/, info, capture: :all_but_first) do
-          [value] -> normalize_preview_align(value)
-          _ -> :center
-        end
+  defp fence_attribute(info, name) do
+    case Regex.run(~r/#{name}\s*=\s*"([^"]+)"/, info, capture: :all_but_first) ||
+           Regex.run(~r/#{name}\s*=\s*'([^']+)'/, info, capture: :all_but_first) do
+      [value] -> value
+      nil -> nil
     end
   end
 
   defp fence_promoted_visual(info) do
-    cond do
-      Regex.match?(~r/(?:^|\s)vrt\s*=\s*"true"(?:\s|$)/, info) -> true
-      Regex.match?(~r/(?:^|\s)vrt\s*=\s*'true'(?:\s|$)/, info) -> true
-      Regex.match?(~r/(?:^|\s)vrt(?:\s|$)/, info) -> true
-      true -> false
-    end
+    Regex.match?(~r/(?:^|\s)vrt(?:\s*=\s*(?:"true"|'true'))?(?:\s|$)/, info)
   end
 
   defp normalize_preview_align(value) when is_binary(value) do

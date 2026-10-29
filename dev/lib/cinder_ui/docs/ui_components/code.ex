@@ -19,7 +19,7 @@ defmodule CinderUI.Docs.UIComponents.Code do
   def docs_code_block(assigns) do
     assigns =
       assigns
-      |> assign(:highlighted_html, highlighted_code_html(assigns.source, assigns.language))
+      |> assign(:highlighted_html, CodeHighlighter.highlight(assigns.source, assigns.language))
       |> assign(:pre_classes, [
         "overflow-x-auto rounded-lg bg-muted/30 p-4 text-xs whitespace-normal",
         assigns.standalone && "install-code-block relative rounded-xl my-4 border text-sm"
@@ -31,18 +31,10 @@ defmodule CinderUI.Docs.UIComponents.Code do
 
     ~H"""
     <pre class={classes(@pre_classes)} {@rest}>
-      <code id={@id} class={classes(@code_classes)}><%= rendered(@highlighted_html) %></code>
+      <code id={@id} class={classes(@code_classes)}><%= HTML.raw(@highlighted_html) %></code>
     </pre>
     """
   end
-
-  defp rendered(html) when is_binary(html), do: Phoenix.HTML.raw(html)
-
-  defp highlighted_code_html(source, language) do
-    CodeHighlighter.highlight(source, language)
-  end
-
-  defp escape(text), do: text |> HTML.html_escape() |> HTML.safe_to_string()
 
   def summary_markdown_html(text) do
     text
@@ -51,7 +43,7 @@ defmodule CinderUI.Docs.UIComponents.Code do
     |> ExDoc.DocAST.to_html()
   rescue
     _ ->
-      "<p>#{escape(text)}</p>"
+      "<p>#{text |> HTML.html_escape() |> HTML.safe_to_string()}</p>"
   end
 
   defp highlight_markdown_code({:pre, attrs, [{:code, code_attrs, [source], meta}], pre_meta})

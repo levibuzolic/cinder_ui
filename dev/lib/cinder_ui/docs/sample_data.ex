@@ -1,10 +1,5 @@
 defmodule CinderUI.Docs.SampleData do
-  @moduledoc """
-  Shared Futurama records for documentation previews and recipes.
-
-  Contact details and account states are fictional UI fixtures. Applications
-  copying the examples supply their own assigns with the same map keys.
-  """
+  @moduledoc false
 
   @characters [
                 {"fry", "Philip J. Fry", "Delivery boy", "Planet Express", "human courier"},
@@ -58,8 +53,7 @@ defmodule CinderUI.Docs.SampleData do
   def crew, do: Enum.filter(@characters, &(&1.group == "Planet Express"))
 
   def countries do
-    Enum.map(
-      [
+    for {id, label} <- [
         {"au", "Australia"},
         {"nz", "New Zealand"},
         {"us", "United States"},
@@ -72,15 +66,12 @@ defmodule CinderUI.Docs.SampleData do
         {"br", "Brazil"},
         {"mx", "Mexico"},
         {"za", "South Africa"}
-      ],
-      fn {id, label} -> %{id: id, label: label} end
-    )
+        ],
+        do: %{id: id, label: label}
   end
 
   def orders do
-    @characters
-    |> Enum.with_index(1001)
-    |> Enum.map(fn {character, id} ->
+    for {character, id} <- Enum.with_index(@characters, 1001) do
       %{
         id: id,
         number: "ORD-#{id}",
@@ -88,6 +79,6 @@ defmodule CinderUI.Docs.SampleData do
         status: if(rem(id, 3) == 0, do: :pending, else: :paid),
         total: "$#{48 + rem(id * 37, 300)}.00"
       }
-    end)
+    end
   end
 end

@@ -1,7 +1,6 @@
 defmodule CinderUI.Docs.PreviewRenderer do
   @moduledoc false
 
-  alias CinderUI.Docs.SampleAssets
   alias CinderUI.Docs.SampleData
   alias Phoenix.HTML.Safe
 
@@ -15,7 +14,7 @@ defmodule CinderUI.Docs.PreviewRenderer do
       raise ArgumentError, "empty inline docs example for #{inspect(module)}.#{function}/1"
     end
 
-    preview_snippet = SampleAssets.hydrate_template_for_preview(snippet, module, function)
+    preview_snippet = hydrate_images(snippet)
     unique = System.unique_integer([:positive, :monotonic])
     renderer = Module.concat(__MODULE__, :"DocExample#{unique}")
     file = "docs_example_#{unique}.ex"
@@ -61,6 +60,16 @@ defmodule CinderUI.Docs.PreviewRenderer do
       :code.purge(renderer)
       :code.delete(renderer)
     end
+  end
+
+  defp hydrate_images(snippet) do
+    Enum.reduce(SampleData.characters(), snippet, fn character, template ->
+      Regex.replace(
+        ~r/(src=["'])example\.png(["']\s+(?:avatar_)?alt=["']#{Regex.escape(character.label)}["'])/u,
+        template,
+        fn _full, prefix, suffix -> prefix <> character.avatar <> suffix end
+      )
+    end)
   end
 
   defp indent_block(content, spaces) do
